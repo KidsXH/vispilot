@@ -1,0 +1,30 @@
+{
+    "sourceFile": "src/app/page.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1739857527704,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1739857534191,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,8 @@\n+export default function Home() {\n+  return (\n+   <div className='w-[1920px] h-[1080px] font-system mx-auto border border-black'>\n+     title\n+     <div className=\"\"></div>\n+   </div>\n+  );\n+}\n"
+                },
+                {
+                    "date": 1739857540387,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n export default function Home() {\n   return (\n    <div className='w-[1920px] h-[1080px] font-system mx-auto border border-black'>\n      title\n-     <div className=\"w-10 h-10\"></div>\n+     <div className=\"w-10 h-10 \"></div>\n    </div>\n   );\n }\n"
+                },
+                {
+                    "date": 1739857546066,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n export default function Home() {\n   return (\n    <div className='w-[1920px] h-[1080px] font-system mx-auto border border-black'>\n      title\n-     <div className=\"w-10 h-10 border bo\"></div>\n+     <div className=\"w-10 h-10 border border-amber-400\"></div>\n    </div>\n   );\n }\n"
+                }
+            ],
+            "date": 1739857527704,
+            "name": "Commit-0",
+            "content": "export default function Home() {\n  return (\n   <div className='w-[1920px] h-[1080px] font-system mx-auto border border-black'>\n     title\n     <div\n   </div>\n  );\n}\n"
+        }
+    ]
+}
