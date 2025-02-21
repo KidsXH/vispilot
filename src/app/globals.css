@@ -22,6 +22,11 @@
   font-variation-settings: 'fill' 0, 'wght' 400, 'opsz' 24;
 }
 
+.material-symbols-outlined.icon-small {
+  font-size: 18px;
+  font-variation-settings: 'fill' 0, 'wght' 400, 'opsz' 24;
+}
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -58,4 +63,12 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.canvas-vega-embed canvas {
+  @apply cursor-pointer
+}
+
+.canvas-vega-embed summary {
+  @apply mt-2 mr-2
 }

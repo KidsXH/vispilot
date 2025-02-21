@@ -5,7 +5,7 @@ import Recommendation from '@/components/Recommendation';
 
 export default function Home() {
   return (
-    <div className='flex flex-col w-[1920px] h-[1082px] mx-auto mt-20 border border-black bg-white font-sans'>
+    <div className='flex flex-col w-[1920px] h-[1080px] mx-auto mt-20 border border-black bg-white font-sans'>
       <div className='flex items-center w-full h-10 px-2 bg-neutral-900 text-white text-2xl font-system'>
         VisPilot
       </div>
