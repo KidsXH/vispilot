@@ -6,6 +6,7 @@ import {Provider, TypedUseSelectorHook, useDispatch, useSelector} from "react-re
 import AppSlice from "@/store/features/AppSlice";
 import CanvasSlice from "@/store/features/CanvasSlice";
 import DataSlice from "@/store/features/DataSlice";
+import ChatSlice from "@/store/features/ChatSlice";
 
 // Create a Redux store
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     app: AppSlice,
     canvas: CanvasSlice,
     data: DataSlice,
+    chat: ChatSlice,
   },
 })
 

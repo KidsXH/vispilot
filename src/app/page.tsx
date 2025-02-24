@@ -10,7 +10,7 @@ export default function Home() {
         VisPilot
       </div>
       <div className='flex flex-grow w-full'>
-        <div className='flex flex-col w-96 border border-black'>
+        <div className='flex flex-col min-w-80 border border-black'>
           <div className='h-96 border-b border-black'>
             <DataTable />
           </div>

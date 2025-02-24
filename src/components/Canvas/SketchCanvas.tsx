@@ -70,9 +70,9 @@ export default function SketchPad() {
 
   // 渲染路径
   const renderPath = (pathData: CanvasPath) => {
-      return pathData.points.length > 1
-        ? `M ${pathData.points.map(point => point.join(',')).join(' L ')}`
-        : '';
+    return pathData.points.length > 1
+      ? `M ${pathData.points.map(point => point.join(',')).join(' L ')}`
+      : '';
   };
 
   // 撤销功能
@@ -84,6 +84,26 @@ export default function SketchPad() {
   const handleClear = () => {
     setPaths([]);
   };
+
+  const handleAskVisPilot = () => {
+    const svgElem = svgRef.current;
+    if (svgElem) {
+      svgToBase64Png(svgElem, 1250, 700)
+        .then((base64) => {
+          const imageUrl = base64 as string;
+          dispatch(addMessage({
+            id: 0,
+            role: 'user',
+            sender: 'user',
+            content: [
+              {type: "text", text: "Please recommend a visualization based on the sketch below."},
+              {type: 'image_url', image_url: {url: imageUrl}}
+            ]
+          }))
+        })
+        .catch(console.error);
+    }
+  }
 
   const toolList: ToolButtonInfo[][] = [
     [
@@ -97,7 +117,8 @@ export default function SketchPad() {
         name: 'redo',
         icon: 'redo',
         title: 'Redo',
-        handleClick: () => {}
+        handleClick: () => {
+        }
       },
     ],
     [
@@ -105,25 +126,33 @@ export default function SketchPad() {
         name: 'pencil',
         icon: 'stylus_note',
         title: 'Pencil',
-        handleClick: () => {dispatch(setTool('pencil'))}
+        handleClick: () => {
+          dispatch(setTool('pencil'))
+        }
       },
       {
         name: 'shape',
         icon: 'shapes',
         title: 'Shape',
-        handleClick: () => {dispatch(setTool('shape'))}
+        handleClick: () => {
+          dispatch(setTool('shape'))
+        }
       },
       {
         name: 'axis',
         icon: 'shuffle',
         title: 'Axis',
-        handleClick: () => {dispatch(setTool('axis'))}
+        handleClick: () => {
+          dispatch(setTool('axis'))
+        }
       },
       {
         name: 'note',
         icon: 'sticky_note',
         title: 'Text',
-        handleClick: () => {dispatch(setTool('note'))}
+        handleClick: () => {
+          dispatch(setTool('note'))
+        }
       }
     ],
     [
@@ -131,13 +160,17 @@ export default function SketchPad() {
         name: 'select',
         icon: 'left_click',
         title: 'Select',
-        handleClick: () => {dispatch(setTool('select'))}
+        handleClick: () => {
+          dispatch(setTool('select'))
+        }
       },
       {
         name: 'selectArea',
         icon: 'ink_selection',
         title: 'Select area',
-        handleClick: () => {dispatch(setTool('selectArea'))}
+        handleClick: () => {
+          dispatch(setTool('selectArea'))
+        }
       }
     ]
   ]
@@ -148,6 +181,7 @@ export default function SketchPad() {
       <div className="absolute top-4 right-4 flex z-10 text-neutral-600">
         <button
           className="flex items-center justify-center space-x-2 h-9 w-[9.5rem] rounded bg-gray-200 font-bold hover:bg-gray-300 cursor-pointer"
+          onClick={handleAskVisPilot}
         >
           <GlowingText>
             <span className="material-symbols-outlined">emoji_objects</span>
@@ -218,13 +252,13 @@ export default function SketchPad() {
       </svg>
 
       {/*Embed Vega Views*/}
-      <EmbedVegaViews />
+      <EmbedVegaViews/>
     </div>
   );
 }
 
 interface ToolButtonInfo {
-  name:string,
+  name: string,
   icon: string,
   title: string,
   handleClick: () => void,
@@ -282,6 +316,7 @@ const ToolIcon = ({className, icon, active, text}: {
 
 import vegaEmbed from 'vega-embed';
 import {compile, Config} from 'vega-lite';
+import {addMessage} from "@/store/features/ChatSlice";
 
 const EmbedVegaViews = () => {
   const vegaEmbeds = useAppSelector(selectVegaEmbeds);
@@ -289,7 +324,8 @@ const EmbedVegaViews = () => {
   return <div className="absolute top-0 left-0">
     {
       vegaEmbeds.vegaSpecs.map((spec: TopLevelSpec, index: number) => (
-        <div key={index} id={`canvas-vega-${index}`} className="absolute" style={{top: vegaEmbeds.positions[index][1], left: vegaEmbeds.positions[index][0]}}>
+        <div key={index} id={`canvas-vega-${index}`} className="absolute"
+             style={{top: vegaEmbeds.positions[index][1], left: vegaEmbeds.positions[index][0]}}>
           <VegaLite spec={spec}/>
         </div>
       ))
@@ -297,7 +333,7 @@ const EmbedVegaViews = () => {
   </div>
 }
 
-const VegaLite = ({spec}: {spec: TopLevelSpec}) => {
+const VegaLite = ({spec}: { spec: TopLevelSpec }) => {
   const visRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -313,4 +349,52 @@ const VegaLite = ({spec}: {spec: TopLevelSpec}) => {
   return (
     <div className={"canvas-vega-embed flex items-center justify-center hover:shadow-lg p-2 pt-4"} ref={visRef}></div>
   );
+}
+
+function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number) {
+  return new Promise((resolve, reject) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+
+      canvas.width = width || svgElement.clientWidth || svgElement.getBoundingClientRect().width;
+      canvas.height = height || svgElement.clientHeight || svgElement.getBoundingClientRect().height;
+
+      // 克隆 SVG 元素以避免修改原始元素
+      const svgClone = svgElement.cloneNode(true);
+
+      // 创建背景矩形
+      const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      background.setAttribute("width", "100%");
+      background.setAttribute("height", "100%");
+      background.setAttribute("fill", "white");
+
+      // 将背景插入到 SVG 的最前面
+      svgClone.insertBefore(background, svgClone.firstChild);
+
+      const svgString = new XMLSerializer().serializeToString(svgClone);
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = 'white';  // 设置 canvas 背景色为白色
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const base64String = canvas.toDataURL('image/png');
+        URL.revokeObjectURL(url);
+        resolve(base64String);
+      };
+
+      img.onerror = (error) => {
+        URL.revokeObjectURL(url);
+        reject(error);
+      };
+
+      img.src = url;
+    } catch (error) {
+      reject(error);
+    }
+  });
 }

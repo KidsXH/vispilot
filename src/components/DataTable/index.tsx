@@ -4,12 +4,7 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {selectDataSource, setDataSource} from "@/store/features/DataSlice";
 
 const DataTable = () => {
-  useEffect(() => {
-    console.log('DataTable mounted')
-    return () => {
-      console.log('DataTable unmounted')
-    }
-  }, [])
+
   return (
     <>
       <div className='flex flex-col p-2 w-full'>
@@ -19,7 +14,7 @@ const DataTable = () => {
             <DataSourceLabel/>
           </div>
         </div>
-        <div className='max-w-[320px] h-[320px] overflow-auto'>
+        <div className='max-w-[320px] h-[320px] overflow-auto no-scrollbar'>
           <CSVReader/>
         </div>
       </div>
@@ -39,8 +34,10 @@ const DataSourceLabel = () => {
   </div>
 }
 
-import React, {ChangeEvent, useEffect, useState} from 'react';
+import React, {ChangeEvent, useState} from 'react';
 import {Upload} from 'lucide-react';
+import {generateSystemPromptWithCSV} from "@/prompts";
+import {addMessage} from "@/store/features/ChatSlice";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
@@ -75,6 +72,14 @@ const CSVReader = () => {
         });
 
         setCsvData(parsedData);
+
+        const systemPrompt = generateSystemPromptWithCSV({csvData: parsedData, headers});
+        dispatch(addMessage({
+          id: 0,
+          role: 'user',
+          sender: 'user',
+          content: [{type: 'text', text: systemPrompt}]
+        }));
       }
     };
 
@@ -85,10 +90,10 @@ const CSVReader = () => {
     <div className="max-w-4xl mx-auto select-none">
       {
         csvData.length === 0 &&
-          <div className="mb-6">
+          <div className="mt-24">
               <label
                   htmlFor="csvInput"
-                  className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
+                  className="flex items-center justify-center w-full h-32 px-2 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
               >
                   <div className="flex flex-col items-center space-y-2">
                       <Upload className="w-8 h-8 text-gray-400"/>
