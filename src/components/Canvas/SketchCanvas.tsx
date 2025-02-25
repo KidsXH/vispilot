@@ -1,6 +1,6 @@
 import GlowingText from '@/components/Canvas/GlowingText'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { selectTool, selectVegaEmbeds, setTool } from '@/store/features/CanvasSlice'
+import {selectTool, selectVegaEmbeds, setTool, ShapeType} from '@/store/features/CanvasSlice'
 import { CanvasPath, Message } from '@/types'
 import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
@@ -383,8 +383,8 @@ const ToolBox = ({
 }: {
   toolList: ToolButtonInfo[][]
   shapeToolList: ToolButtonInfo[]
-  selectedShapeType: 'rectangle' | 'circle' | null
-  setSelectedShapeType: (type: 'rectangle' | 'circle' | null) => void
+  selectedShapeType: ShapeType | null
+  setSelectedShapeType: (shapeType: ShapeType | null) => void
 }) => {
   const tool = useAppSelector(selectTool)
   return (
@@ -395,7 +395,7 @@ const ToolBox = ({
           <div className="flex items-center justify-center px-2 h-12 w-[90px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
             <div className="flex items-center space-x-1">
               {shapeToolList.map((toolInfo, i) => (
-                <button key={`shape-tool-${i}`} onClick={() => setSelectedShapeType(toolInfo.name)}>
+                <button key={`shape-tool-${i}`} onClick={() => setSelectedShapeType(toolInfo.name as ShapeType)}>
                   <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={selectedShapeType === toolInfo.name} />
                 </button>
               ))}

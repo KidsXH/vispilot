@@ -2,6 +2,9 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
 import {TopLevelSpec} from "vega-lite";
 
+export type ToolType = 'pencil' | 'select' | 'selectArea' | 'shape' | 'axis' | 'note'
+export type ShapeType = 'rectangle' | 'circle'
+
 interface CanvasState {
   tool: 'pencil' | 'select' | 'selectArea' | 'shape' | 'axis' | 'note'
   vegaEmbeds: { vegaSpecs: TopLevelSpec[], positions: number[][] }
