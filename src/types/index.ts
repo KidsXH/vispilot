@@ -4,6 +4,8 @@ export interface CanvasPath {
   color: string;
   width: number;
   pressure: number;
+  type: 'pencil'| 'axis' | 'shape' | 'note';
+  shapeType?: 'rectangle'| 'circle'| null;
 }
 
 export interface Message {
