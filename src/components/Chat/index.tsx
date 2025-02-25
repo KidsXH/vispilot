@@ -5,6 +5,7 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {addMessage, selectMessages, selectModel, selectState, setState} from "@/store/features/ChatSlice";
 import {Message} from "@/types";
 import Image from "next/image";
+import {sendRequest} from "@/model";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -17,7 +18,7 @@ const Chat = () => {
 
   const handleSendMessage = useCallback((inputText: string) => {
     // Add message to the chat
-    const lastMessageID = messages[messages.length - 1].id
+    const lastMessageID = messages[messages.length - 1]?.id || 0;
     const newMessage: Message = {
       id: lastMessageID + 1,
       role: 'user',
@@ -26,16 +27,11 @@ const Chat = () => {
     }
     dispatch(setState('waiting'))
     dispatch(addMessage(newMessage))
-    setTimeout(() => {
-      const responseMessage: Message = {
-        id: lastMessageID + 2,
-        role: 'model',
-        sender: 'model',
-        content: [{type: 'text', text: 'I am a model!'}],
-      }
-      dispatch(addMessage(responseMessage))
+
+    sendRequest([...messages, newMessage]).then((response) => {
+      dispatch(addMessage(response))
       dispatch(setState('idle'))
-    }, 1000)
+    })
   }, [dispatch, messages])
 
   useEffect(() => {
@@ -48,7 +44,8 @@ const Chat = () => {
     <div className='flex flex-col p-2'>
       <div className='font-bold text-xl'>Chat</div>
       <div className='flex flex-col h-[530px] overflow-y-scroll no-scrollbar' ref={messageDivRef}>
-        {messages.map((message) => {
+        {messages.filter((message) => message.role !== 'system')
+          .map((message) => {
           return (
             <div
               key={message.id}
@@ -104,18 +101,20 @@ export default Chat;
 const MessageBox = ({message}: { message: Message }) => {
   return (
     <div
-      className={`flex flex-col rounded p-2 max-w-60
-        ${message.sender === 'user' ? 'bg-blue-200' : 'bg-gray-200 w-60'}`}
+      className={`flex flex-col rounded p-2 max-w-72
+        ${message.sender === 'user' ? 'bg-blue-200' : 'bg-gray-200 w-72'}`}
     >
       {message.content.map((content, index) =>
-        <div key={index} className={`break-words hyphens-auto`}>
+        <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
           {
             content.type === "text" ?
               content.text :
-              <Image className='w-[250px] h-[140px] mt-2' src={content.image_url!.url} width={250} height={140} alt={'sketch'}/>
+              <Image className='w-[270px] h-[150px] mt-2' src={content.image_url!.url} width={270} height={150}
+                     alt={'sketch'}/>
           }
         </div>
       )}
     </div>
   );
 };
+

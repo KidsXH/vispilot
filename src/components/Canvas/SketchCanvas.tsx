@@ -1,3 +1,10 @@
+import React, {useState, useRef, PointerEvent, useCallback, useEffect} from 'react';
+import {motion} from 'framer-motion';
+import {CanvasPath, Message} from "@/types";
+import {useAppDispatch, useAppSelector} from "@/store";
+import {selectVegaEmbeds, selectTool, setTool} from "@/store/features/CanvasSlice";
+import GlowingText from "@/components/Canvas/GlowingText";
+import {TopLevelSpec} from "vega-lite";
 import GlowingText from '@/components/Canvas/GlowingText'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { selectTool, selectVegaEmbeds, setTool } from '@/store/features/CanvasSlice'
@@ -174,23 +181,28 @@ export default function SketchPad() {
     setPaths([])
   }
 
-  const handleAskVisPilot = () => {
+  const messages = useAppSelector(selectMessages);
+  const handleAskVisPilot = useCallback(() => {
     const svgElem = svgRef.current
     if (svgElem) {
       svgToBase64Png(svgElem, 1250, 700)
-        .then(base64 => {
-          const imageUrl = base64 as string
-          dispatch(
-            addMessage({
-              id: 0,
-              role: 'user',
-              sender: 'user',
-              content: [
-                { type: 'text', text: 'Please recommend a visualization based on the sketch below.' },
-                { type: 'image_url', image_url: { url: imageUrl } }
-              ]
-            })
-          )
+        .then((base64) => {
+          const imageUrl = base64 as string;
+          const message: Message = {
+            id: messages.length + 1,
+            role: 'user',
+            sender: 'user',
+            content: [
+              {type: "text", text: "Please recommend a visualization based on the sketch below."},
+              {type: 'image_url', image_url: {url: imageUrl}}
+            ]
+          }
+          dispatch(addMessage(message));
+          dispatch(setState('waiting'));
+          sendRequest([...messages, message]).then(response => {
+            dispatch(addMessage(response));
+            dispatch(setState('idle'));
+          });
         })
         .catch(console.error)
     }
@@ -436,6 +448,13 @@ const ToolIcon = ({
         {icon}
       </span>
     </>
+  );
+};
+
+import vegaEmbed from 'vega-embed';
+import {compile, Config} from 'vega-lite';
+import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
+import {sendRequest} from "@/model";
   )
 }
 
