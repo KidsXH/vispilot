@@ -199,7 +199,7 @@ export default function SketchPad() {
         })
         .catch(console.error)
     }
-  })
+  }, [dispatch, messages])
 
   const shapeToolList: ToolButtonInfo[] = [
     {
