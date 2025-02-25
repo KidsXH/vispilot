@@ -2,6 +2,7 @@ import Canvas from '@/components/Canvas';
 import Chat from '@/components/Chat';
 import DataTable from '@/components/DataTable';
 import Recommendation from '@/components/Recommendation';
+import DesignPanel from "@/components/DesignPanel";
 
 export default function Home() {
   return (
@@ -19,8 +20,8 @@ export default function Home() {
           </div>
         </div>
         <div className='flex flex-row-reverse grow border border-black min-w-0'>
-          <div className='flex w-96 border-l-2 border-black p-2'>
-            <div className='font-bold text-xl'>Design Panel</div>
+          <div className='w-[340px] border-l-2 border-black'>
+            <DesignPanel />
           </div>
           <div className='flex flex-col-reverse grow min-w-0'>
             <div className='h-72 border-t border-black'>
