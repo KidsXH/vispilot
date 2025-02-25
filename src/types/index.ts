@@ -8,9 +8,9 @@ export interface CanvasPath {
 
 export interface Message {
   id: number;
-  role: 'user' | 'model';
+  role: 'user' | 'assistant' | 'system';
   content: MessageContent[];
-  sender: 'system' | 'user' | 'model' ;
+  sender: 'system' | 'user' | 'assistant' ;
 }
 
 export interface MessageContent {
@@ -18,4 +18,3 @@ export interface MessageContent {
   text?: string;
   image_url?: { url: string }
 }
-

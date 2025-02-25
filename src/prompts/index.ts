@@ -6,9 +6,21 @@ export const generateSystemPromptWithCSV = ({csvData, headers}: {csvData: { [key
     prompt += `${header}: ${csvData.slice(0, 3).map(row => row[header]).join(', ')}\n`;
   });
 
-  prompt += `\nPlease provide visualization recommendations for this data following user's prompt.`;
+  prompt += `\nPlease provide visualization recommendations for this data based on user's requests and sketch images.`;
 
-  prompt += `\n\nThe output format must be in the form of Vega-Lite JSON.`;
+  prompt += `\nYour response should include the following:\n`;
+  prompt += `\n1. [Chat] Chat with the user to understand their requirements and provide suggestions based on their requests.`;
+  prompt += `\n2. [Vis] (optional) If the user provides a query or sketch image, provide a visualization recommendation in the form of Vega-Lite JSON.`;
+  prompt += `\n\nYou should not include Vega-Lite JSON in your response if the user does not provide a query or sketch image.`;
 
+  prompt += `\n\nExample Response Format:\n\n`;
+
+  prompt += `[Chat]\n`;
+  prompt += `Your chat response here.\n\n`;
+
+  prompt += `[Vis]\n`;
+  prompt += `Your visualization recommendation here (only and must be Vega-Lite JSON).\n\n`;
+
+  prompt += `\nAll your responses must be written in English.`;
   return prompt;
 }

@@ -37,7 +37,9 @@ const DataSourceLabel = () => {
 import React, {ChangeEvent, useState} from 'react';
 import {Upload} from 'lucide-react';
 import {generateSystemPromptWithCSV} from "@/prompts";
-import {addMessage} from "@/store/features/ChatSlice";
+import {addMessage, setState} from "@/store/features/ChatSlice";
+import {sendRequest} from "@/model";
+import {Message} from "@/types";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
@@ -74,12 +76,18 @@ const CSVReader = () => {
         setCsvData(parsedData);
 
         const systemPrompt = generateSystemPromptWithCSV({csvData: parsedData, headers});
-        dispatch(addMessage({
+        const message: Message = {
           id: 0,
-          role: 'user',
-          sender: 'user',
+          role: 'system',
+          sender: 'system',
           content: [{type: 'text', text: systemPrompt}]
-        }));
+        }
+        dispatch(addMessage(message));
+        dispatch(setState('waiting'));
+        sendRequest([message]).then(response => {
+          dispatch(addMessage(response));
+          dispatch(setState('idle'));
+        });
       }
     };
 

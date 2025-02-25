@@ -1,6 +1,6 @@
 import React, {useState, useRef, PointerEvent, useCallback, useEffect} from 'react';
 import {motion} from 'framer-motion';
-import {CanvasPath} from "@/types";
+import {CanvasPath, Message} from "@/types";
 import {useAppDispatch, useAppSelector} from "@/store";
 import {selectVegaEmbeds, selectTool, setTool} from "@/store/features/CanvasSlice";
 import GlowingText from "@/components/Canvas/GlowingText";
@@ -85,25 +85,32 @@ export default function SketchPad() {
     setPaths([]);
   };
 
-  const handleAskVisPilot = () => {
+  const messages = useAppSelector(selectMessages);
+  const handleAskVisPilot = useCallback(() => {
     const svgElem = svgRef.current;
     if (svgElem) {
       svgToBase64Png(svgElem, 1250, 700)
         .then((base64) => {
           const imageUrl = base64 as string;
-          dispatch(addMessage({
-            id: 0,
+          const message: Message = {
+            id: messages.length + 1,
             role: 'user',
             sender: 'user',
             content: [
               {type: "text", text: "Please recommend a visualization based on the sketch below."},
               {type: 'image_url', image_url: {url: imageUrl}}
             ]
-          }))
+          }
+          dispatch(addMessage(message));
+          dispatch(setState('waiting'));
+          sendRequest([...messages, message]).then(response => {
+            dispatch(addMessage(response));
+            dispatch(setState('idle'));
+          });
         })
         .catch(console.error);
     }
-  }
+  }, [dispatch, messages])
 
   const toolList: ToolButtonInfo[][] = [
     [
@@ -316,7 +323,8 @@ const ToolIcon = ({className, icon, active, text}: {
 
 import vegaEmbed from 'vega-embed';
 import {compile, Config} from 'vega-lite';
-import {addMessage} from "@/store/features/ChatSlice";
+import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
+import {sendRequest} from "@/model";
 
 const EmbedVegaViews = () => {
   const vegaEmbeds = useAppSelector(selectVegaEmbeds);
