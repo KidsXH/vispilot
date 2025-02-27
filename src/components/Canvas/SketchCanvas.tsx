@@ -16,6 +16,7 @@ export default function SketchPad() {
   const svgRef = useRef<SVGSVGElement | null>(null)
 
   const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle' | null>(null)
+  const [selectedPathId, setSelectedPathId] = useState<number | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
 
   // 获取鼠标在SVG中的相对坐标
@@ -37,6 +38,10 @@ export default function SketchPad() {
 
   const handlePointerDown = useCallback(
     (event: PointerEvent) => {
+      if (tool != 'select') {
+        setSelectedPathId(null)
+      }
+
       if (isEditingText) {
         setIsEditingText(false)
         return
@@ -87,9 +92,18 @@ export default function SketchPad() {
           type: 'note' as const,
           text: ''
         })
+      } else if (tool === 'select') {
+        const path = paths.find(path => {
+          return isPointInPath(path, [x, y])
+        })
+        if (path) {
+          setSelectedPathId(path.id)
+        } else {
+          setSelectedPathId(null)
+        }
       }
     },
-    [tool, selectedShapeType, isEditingText]
+    [tool, selectedShapeType, isEditingText, paths]
   )
 
   const handlePointerMove = (event: PointerEvent) => {
@@ -192,6 +206,48 @@ export default function SketchPad() {
       const updatedPaths = paths.map(path => (path.id === currentPathId ? { ...path, text } : path))
       setPaths(updatedPaths)
     }
+  }
+
+  const isPointInPath = (path: CanvasPath, point: [number, number]): boolean => {
+    if (path.type === 'note') {
+      const [x, y] = point
+      const [startX, startY] = path.points[0]
+      const distance = Math.sqrt((x - startX) ** 2 + (y - startY) ** 2)
+      return distance < 10
+    } else if (path.type === 'pencil') {
+      const [x, y] = point
+      const points = Array.from(path.points)
+      for (let i = 0; i < points.length - 1; i++) {
+        const [startX, startY] = points[i]
+        const [endX, endY] = points[i + 1]
+        const distance = distanceToSegment(x, y, startX, startY, endX, endY)
+
+        if (distance < 10) {
+          return true
+        }
+      }
+      return false
+    } else if (path.type === 'shape') {
+      const [x, y] = point
+      const [startX, startY] = path.points[0]
+      const [endX, endY] = path.points[1]
+      if (path.shapeType === 'circle') {
+        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)
+        return Math.abs((x - startX) ** 2 + (y - startY) ** 2 - radius ** 2) < 1000
+      } else if (path.shapeType === 'rectangle') {
+        return distanceToRectangle(x, y, startX, startY, endX, endY)
+      }
+      return false
+    } else if (path.type === 'axis') {
+      const [x, y] = point
+      const [startX, startY] = path.points[0]
+      const [endX, endY] = path.points[1]
+      const dx = endX - startX
+      const dy = endY - startY
+      const distance = distanceToSegment(x, y, startX, startY, endX, endY)
+      return distance < 10
+    }
+    return false
   }
 
   // 撤销功能
@@ -370,7 +426,8 @@ export default function SketchPad() {
             d={renderPath(path)}
             fill="none"
             stroke={path.color}
-            strokeWidth={path.width * path.pressure}
+            // strokeWidth={path.width * path.pressure}
+            strokeWidth={selectedPathId === path.id ? path.width * path.pressure * 2 : path.width * path.pressure}
             strokeLinecap="round"
             strokeLinejoin="round"
             initial={{ pathLength: 0 }}
@@ -381,7 +438,7 @@ export default function SketchPad() {
 
         {/* 文本路径 */}
         {paths.map(path => (
-          <g key={path.id}>
+          <g key={path.id} onClick={e => e.stopPropagation()}>
             {renderPath(path)}
             {path.type === 'note' && (
               <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
@@ -421,7 +478,12 @@ export default function SketchPad() {
             d={renderPath(currentPath)}
             fill="none"
             stroke={currentPath.color}
-            strokeWidth={currentPath.width * currentPath.pressure}
+            // strokeWidth={currentPath.width * currentPath.pressure}
+            strokeWidth={
+              selectedPathId === currentPath.id
+                ? currentPath.width * currentPath.pressure * 2
+                : currentPath.width * currentPath.pressure
+            }
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -594,4 +656,68 @@ function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number
       reject(error)
     }
   })
+}
+
+function distanceToTopEdge(x: number, y: number, startY: number): number {
+  return Math.abs(y - startY)
+}
+function distanceToRightEdge(x: number, y: number, endX: number): number {
+  return Math.abs(x - endX)
+}
+function distanceToBottomEdge(x: number, y: number, endY: number): number {
+  return Math.abs(y - endY)
+}
+function distanceToLeftEdge(x: number, y: number, startX: number): number {
+  return Math.abs(x - startX)
+}
+function distanceToRectangle(
+  x: number,
+  y: number,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number
+): boolean {
+  const distances = [
+    distanceToTopEdge(x, y, startY),
+    distanceToRightEdge(x, y, endX),
+    distanceToBottomEdge(x, y, endY),
+    distanceToLeftEdge(x, y, startX)
+  ]
+  const edgeXLeft = Math.min(startX, endX)
+  const edgeXRight = Math.max(startX, endX)
+  const edgeYTop = Math.max(startY, endY)
+  const edgeYBottom = Math.min(startY, endY)
+  let isOk = false
+  isOk =
+    (distances[0] < 10 && x >= edgeXLeft - 10 && x <= edgeXRight + 10) ||
+    (distances[1] < 10 && y >= edgeYBottom - 10 && y <= edgeYTop + 10) ||
+    (distances[2] < 10 && x >= edgeXLeft - 10 && x <= edgeXRight + 10) ||
+    (distances[3] < 10 && y >= edgeYBottom - 10 && y <= edgeYTop + 10)
+  return isOk
+}
+function distanceToSegment(px: number, py: number, startX: number, startY: number, endX: number, endY: number): number {
+  const dx = endX - startX
+  const dy = endY - startY
+  const segmentLengthSquared = dx * dx + dy * dy
+
+  if (segmentLengthSquared === 0) {
+    return Math.sqrt((px - startX) ** 2 + (py - startY) ** 2)
+  }
+
+  // 计算投影参数 t
+  const t = ((px - startX) * dx + (py - startY) * dy) / segmentLengthSquared
+
+  if (t < 0) {
+    // 投影点在线段起点之外，计算点到起点的距离
+    return Math.sqrt((px - startX) ** 2 + (py - startY) ** 2)
+  } else if (t > 1) {
+    // 投影点在线段终点之外，计算点到终点的距离
+    return Math.sqrt((px - endX) ** 2 + (py - endY) ** 2)
+  } else {
+    // 投影点在线段上，计算点到直线的距离
+    const projectionX = startX + t * dx
+    const projectionY = startY + t * dy
+    return Math.sqrt((px - projectionX) ** 2 + (py - projectionY) ** 2)
+  }
 }
