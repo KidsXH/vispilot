@@ -6,6 +6,7 @@ export interface CanvasPath {
   pressure: number;
   type: 'pencil'| 'axis' | 'shape' | 'note';
   shapeType?: 'rectangle'| 'circle'| null;
+  text?: string;
 }
 
 export interface Message {

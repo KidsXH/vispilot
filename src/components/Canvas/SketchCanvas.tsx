@@ -1,6 +1,6 @@
 import GlowingText from '@/components/Canvas/GlowingText'
 import { useAppDispatch, useAppSelector } from '@/store'
-import {selectTool, selectVegaEmbeds, setTool, ShapeType} from '@/store/features/CanvasSlice'
+import { selectTool, selectVegaEmbeds, setTool, ShapeType } from '@/store/features/CanvasSlice'
 import { CanvasPath, Message } from '@/types'
 import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
@@ -16,6 +16,7 @@ export default function SketchPad() {
   const svgRef = useRef<SVGSVGElement | null>(null)
 
   const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle' | null>(null)
+  const [isEditingText, setIsEditingText] = useState(false)
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
@@ -36,6 +37,11 @@ export default function SketchPad() {
 
   const handlePointerDown = useCallback(
     (event: PointerEvent) => {
+      if (isEditingText) {
+        setIsEditingText(false)
+        return
+      }
+
       const [x, y] = getCoordinates(event)
 
       if (tool === 'pencil') {
@@ -70,9 +76,20 @@ export default function SketchPad() {
           shapeType: selectedShapeType
         })
       } else if (tool === 'note') {
+        setIsEditingText(true)
+        setIsDrawing(true)
+        setCurrentPath({
+          id: Date.now(),
+          points: [[x, y]],
+          color: 'black',
+          width: 2,
+          pressure: event.pressure || 1,
+          type: 'note' as const,
+          text: ''
+        })
       }
     },
-    [tool, selectedShapeType]
+    [tool, selectedShapeType, isEditingText]
   )
 
   const handlePointerMove = (event: PointerEvent) => {
@@ -161,6 +178,19 @@ export default function SketchPad() {
         default:
           return ''
       }
+    } else if (pathData.type === 'note') {
+      return ''
+    }
+  }
+
+  const handleTextChange = (e: React.FormEvent<HTMLDivElement>, currentPathId: number) => {
+    const text = e.currentTarget.textContent || ''
+    if (text.trim() === '') {
+      const updatedPaths = paths.filter(path => path.id !== currentPathId)
+      setPaths(updatedPaths)
+    } else {
+      const updatedPaths = paths.map(path => (path.id === currentPathId ? { ...path, text } : path))
+      setPaths(updatedPaths)
     }
   }
 
@@ -347,6 +377,42 @@ export default function SketchPad() {
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.5 }}
           />
+        ))}
+
+        {/* 文本路径 */}
+        {paths.map(path => (
+          <g key={path.id}>
+            {renderPath(path)}
+            {path.type === 'note' && (
+              <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
+                <div
+                  contentEditable
+                  className="w-full h-full p-2 rounded bg-transparent outline-none border-2 border-black"
+                  onInput={e => {
+                    setIsEditingText(true)
+                    handleTextChange(e, path.id)
+                  }}
+                  onFocus={e => {
+                    e.currentTarget.classList.remove('border-transparent')
+                    e.currentTarget.classList.add('border-black')
+                  }}
+                  onBlur={e => {
+                    if (!e.currentTarget.textContent?.trim()) {
+                      if (currentPath) {
+                        const updatedPaths = paths.filter(path => path.id !== currentPath.id)
+                        setPaths(updatedPaths)
+                      } else {
+                        console.log('currentPath is null, cannot perform filter operation.')
+                      }
+                    } else {
+                      e.currentTarget.classList.remove('border-black')
+                      e.currentTarget.classList.add('border-transparent')
+                    }
+                  }}
+                />
+              </foreignObject>
+            )}
+          </g>
         ))}
 
         {/* 当前正在绘制的路径 */}
