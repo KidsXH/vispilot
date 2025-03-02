@@ -6,6 +6,7 @@ import {addMessage, selectMessages, selectModel, selectState, setState} from "@/
 import {Message} from "@/types";
 import Image from "next/image";
 import {sendRequest} from "@/model";
+import {generateSystemPrompt} from "@/prompts";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -39,6 +40,24 @@ const Chat = () => {
       messageDivRef.current.scrollTop = messageDivRef.current.scrollHeight;
     }
   }, [state])
+  
+  useEffect(() => {
+    if (messages.length === 0) {
+      const systemPrompt = generateSystemPrompt();
+      const message: Message = {
+        id: 0,
+        role: 'system',
+        sender: 'system',
+        content: [{type: 'text', text: systemPrompt}]
+      }
+      dispatch(addMessage(message));
+      dispatch(setState('waiting'));
+      sendRequest([message]).then(response => {
+        dispatch(addMessage(response));
+        dispatch(setState('idle'));
+      });
+    }
+  }, [dispatch, messages])
 
   return (
     <div className='flex flex-col p-2'>

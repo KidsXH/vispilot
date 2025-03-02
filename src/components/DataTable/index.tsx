@@ -34,19 +34,21 @@ const DataSourceLabel = () => {
   </div>
 }
 
-import React, {ChangeEvent, useState} from 'react';
+import React, {ChangeEvent, useCallback, useState} from 'react';
 import {Upload} from 'lucide-react';
-import {generateSystemPromptWithCSV} from "@/prompts";
-import {addMessage, setState} from "@/store/features/ChatSlice";
+import {generateCSVPrompt, generateSystemPrompt, generateSystemPromptWithCSV} from "@/prompts";
+import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
 import {sendRequest} from "@/model";
 import {Message} from "@/types";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
+  const messages = useAppSelector(selectMessages);
+  const lastMessageID = messages.length > 0 ? messages[messages.length - 1].id : 0;
   const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
 
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files === null) return;
 
     const file = e.target.files[0];
@@ -75,16 +77,17 @@ const CSVReader = () => {
 
         setCsvData(parsedData);
 
-        const systemPrompt = generateSystemPromptWithCSV({csvData: parsedData, headers});
+        // const systemPrompt = generateSystemPromptWithCSV({csvData: parsedData, headers});
+        const csvPrompt = generateCSVPrompt({filename, csvData: parsedData, headers});
         const message: Message = {
-          id: 0,
+          id: lastMessageID + 1,
           role: 'system',
           sender: 'system',
-          content: [{type: 'text', text: systemPrompt}]
+          content: [{type: 'text', text: csvPrompt}]
         }
         dispatch(addMessage(message));
         dispatch(setState('waiting'));
-        sendRequest([message]).then(response => {
+        sendRequest([...messages, message]).then(response => {
           dispatch(addMessage(response));
           dispatch(setState('idle'));
         });
@@ -92,7 +95,7 @@ const CSVReader = () => {
     };
 
     reader.readAsText(file);
-  };
+  }, [dispatch, lastMessageID, messages]);
 
   return (
     <div className="max-w-4xl mx-auto select-none">

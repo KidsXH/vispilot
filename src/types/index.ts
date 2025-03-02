@@ -1,3 +1,5 @@
+import {SpecCategory, TestState} from "@/app/corpus/page";
+
 export interface CanvasPath {
   id: number;
   points: number[][];
@@ -20,4 +22,22 @@ export interface MessageContent {
   type: 'text' | 'image_url';
   text?: string;
   image_url?: { url: string }
+}
+
+export type CSVData = {[key: string]: string}[]
+
+export interface UtteranceSample {
+  id: number;
+  utteranceSet: string;
+  sequential: string;
+  visId: string;
+  dataset: string;
+  dataSchema: SpecCategory | null;
+  task: SpecCategory | null;
+  mark: SpecCategory | null;
+  encoding: SpecCategory | null;
+  design: SpecCategory | null;
+  accuracy: number| null;    // Value between 0 and 1
+  inferenceLevel: number| null;  // Value between 0 and 1
+  tested: TestState;
 }
