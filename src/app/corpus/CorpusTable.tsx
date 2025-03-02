@@ -1,8 +1,9 @@
 import React, {useState, useMemo, useCallback, useEffect} from 'react';
 import {UtteranceSample} from "@/types";
 import {useAppDispatch, useAppSelector} from "@/store";
-import {selectUtteranceSamples, setUtteranceSample} from "@/store/features/CorpusSlice";
+import {selectUtteranceSamples, selectVisDataset, setUtteranceSample} from "@/store/features/CorpusSlice";
 import {testUtteranceSample} from "@/app/corpus/model";
+import {testUtteranceSampleTest} from "@/app/corpus/modelTest";
 
 interface CorpusTableProps {
   data: UtteranceSample[];
@@ -21,6 +22,7 @@ export default function CorpusTable({data}: CorpusTableProps) {
   });
 
   const utteranceSamples = useAppSelector(selectUtteranceSamples);
+  const visDataset = useAppSelector(selectVisDataset);
 
   const sortedData = useMemo(() => {
     const sorted = [...data];
@@ -50,16 +52,22 @@ export default function CorpusTable({data}: CorpusTableProps) {
     const sampleIndex = utteranceSamples.findIndex((sample) => sample.id === id);
     dispatch(setUtteranceSample({id: id, sample: {...utteranceSamples[sampleIndex], tested: 'pending'}}));
 
-    testUtteranceSample(sample).then((result) => {
+    const filename = sample.dataset.toLowerCase() + '.csv'
+    const dataset = {
+      filename,
+      csvData: visDataset[filename]
+    }
+
+    testUtteranceSampleTest(sample, dataset).then((result) => {
       dispatch(setUtteranceSample({id: id, sample: result}));
     })
 
-  }, [dispatch, utteranceSamples]);
+  }, [dispatch, utteranceSamples, visDataset]);
 
   useEffect(() => {
     const nTested = utteranceSamples.filter(s => s.tested === 'yes').length
     const nPending = utteranceSamples.filter(s => s.tested === 'pending').length
-    if (nTested > 0 && nPending < 3) {
+    if (nTested > 0 && nPending < 3 && nTested + nPending < 5) {
       // find first not tested sample
       const sample = utteranceSamples.find(s => s.tested === 'no');
       if (sample) {
@@ -73,6 +81,16 @@ export default function CorpusTable({data}: CorpusTableProps) {
         <button className='flex items-center justify-center h-9 w-9 mr-2 rounded-full hover:bg-gray-200 cursor-pointer'
           onClick={() => {
             handleTestSample(utteranceSamples[0])();
+            // const filename = utteranceSamples[0].dataset.toLowerCase() + '.csv'
+            // const dataset = {
+            //   filename,
+            //   csvData: visDataset[filename]
+            // }
+            // testUtteranceSampleTest(utteranceSamples[0], dataset).then(
+            //   (result) => {
+            //     console.log('OK Test', result)
+            //   }
+            // )
           }}
         >
           <span className='material-symbols-outlined text-green-600 m-auto'>fast_forward</span>

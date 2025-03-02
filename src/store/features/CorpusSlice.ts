@@ -16,8 +16,9 @@ export const corpusSlice = createSlice({
   name: 'corpus',
   initialState,
   reducers: {
-    setVisDataset: (state, action: PayloadAction<{ [key: string]: CSVData }>) => {
-      state.visDataset = action.payload
+    setVisDataset: (state, action: PayloadAction<{ filename: string, data: CSVData }>) => {
+      const {filename, data} = action.payload;
+      state.visDataset = {...state.visDataset, [filename]: data}
     },
     setUtteranceSamples: (state, action: PayloadAction<UtteranceSample[]>) => {
       state.utteranceSamples = action.payload

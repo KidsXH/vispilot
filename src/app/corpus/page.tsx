@@ -7,7 +7,7 @@ import {generateCSVPrompt, generateSystemPrompt} from "@/prompts";
 import {CSVData, Message, UtteranceSample} from "@/types";
 import {sendRequest} from "@/model";
 import {useAppDispatch, useAppSelector} from "@/store";
-import {selectUtteranceSamples, setUtteranceSamples} from "@/store/features/CorpusSlice";
+import {setVisDataset, selectUtteranceSamples, setUtteranceSamples} from "@/store/features/CorpusSlice";
 
 export type SpecCategory = 'Explicit' | 'Implicit' | 'None';
 export type TestState = 'no' | 'yes' | 'pending';
@@ -20,7 +20,7 @@ const specColorBand: { [key: string]: string } = {
   'design': '#9370DB'
 } as const;
 const categories = ['Explicit', 'Implicit', 'None'] as const;
-const datasetList = ['cars.csv']
+const datasetList = ['cars.csv', 'movies.csv', 'superstore.csv']
 
 export default function Corpus() {
   const dispatch = useAppDispatch();
@@ -30,14 +30,14 @@ export default function Corpus() {
   const [filters, setFilters] = useState<Partial<UtteranceSample>>({});
   const [selectedIDs, setSelectedIDs] = useState<number[]>([]);
 
-  const [csvDataSet, setCsvDataSet] = useState<{ [key: string]: CSVData }>({});
-
   useEffect(
     () => {
-      loadCSVbyFilename(datasetList[0]).then((data) => {
-        setCsvDataSet({'cars.csv': data});
+      datasetList.forEach((filename) => {
+        loadCSVDatasets(filename).then((data) => {
+          dispatch(setVisDataset({filename, data}));
+        })
       })
-    }, []
+    }, [dispatch]
   )
 
   const handleDataLoad = (csvData: { [key: string]: string }[]) => {
@@ -242,12 +242,14 @@ export default function Corpus() {
       .data(stackedData)
       .join("g")
       .attr("class", "category")
+      // @ts-expect-error
       .attr("opacity", d => opacity(d.key))
       .selectAll("rect")
       .data(d => d)
       .join("rect")
       .attr("x", d => x(d.data.dimension) || 0)
       .attr("y", d => y(d[1]))
+      // @ts-expect-error
       .attr("fill", d => color(d.data.dimension))
       .attr("height", d => y(d[0]) - y(d[1]))
       .attr("width", x.bandwidth());
@@ -276,7 +278,9 @@ export default function Corpus() {
         legendCol.append("rect")
           .attr("width", 10)
           .attr("height", 20)
+          // @ts-expect-error
           .attr("fill", color(spec))
+          // @ts-expect-error
           .attr("opacity", opacity(cat))
           .attr("x", -40 + j * 10)
       });
@@ -505,7 +509,7 @@ const modelTest = async ({utteranceSet, visId, dataset, csvDataSet}: UtteranceSa
   return response;
 }
 
-const loadCSVbyFilename = async (filename: string) => {
+const loadCSVDatasets = async (filename: string) => {
   const response = await fetch(`/vispilot/data/${filename}`);
   const text = await response.text();
   const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
