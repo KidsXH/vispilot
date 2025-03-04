@@ -17,7 +17,9 @@ export default function SketchPad() {
 
   const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle' | null>(null)
   const [selectedPathId, setSelectedPathId] = useState<number | null>(null)
+  const [editingPathId, setEditingPathId] = useState<number | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
+  const [coordinates, setCoordinates] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
@@ -42,12 +44,24 @@ export default function SketchPad() {
         setSelectedPathId(null)
       }
 
+      const [x, y] = getCoordinates(event)
+      setCoordinates({ x, y })
+
+      // const existingNote = paths.find(path => {
+      //   return path.type === 'note' && isPointInPath(path, [x, y])
+      // })
+
+      // if (existingNote) {
+      //   setIsEditingText(true)
+      //   setIsDrawing(true)
+      //   setCurrentPath(existingNote)
+      //   return
+      // }
+
       if (isEditingText) {
         setIsEditingText(false)
         return
       }
-
-      const [x, y] = getCoordinates(event)
 
       if (tool === 'pencil') {
         setIsDrawing(true)
@@ -93,11 +107,13 @@ export default function SketchPad() {
           text: ''
         })
       } else if (tool === 'select') {
+        setIsDrawing(true)
         const path = paths.find(path => {
           return isPointInPath(path, [x, y])
         })
         if (path) {
           setSelectedPathId(path.id)
+          setCurrentPath(path)
         } else {
           setSelectedPathId(null)
         }
@@ -136,12 +152,27 @@ export default function SketchPad() {
         shapeType: selectedShapeType
       }
       setCurrentPath(newPath)
+    } else if (tool === 'select') {
+      const path = paths.find(path => path.id === selectedPathId)
+      if (path) {
+        const dx = x - coordinates.x
+        const dy = y - coordinates.y
+        const newPoints = path.points.map(([px, py]) => [px + dx, py + dy])
+        const newPath = {
+          ...path,
+          points: newPoints
+        }
+        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? newPath : p)))
+      }
     }
+    setCoordinates({ x, y })
   }
 
   const handlePointerUp = () => {
     if (currentPath) {
-      setPaths([...paths, currentPath])
+      if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
+        setPaths([...paths, currentPath])
+      }
     }
     setIsDrawing(false)
     setCurrentPath(null)
@@ -212,8 +243,8 @@ export default function SketchPad() {
     if (path.type === 'note') {
       const [x, y] = point
       const [startX, startY] = path.points[0]
-      const distance = Math.sqrt((x - startX) ** 2 + (y - startY) ** 2)
-      return distance < 10
+      let isOk = x >= startX - 10 && x <= startX + 100 + 10 && y >= startY - 10 && y <= startY + 45 + 10
+      return isOk
     } else if (path.type === 'pencil') {
       const [x, y] = point
       const points = Array.from(path.points)
@@ -242,8 +273,6 @@ export default function SketchPad() {
       const [x, y] = point
       const [startX, startY] = path.points[0]
       const [endX, endY] = path.points[1]
-      const dx = endX - startX
-      const dy = endY - startY
       const distance = distanceToSegment(x, y, startX, startY, endX, endY)
       return distance < 10
     }
@@ -443,29 +472,35 @@ export default function SketchPad() {
             {path.type === 'note' && (
               <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
                 <div
-                  contentEditable
-                  className="w-full h-full p-2 rounded bg-transparent outline-none border-2 border-black"
+                  contentEditable={tool === 'note' ? true : false}
+                  className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
+                    (tool === 'select' && selectedPathId === path.id) || (isEditingText && editingPathId === path.id)
+                      ? 'border-black'
+                      : 'border-transparent'
+                  }`}
                   onInput={e => {
                     setIsEditingText(true)
+                    setEditingPathId(path.id)
                     handleTextChange(e, path.id)
                   }}
                   onFocus={e => {
+                    setIsEditingText(true)
+                    setEditingPathId(path.id)
                     e.currentTarget.classList.remove('border-transparent')
                     e.currentTarget.classList.add('border-black')
                   }}
                   onBlur={e => {
+                    setIsEditingText(false)
                     if (!e.currentTarget.textContent?.trim()) {
-                      if (currentPath) {
-                        const updatedPaths = paths.filter(path => path.id !== currentPath.id)
-                        setPaths(updatedPaths)
-                      } else {
-                        console.log('currentPath is null, cannot perform filter operation.')
-                      }
+                      const updatedPaths = paths.filter(p => p.id !== path.id)
+                      setPaths(updatedPaths)
                     } else {
                       e.currentTarget.classList.remove('border-black')
                       e.currentTarget.classList.add('border-transparent')
                     }
+                    setEditingPathId(null)
                   }}
+                  autoFocus={editingPathId === path.id}
                 />
               </foreignObject>
             )}
