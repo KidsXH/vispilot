@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { TopLevelSpec } from 'vega-lite'
 
-export default function SketchPad() {
+export default function SketchPad({ color, thickness }: { color: string; thickness: number }) {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
 
@@ -46,17 +46,6 @@ export default function SketchPad() {
 
       const [x, y] = getCoordinates(event)
       setCoordinates({ x, y })
-
-      // const existingNote = paths.find(path => {
-      //   return path.type === 'note' && isPointInPath(path, [x, y])
-      // })
-
-      // if (existingNote) {
-      //   setIsEditingText(true)
-      //   setIsDrawing(true)
-      //   setCurrentPath(existingNote)
-      //   return
-      // }
 
       if (isEditingText) {
         setIsEditingText(false)
@@ -121,6 +110,26 @@ export default function SketchPad() {
     },
     [tool, selectedShapeType, isEditingText, paths]
   )
+
+  useEffect(() => {
+    if (color && selectedPathId) {
+      const path = paths.find(path => path.id === selectedPathId)
+      if (path) {
+        path.color = color
+        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
+      }
+    }
+  }, [color])
+
+  useEffect(() => {
+    if (thickness && selectedPathId) {
+      const path = paths.find(path => path.id === selectedPathId)
+      if (path) {
+        path.width = thickness
+        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
+      }
+    }
+  }, [thickness])
 
   const handlePointerMove = (event: PointerEvent) => {
     if (!isDrawing || !currentPath) return
@@ -478,6 +487,7 @@ export default function SketchPad() {
                       ? 'border-black'
                       : 'border-transparent'
                   }`}
+                  style={{ color: path.color, fontWeight: path.width * 100 }}
                   onInput={e => {
                     setIsEditingText(true)
                     setEditingPathId(path.id)
