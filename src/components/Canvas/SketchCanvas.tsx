@@ -343,7 +343,7 @@ export default function SketchPad({
             role: 'user',
             sender: 'user',
             content: [
-              { type: 'text', text: 'Please recommend a visualization based on the sketch below.' },
+              // { type: 'text', text: 'Please recommend a visualization based on the sketch below.' },
               { type: 'image_url', image_url: { url: imageUrl } }
             ]
           }

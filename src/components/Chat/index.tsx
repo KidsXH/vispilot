@@ -7,6 +7,8 @@ import {Message} from "@/types";
 import Image from "next/image";
 import {sendRequest} from "@/model";
 import {generateSystemPrompt} from "@/prompts";
+import {selectDataSource} from "@/store/features/DataSlice";
+import {parseResponseTextAsJson} from "@/model/Gemini";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -14,6 +16,7 @@ const Chat = () => {
   const model = useAppSelector(selectModel);
   const messages = useAppSelector(selectMessages);
   const messageDivRef = useRef<HTMLDivElement>(null);
+  const dataSource = useAppSelector(selectDataSource);
 
   const [inputText, setInputText] = useState('')
 
@@ -40,50 +43,57 @@ const Chat = () => {
       messageDivRef.current.scrollTop = messageDivRef.current.scrollHeight;
     }
   }, [state])
-  
+
   useEffect(() => {
-    if (messages.length === 0) {
-      const systemPrompt = generateSystemPrompt();
-      const message: Message = {
-        id: 0,
-        role: 'system',
-        sender: 'system',
-        content: [{type: 'text', text: systemPrompt}]
-      }
-      dispatch(addMessage(message));
-      dispatch(setState('waiting'));
-      sendRequest([message]).then(response => {
-        dispatch(addMessage(response));
-        dispatch(setState('idle'));
-      });
-    }
-  }, [dispatch, messages])
+    // if (messages.length === 0 && dataSource !== '-') {
+    //   const systemPrompt = generateSystemPrompt();
+    //   const message: Message = {
+    //     id: 0,
+    //     role: 'system',
+    //     sender: 'system',
+    //     content: [{type: 'text', text: systemPrompt}]
+    //   }
+    //   dispatch(addMessage(message));
+    //   dispatch(setState('waiting'));
+    //   sendRequest([message]).then(response => {
+    //     dispatch(addMessage(response));
+    //     dispatch(setState('idle'));
+    //   });
+    // }
+  }, [dispatch, dataSource, messages])
 
   return (
     <div className='flex flex-col p-2'>
       <div className='font-bold text-xl'>Chat</div>
-      <div className='flex flex-col h-[530px] overflow-y-scroll no-scrollbar' ref={messageDivRef}>
-        {messages.filter((message) => message.role !== 'system')
-          .map((message) => {
-          return (
-            <div
-              key={message.id}
-              className={`flex my-2
+      {
+        dataSource === '-' ?
+          <div className='flex items-center justify-center gap-2 h-[530px] text-gray-400 text-sm font-bold'>
+            <span className='material-symbols-outlined'>smart_toy</span>
+            <div className=''>: Please upload a data table to start.</div>
+          </div> :
+          <div className='flex flex-col h-[530px] overflow-y-scroll no-scrollbar' ref={messageDivRef}>
+            {messages.filter((message) => message.sender !== 'system')
+              .map((message) => {
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex my-2
                 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}
-            >
-              <MessageBox message={message}/>
-            </div>
-          );
-        })}
-        {
-          state === 'waiting' &&
-            <div className='flex justify-center mb-2'>
-            <span className='animate-spin rounded-full material-symbols-outlined'>
+                  >
+                    <MessageBox message={message}/>
+                  </div>
+                );
+              })}
+            {
+              state === 'waiting' &&
+                <div className='flex justify-center mb-2'>
+            <span className='animate-spin rounded-full material-symbols-outlined select-none'>
               progress_activity
             </span>
-            </div>
-        }
-      </div>
+                </div>
+            }
+          </div>
+      }
       <div className='flex flex-col space-y-2'>
         <input
           type='text'
@@ -100,8 +110,10 @@ const Chat = () => {
         />
         <div className='flex flex-row-reverse space-x-1 items-center'>
           <div
-            className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'>
-            upload_file
+            className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'
+            title='New Chat'
+          >
+            add
           </div>
           <div
             className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'>
@@ -127,7 +139,7 @@ const MessageBox = ({message}: { message: Message }) => {
         <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
           {
             content.type === "text" ?
-              content.text :
+              (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
               <Image className='w-[270px] h-[150px] mt-2' src={content.image_url!.url} width={270} height={150}
                      alt={'sketch'}/>
           }

@@ -77,17 +77,24 @@ const CSVReader = () => {
 
         setCsvData(parsedData);
 
-        // const systemPrompt = generateSystemPromptWithCSV({csvData: parsedData, headers});
+        const systemPrompt = generateSystemPrompt();
         const csvPrompt = generateCSVPrompt({filename, csvData: parsedData, headers});
-        const message: Message = {
-          id: lastMessageID + 1,
+        const systemMessage: Message = {
+          id: 0,
           role: 'system',
           sender: 'system',
-          content: [{type: 'text', text: csvPrompt}]
+          content: [{type: 'text', text: systemPrompt}]
         }
-        dispatch(addMessage(message));
+        const userMessage: Message = {
+          id: 1,
+          role: 'user',
+          sender: 'system',
+          content: [{type: 'text', text: csvPrompt}],
+        }
+        dispatch(addMessage(systemMessage));
+        dispatch(addMessage(userMessage));
         dispatch(setState('waiting'));
-        sendRequest([...messages, message]).then(response => {
+        sendRequest([systemMessage, userMessage]).then(response => {
           dispatch(addMessage(response));
           dispatch(setState('idle'));
         });
@@ -95,7 +102,7 @@ const CSVReader = () => {
     };
 
     reader.readAsText(file);
-  }, [dispatch, lastMessageID, messages]);
+  }, [dispatch]);
 
   return (
     <div className="max-w-4xl mx-auto select-none">
@@ -108,9 +115,7 @@ const CSVReader = () => {
               >
                   <div className="flex flex-col items-center space-y-2">
                       <Upload className="w-8 h-8 text-gray-400"/>
-                      <span className="font-medium text-sm text-gray-600">
-              Drop CSV file to upload or click to browse
-            </span>
+                      <span className="font-bold text-sm text-gray-400">Drop or click to upload CSV file</span>
                   </div>
                   <input
                       id="csvInput"
