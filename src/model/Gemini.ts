@@ -33,12 +33,13 @@ export const requestToGemini = async (messages: Message[]) => {
   const msg = messageContentToParts(messages[messages.length - 1].content);
 
 
-  console.log('History', history, 'msg', msg);
+  console.log('History', history, 'New Msg', msg);
 
   const result = await chat.sendMessage(msg)
   const text = result.response.text();
 
-  console.log('res', parseResponseTextAsJson(text))
+  console.log('Res Raw', text)
+  console.log('Res Parsed', parseResponseTextAsJson(text))
 
   return {
     id: messages[messages.length - 1].id + 1,
@@ -52,7 +53,10 @@ const messageContentToParts = (content: MessageContent[]) => {
   return content.map((content) => {
     return (content.type === 'text' ?
       ({text: content.text}) :
-      ({inlineData: {mimeType: 'image/png', data: Buffer.from(content.image_url!.url).toString('base64')}})) as Part
+      ({inlineData: {mimeType: 'image/png',
+          // remove the data:image/png;base64,
+          data: (content.image_url!.url).replace('data:image/png;base64,', ''),
+      }})) as Part
   })
 }
 
