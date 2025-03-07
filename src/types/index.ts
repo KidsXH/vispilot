@@ -1,4 +1,4 @@
-import {SpecCategory, TestState} from "@/app/corpus/page";
+import { SpecCategory, TestState } from "@/app/corpus/page";
 
 export interface CanvasPath {
   id: number;
@@ -6,6 +6,7 @@ export interface CanvasPath {
   color: string;
   width: number;
   pressure: number;
+  opacity: number;
   type: 'pencil'| 'axis' | 'shape' | 'note';
   shapeType?: 'rectangle'| 'circle'| null;
   text?: string;

@@ -6,7 +6,19 @@ import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { TopLevelSpec } from 'vega-lite'
 
-export default function SketchPad({ color, thickness }: { color: string; thickness: number }) {
+export default function SketchPad({
+  color,
+  thickness,
+  opacity,
+  setIsShape,
+  setSelectedPath
+}: {
+  color: string
+  thickness: number
+  opacity: number
+  setIsShape: (isShape: boolean) => void
+  setSelectedPath: (path: CanvasPath | null) => void
+}) {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
 
@@ -47,6 +59,9 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
       const [x, y] = getCoordinates(event)
       setCoordinates({ x, y })
 
+      setIsShape(false)
+      setSelectedPath(null)
+
       if (isEditingText) {
         setIsEditingText(false)
         return
@@ -60,6 +75,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
           color: 'black',
           width: 2,
           pressure: event.pressure || 1,
+          opacity: 1,
           type: 'pencil' as const
         })
       } else if (tool === 'axis') {
@@ -70,6 +86,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
           color: 'black',
           width: 2,
           pressure: event.pressure || 1,
+          opacity: 1,
           type: 'axis' as const
         })
       } else if (tool === 'shape') {
@@ -80,6 +97,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
           color: 'black',
           width: 2,
           pressure: event.pressure || 1,
+          opacity: 1,
           type: 'shape' as const,
           shapeType: selectedShapeType
         })
@@ -92,6 +110,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
           color: 'black',
           width: 2,
           pressure: event.pressure || 1,
+          opacity: 1,
           type: 'note' as const,
           text: ''
         })
@@ -101,6 +120,10 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
           return isPointInPath(path, [x, y])
         })
         if (path) {
+          if (path.type === 'shape') {
+            setIsShape(true)
+            setSelectedPath(path)
+          }
           setSelectedPathId(path.id)
           setCurrentPath(path)
         } else {
@@ -130,6 +153,16 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
       }
     }
   }, [thickness])
+
+  useEffect(() => {
+    if (opacity && selectedPathId) {
+      const path = paths.find(path => path.id === selectedPathId)
+      if (path) {
+        path.opacity = opacity
+        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
+      }
+    }
+  }, [opacity])
 
   const handlePointerMove = (event: PointerEvent) => {
     if (!isDrawing || !currentPath) return
@@ -468,6 +501,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
             strokeWidth={selectedPathId === path.id ? path.width * path.pressure * 2 : path.width * path.pressure}
             strokeLinecap="round"
             strokeLinejoin="round"
+            opacity={path.opacity}
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.5 }}
@@ -487,7 +521,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
                       ? 'border-black'
                       : 'border-transparent'
                   }`}
-                  style={{ color: path.color, fontWeight: path.width * 100 }}
+                  style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
                   onInput={e => {
                     setIsEditingText(true)
                     setEditingPathId(path.id)
@@ -523,6 +557,7 @@ export default function SketchPad({ color, thickness }: { color: string; thickne
             d={renderPath(currentPath)}
             fill="none"
             stroke={currentPath.color}
+            opacity={currentPath.opacity}
             // strokeWidth={currentPath.width * currentPath.pressure}
             strokeWidth={
               selectedPathId === currentPath.id
