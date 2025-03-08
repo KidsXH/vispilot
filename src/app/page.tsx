@@ -4,7 +4,7 @@ import Canvas from '@/components/Canvas'
 import Chat from '@/components/Chat'
 import DataTable from '@/components/DataTable'
 import DesignPanel from '@/components/DesignPanel'
-import Recommendation from '@/components/Recommendation'
+import HistoryPanel from '../components/HistoryPanel'
 import { CanvasPath } from '@/types'
 import { useState } from 'react'
 
@@ -39,7 +39,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col-reverse grow min-w-0">
             <div className="h-72 border-t border-black">
-              <Recommendation />
+              <HistoryPanel />
             </div>
             <div className="grow border-b border-black">
               <Canvas
