@@ -26,8 +26,8 @@ const HistoryPanel = () => {
 
     const margin = {top: 20, right: 20, bottom: 20, left: 50};
     const timelineHeight = 75;
-    const chatColor = 'gray-600';
-    const canvasColor = 'blue-300';
+    const chatColor = 'oklch(0.442 0.017 285.786)';
+    const canvasColor = 'oklch(0.809 0.105 251.813)';
 
     // render a horizontal line as timeline
     const timeline = svgElement.append('line')
@@ -42,7 +42,7 @@ const HistoryPanel = () => {
       .data(historyData)
       .enter()
       .append('circle')
-      .attr('class', d => `fill-${d.type === 'chat' ? chatColor : canvasColor}`)
+      .attr('fill', d => d.type === 'chat' ? chatColor : canvasColor)
       .attr('cx', (d, i) => margin.left + i * intervalWidth)
       .attr('cy', timelineHeight)
       .attr('r', 6)
@@ -59,7 +59,8 @@ const HistoryPanel = () => {
       if (d.type === 'chat') {
         // render the linkage line
         chatLabelGroup.append('line')
-          .attr('class', `stroke-3 stroke-${chatColor}`)
+          .attr('class', `stroke-3`)
+          .attr('stroke', chatColor)
           .attr('x1', x)
           .attr('y1', y)
           .attr('x2', x)
@@ -67,7 +68,7 @@ const HistoryPanel = () => {
 
         // render label bg
         chatLabelGroup.append('rect')
-          .attr('class', `fill-${chatColor}`)
+          .attr('fill', chatColor)
           .attr('x', x - 40)
           .attr('y', y - 50)
           .attr('rx', 4)
@@ -84,7 +85,8 @@ const HistoryPanel = () => {
       } else if (d.type === 'canvas') {
         // render the linkage line
         chatLabelGroup.append('line')
-          .attr('class', `stroke-3 stroke-${canvasColor}`)
+          .attr('class', `stroke-3`)
+          .attr('stroke', canvasColor)
           .attr('x1', x)
           .attr('y1', y)
           .attr('x2', x)
@@ -92,7 +94,8 @@ const HistoryPanel = () => {
 
         // render a blank rectangle
         canvasLabelGroup.append('rect')
-          .attr('class', `fill-neutral-100 stroke-2 stroke-${canvasColor}`)
+          .attr('class', `fill-neutral-100 stroke-2`)
+          .attr('stroke', canvasColor)
           .attr('x', x - 50)
           .attr('y', y + 30)
           .attr('rx', 2)
@@ -102,7 +105,7 @@ const HistoryPanel = () => {
 
         // render the label bg
         canvasLabelGroup.append('rect')
-          .attr('class', `fill-${canvasColor}`)
+          .attr('fill', canvasColor)
           .attr('x', x - 40)
           .attr('y', y + 30 + 60 + 6)
           .attr('rx', 4)

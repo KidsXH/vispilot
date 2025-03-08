@@ -5,8 +5,10 @@ import {selectVegaString} from "@/store/features/DataSlice";
 const VLPreview = () => {
   const vegaString = useAppSelector(selectVegaString);
   return (
-    <div className="flex items-center justify-center h-full -ml-2">
+    <div className="w-full overflow-auto no-scrollbar">
+    <div className="flex items-center justify-center h-full min-w-max pt-2">
         <VegaLite vegaString={vegaString} />
+    </div>
     </div>
   );
 }

@@ -39,10 +39,9 @@ const VegaLite = ({vegaString}: {vegaString?: string}) => {
       spec.data = {url: '/vispilot/data/' + spec.data?.name || ''}
       spec.width = 230;
       spec.height = 110;
-      spec.padding = 0;
+      spec.padding = 5;
       return compile(spec, {config}).spec;
     } catch (e) {
-      console.log('Error parsing vegaString', e);
       return compile(vegaLiteSpec, {config}).spec;
     }
   }, [vegaString, vegaLiteSpec, config]);
@@ -52,7 +51,7 @@ const VegaLite = ({vegaString}: {vegaString?: string}) => {
       .then(function (result) {
         // add class on the visref
         if (visRef.current) {
-          console.log('Render', spec)
+          // console.log('Render', spec)
           // visRef.current.classList.add('hover:shadow-lg', '!cursor-pointer');
         }
       })
@@ -60,7 +59,7 @@ const VegaLite = ({vegaString}: {vegaString?: string}) => {
     }
   )
   return (
-    <div className={"hover:shadow-lg !cursor-pointer"} ref={visRef}></div>
+    <div ref={visRef}></div>
   );
 }
 
