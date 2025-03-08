@@ -7,7 +7,7 @@ import {Message} from "@/types";
 import Image from "next/image";
 import {sendRequest} from "@/model";
 import {generateSystemPrompt} from "@/prompts";
-import {selectDataSource} from "@/store/features/DataSlice";
+import {selectDataSource, setVegaString} from "@/store/features/DataSlice";
 import {parseResponseTextAsJson} from "@/model/Gemini";
 
 const Chat = () => {
@@ -45,22 +45,14 @@ const Chat = () => {
   }, [state])
 
   useEffect(() => {
-    // if (messages.length === 0 && dataSource !== '-') {
-    //   const systemPrompt = generateSystemPrompt();
-    //   const message: Message = {
-    //     id: 0,
-    //     role: 'system',
-    //     sender: 'system',
-    //     content: [{type: 'text', text: systemPrompt}]
-    //   }
-    //   dispatch(addMessage(message));
-    //   dispatch(setState('waiting'));
-    //   sendRequest([message]).then(response => {
-    //     dispatch(addMessage(response));
-    //     dispatch(setState('idle'));
-    //   });
-    // }
-  }, [dispatch, dataSource, messages])
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant') {
+      const parsedText = parseResponseTextAsJson(lastMessage.content[0].text!);
+      if (parsedText && parsedText.vega) {
+        dispatch(setVegaString(JSON.stringify(parsedText.vega)));
+      }
+    }
+  }, [dispatch, messages])
 
   return (
     <div className='flex flex-col p-2'>

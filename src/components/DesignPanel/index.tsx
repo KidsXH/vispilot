@@ -2,6 +2,7 @@
 import VLJsonView from '@/components/DesignPanel/VLJsonView'
 import { CanvasPath } from '@/types'
 import { ChangeEvent, useEffect, useState } from 'react'
+import VLPreview from "@/components/DesignPanel/VLPreview";
 
 interface DesignPanelProps {
   setColor: (color: string) => void
@@ -94,7 +95,8 @@ const DesignPanel = ({ setColor, setThickness, setOpacity, isShape, selectedPath
   return (
     <div className="flex flex-col p-2">
       <div className="font-bold text-xl border-b-2 border-neutral-200 pb-2">Design Panel</div>
-      <div className="h-72 border-b border-neutral-200 mt-1 font-bold text-base">
+      <div className="font-bold text-base mt-1">Configuration</div>
+      <div className="h-60 border-b border-neutral-200 font-bold text-base">
         <Configuration
           color={color}
           thickness={thickness}
@@ -112,8 +114,12 @@ const DesignPanel = ({ setColor, setThickness, setOpacity, isShape, selectedPath
           selectedPath={selectedPath}
         />
       </div>
-      <div className="font-bold text-base mt-1">Vega-Lite Code</div>
-      <div className="mt-2 max-h-[660px] overflow-auto no-scrollbar whitespace-pre">
+      <div className="font-bold text-base mt-1">Design Ideas</div>
+      <div className="mt-1 h-[180px]">
+        <VLPreview />
+      </div>
+      <div className="font-bold text-sm">Visualization Specification</div>
+      <div className="mt-2 py-1 max-h-[480px] border border-neutral-200 overflow-auto no-scrollbar whitespace-pre">
         <VLJsonView />
       </div>
     </div>
@@ -152,7 +158,7 @@ const Configuration = ({
   selectedPath: CanvasPath | null
 }) => {
   return (
-    <div className="h-72 border-b border-neutral-200 mt-1 font-bold text-base">
+    <div className="mt-1 font-bold text-base">
       {/* 选择栏：颜色和粗细 */}
       <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700">Color</label>

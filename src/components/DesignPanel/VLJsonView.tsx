@@ -3,10 +3,23 @@
 import JsonView from '@uiw/react-json-view';
 import {githubLightTheme} from '@uiw/react-json-view/githubLight';
 import {vegaLiteJson} from "@/mocks/vegaLiteJson";
-import {useEffect, useRef} from "react";
+import {useEffect, useMemo, useRef} from "react";
+import {useAppSelector} from "@/store";
+import {selectVegaString} from "@/store/features/DataSlice";
 
 const VLJsonView = () => {
   const editorRef = useRef(null);
+  const vegaString = useAppSelector(selectVegaString);
+  const vegaSpec = useMemo(() => {
+    const spec = JSON.parse(vegaString);
+
+    if (Object.keys(spec).length === 0) {
+      return vegaLiteJson;
+    }
+
+    spec.data = spec.data.name || ''
+    return spec;
+  }, [vegaString])
 
   useEffect(() => {
     if (editorRef.current) {
@@ -26,7 +39,7 @@ const VLJsonView = () => {
     }
   })
 
-  return <JsonView value={vegaLiteJson}
+  return <JsonView value={vegaSpec}
                    style={githubLightTheme}
                    enableClipboard={false}
                    displayDataTypes={false}
