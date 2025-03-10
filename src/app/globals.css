@@ -85,3 +85,8 @@ body {
 .canvas-vega-embed summary {
   @apply mt-2 mr-2
 }
+
+.mini-vega .vega-embed canvas {
+  height: 72px;
+  width: 120px;
+}

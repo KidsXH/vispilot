@@ -214,6 +214,10 @@ export default function SketchPad({
     if (currentPath) {
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
         setPaths([...paths, currentPath])
+        dispatch(addHistory({
+          type: 'canvas',
+          content: currentPath
+        }))
       }
     }
     setIsDrawing(false)
@@ -706,6 +710,7 @@ import { sendRequest } from '@/model'
 import { addMessage, selectMessages, setState } from '@/store/features/ChatSlice'
 import vegaEmbed from 'vega-embed'
 import { compile } from 'vega-lite'
+import {addHistory} from "@/store/features/HistorySlice";
 
 const EmbedVegaViews = () => {
   const vegaEmbeds = useAppSelector(selectVegaEmbeds)

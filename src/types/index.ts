@@ -15,8 +15,8 @@ export interface CanvasPath {
 export interface Message {
   id: number;
   role: 'user' | 'assistant' | 'system';
+  sender: 'user' | 'assistant' | 'system';
   content: MessageContent[];
-  sender: 'system' | 'user' | 'assistant' ;
 }
 
 export interface MessageContent {
@@ -41,4 +41,14 @@ export interface UtteranceSample {
   accuracy: number| null;    // Value between 0 and 1
   inferenceLevel: number| null;  // Value between 0 and 1
   tested: TestState;
+}
+
+export interface HistoryItem {
+  type: 'chat' | 'canvas' | 'model'
+  content: string | CanvasPath | ModelOutput;
+}
+
+export interface ModelOutput {
+  chat: string;
+  vega: string;
 }

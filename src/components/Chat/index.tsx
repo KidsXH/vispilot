@@ -6,9 +6,9 @@ import {addMessage, selectMessages, selectModel, selectState, setState} from "@/
 import {Message} from "@/types";
 import Image from "next/image";
 import {sendRequest} from "@/model";
-import {generateSystemPrompt} from "@/prompts";
 import {selectDataSource, setVegaString} from "@/store/features/DataSlice";
 import {parseResponseTextAsJson} from "@/model/Gemini";
+import {addHistory} from "@/store/features/HistorySlice";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -49,8 +49,20 @@ const Chat = () => {
     if (lastMessage && lastMessage.role === 'assistant') {
       const parsedText = parseResponseTextAsJson(lastMessage.content[0].text!);
       if (parsedText && parsedText.vega) {
-        dispatch(setVegaString(JSON.stringify(parsedText.vega)));
+        const vegaString = JSON.stringify(parsedText.vega);
+        dispatch(setVegaString(vegaString));
+
+        if (vegaString.length > 2) {
+          dispatch(addHistory({type: 'model', content: vegaString}))
+        }
       }
+    }
+    if (lastMessage && lastMessage.sender === 'user' && lastMessage.content[0].type === 'text') {
+      const textContent = lastMessage.content[0].text || '';
+      dispatch(addHistory({type: 'chat', content: textContent}));
+    }
+    if (lastMessage && messages.length === 2) {
+      dispatch(addHistory({type: 'chat', content: 'Start'}));
     }
   }, [dispatch, messages])
 

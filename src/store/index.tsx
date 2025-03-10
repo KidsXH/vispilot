@@ -8,6 +8,7 @@ import CanvasSlice from "@/store/features/CanvasSlice";
 import DataSlice from "@/store/features/DataSlice";
 import ChatSlice from "@/store/features/ChatSlice";
 import CorpusSlice from "@/store/features/CorpusSlice";
+import HistorySlice from "@/store/features/HistorySlice";
 
 // Create a Redux store
 export const store = configureStore({
@@ -17,6 +18,7 @@ export const store = configureStore({
     data: DataSlice,
     chat: ChatSlice,
     corpus: CorpusSlice,
+    history: HistorySlice,
   },
 })
 
