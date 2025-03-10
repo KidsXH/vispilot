@@ -19,7 +19,7 @@ export default function Home() {
     <div className="flex flex-col w-[1920px] h-[1080px] mx-auto mt-20 border border-black bg-white font-sans">
       <div className="flex items-center w-full h-10 px-2 bg-neutral-900 text-white text-2xl font-system">VisPilot</div>
       <div className="flex flex-grow w-full">
-        <div className="flex flex-col min-w-80 border border-black">
+        <div className="flex flex-col min-w-80 max-w-80 border border-black">
           <div className="h-96 border-b border-black">
             <DataTable />
           </div>
