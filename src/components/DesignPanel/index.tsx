@@ -1,10 +1,10 @@
 'use client'
 import VLJsonView from '@/components/DesignPanel/VLJsonView'
-import {CanvasPath} from '@/types'
-import {ChangeEvent, useEffect, useState} from 'react'
-import VLPreview from "@/components/DesignPanel/VLPreview";
-import {useAppSelector} from "@/store";
-import {selectVegaString} from "@/store/features/DataSlice";
+import VLPreview from '@/components/DesignPanel/VLPreview'
+import { useAppSelector } from '@/store'
+import { selectVegaString } from '@/store/features/DataSlice'
+import { CanvasPath } from '@/types'
+import { ChangeEvent, useEffect, useState } from 'react'
 
 interface DesignPanelProps {
   setColor: (color: string) => void
@@ -14,7 +14,7 @@ interface DesignPanelProps {
   selectedPath: CanvasPath | null
 }
 
-const DesignPanel = ({setColor, setThickness, setOpacity, isShape, selectedPath}: DesignPanelProps) => {
+const DesignPanel = ({ setColor, setThickness, setOpacity, isShape, selectedPath }: DesignPanelProps) => {
   const [color, setInternalColor] = useState('#000000')
   const [thickness, setInternalThickness] = useState(2)
   const [opacity, setInternalOpacity] = useState(1)
@@ -123,49 +123,47 @@ const DesignPanel = ({setColor, setThickness, setOpacity, isShape, selectedPath}
         <div className="flex justify-end items-center gap-1 ml-auto">
           <button
             className="flex items-center gap-1 justify-center select-none cursor-pointer px-1 rounded hover:bg-neutral-100"
-            title="Generate New Design"
-          >
+            title="Generate New Design">
             <span className="material-symbols-outlined text-neutral-600 m-auto">refresh</span>
           </button>
           <button
             className="flex items-center gap-1 justify-center select-none cursor-pointer px-1 rounded hover:bg-neutral-100"
             title="Add to Canvas"
             onClick={() => {
-              const vega = vegaString;
+              const vega = vegaString
               // TODO: send vega-lite code to canvas
-            }}
-          >
+            }}>
             <span className="material-symbols-outlined text-neutral-600 m-auto">add_to_queue</span>
           </button>
         </div>
       </div>
       <div className="mt-1 h-[160px]">
-        <VLPreview/>
+        <VLPreview />
       </div>
       <div className="font-bold text-sm">Visualization Specification</div>
       <div className="mt-2 py-1 max-h-[500px] border border-neutral-200 overflow-auto no-scrollbar whitespace-pre">
-        <VLJsonView/>
+        <VLJsonView />
       </div>
     </div>
   )
 }
 
 const Configuration = ({
-                         color,
-                         thickness,
-                         opacity,
-                         width,
-                         height,
-                         radius,
-                         handleColorChange,
-                         handleThicknessChange,
-                         handleOpacityChange,
-                         handleWidthChange,
-                         handleHeightChange,
-                         handleRadiusChange,
-                         isShape,
-                         selectedPath
-                       }: {
+  color,
+  thickness,
+  opacity,
+  width,
+  height,
+  radius,
+  handleColorChange,
+  handleThicknessChange,
+  handleOpacityChange,
+  handleWidthChange,
+  handleHeightChange,
+  handleRadiusChange,
+  isShape,
+  selectedPath
+}: {
   color: string
   thickness: number
   opacity: number
@@ -186,14 +184,14 @@ const Configuration = ({
       {/* 选择栏：颜色和粗细 */}
       <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700">Color</label>
-        <input type="color" value={color} onChange={handleColorChange} className="mt-1 block w-full"/>
+        <input type="color" value={color} onChange={handleColorChange} className="mt-1 block w-full" />
       </div>
       <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700">Thickness</label>
         <input
           type="range"
           min="1"
-          max="10"
+          max="9"
           value={thickness}
           onChange={handleThicknessChange}
           className="mt-1 block w-full"
@@ -215,18 +213,18 @@ const Configuration = ({
         <div className="mt-4 flex space-x-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700">Width</label>
-            <input type="number" min="1" value={width} onChange={handleWidthChange} className="mt-1 block w-full"/>
+            <input type="number" min="1" value={width} onChange={handleWidthChange} className="mt-1 block w-full" />
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700">Height</label>
-            <input type="number" min="1" value={height} onChange={handleHeightChange} className="mt-1 block w-full"/>
+            <input type="number" min="1" value={height} onChange={handleHeightChange} className="mt-1 block w-full" />
           </div>
         </div>
       )}
       {isShape && selectedPath && selectedPath.shapeType === 'circle' && (
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700">Radius</label>
-          <input type="number" min="1" value={radius} onChange={handleRadiusChange} className="mt-1 block w-full"/>
+          <input type="number" min="1" value={radius} onChange={handleRadiusChange} className="mt-1 block w-full" />
         </div>
       )}
     </div>

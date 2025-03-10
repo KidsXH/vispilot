@@ -497,7 +497,6 @@ export default function SketchPad({
             d={renderPath(path)}
             fill="none"
             stroke={path.color}
-            // strokeWidth={path.width * path.pressure}
             strokeWidth={selectedPathId === path.id ? path.width * path.pressure * 2 : path.width * path.pressure}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -505,48 +504,99 @@ export default function SketchPad({
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.5 }}
+            style={{ cursor: 'pointer' }}
           />
         ))}
 
         {/* 文本路径 */}
         {paths.map(path => (
           <g key={path.id} onClick={e => e.stopPropagation()}>
-            {renderPath(path)}
-            {path.type === 'note' && (
-              <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
-                <div
-                  contentEditable={tool === 'note' ? true : false}
-                  className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
-                    (tool === 'select' && selectedPathId === path.id) || (isEditingText && editingPathId === path.id)
-                      ? 'border-black'
-                      : 'border-transparent'
-                  }`}
-                  style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
-                  onInput={e => {
-                    setIsEditingText(true)
-                    setEditingPathId(path.id)
-                    handleTextChange(e, path.id)
-                  }}
-                  onFocus={e => {
-                    setIsEditingText(true)
-                    setEditingPathId(path.id)
-                    e.currentTarget.classList.remove('border-transparent')
-                    e.currentTarget.classList.add('border-black')
-                  }}
-                  onBlur={e => {
-                    setIsEditingText(false)
-                    if (!e.currentTarget.textContent?.trim()) {
-                      const updatedPaths = paths.filter(p => p.id !== path.id)
-                      setPaths(updatedPaths)
-                    } else {
-                      e.currentTarget.classList.remove('border-black')
-                      e.currentTarget.classList.add('border-transparent')
-                    }
-                    setEditingPathId(null)
-                  }}
-                  autoFocus={editingPathId === path.id}
-                />
-              </foreignObject>
+            {path.type === 'note' && tool === 'note' ? (
+              editingPathId === path.id ? (
+                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
+                  <div
+                    contentEditable={true}
+                    className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
+                      isEditingText && editingPathId === path.id ? 'border-black' : 'border-transparent'
+                    }`}
+                    style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
+                    onInput={e => {
+                      const inputText = e.currentTarget.textContent || ''
+                      handleTextChange(e, path.id)
+                    }}
+                    onFocus={e => {
+                      setIsEditingText(true)
+                      setEditingPathId(path.id)
+                      e.currentTarget.classList.remove('border-transparent')
+                      e.currentTarget.classList.add('border-black')
+                    }}
+                    onBlur={e => {
+                      setIsEditingText(false)
+                      if (!e.currentTarget.textContent?.trim()) {
+                        const updatedPaths = paths.filter(p => p.id !== path.id)
+                        setPaths(updatedPaths)
+                      } else {
+                        e.currentTarget.classList.remove('border-black')
+                        e.currentTarget.classList.add('border-transparent')
+                      }
+                      setEditingPathId(null)
+                    }}
+                    autoFocus
+                  />
+                </foreignObject>
+              ) : (
+                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
+                  <div
+                    contentEditable={true}
+                    className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
+                      isEditingText && editingPathId === path.id ? 'border-black' : 'border-transparent'
+                    }`}
+                    style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
+                    onInput={e => {
+                      const inputText = e.currentTarget.textContent || ''
+                      handleTextChange(e, path.id)
+                    }}
+                    onFocus={e => {
+                      setIsEditingText(true)
+                      setEditingPathId(path.id)
+                      e.currentTarget.classList.remove('border-transparent')
+                      e.currentTarget.classList.add('border-black')
+                    }}
+                    onBlur={e => {
+                      setIsEditingText(false)
+                      if (!e.currentTarget.textContent?.trim()) {
+                        const updatedPaths = paths.filter(p => p.id !== path.id)
+                        setPaths(updatedPaths)
+                      } else {
+                        e.currentTarget.classList.remove('border-black')
+                        e.currentTarget.classList.add('border-transparent')
+                      }
+                      setEditingPathId(null)
+                    }}
+                    autoFocus>
+                    {path.text}
+                  </div>
+                </foreignObject>
+              )
+            ) : (
+              <text
+                key={path.id}
+                x={path.points[0][0]}
+                y={path.points[0][1]}
+                fill={path.color}
+                opacity={path.opacity}
+                fontWeight={path.width * 100}
+                style={{
+                  cursor: 'pointer',
+                  background: selectedPathId === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
+                  transition: 'background 0.3s ease'
+                }}
+                onClick={e => {
+                  e.stopPropagation()
+                  setSelectedPathId(path.id)
+                }}>
+                {path.text}
+              </text>
             )}
           </g>
         ))}
@@ -558,7 +608,6 @@ export default function SketchPad({
             fill="none"
             stroke={currentPath.color}
             opacity={currentPath.opacity}
-            // strokeWidth={currentPath.width * currentPath.pressure}
             strokeWidth={
               selectedPathId === currentPath.id
                 ? currentPath.width * currentPath.pressure * 2
@@ -566,6 +615,7 @@ export default function SketchPad({
             }
             strokeLinecap="round"
             strokeLinejoin="round"
+            style={{ cursor: 'pointer' }}
           />
         )}
       </svg>
