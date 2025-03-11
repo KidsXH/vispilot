@@ -1,10 +1,10 @@
 'use client'
 import VLJsonView from '@/components/DesignPanel/VLJsonView'
 import VLPreview from '@/components/DesignPanel/VLPreview'
-import { useAppSelector } from '@/store'
-import { selectVegaString } from '@/store/features/DataSlice'
-import { CanvasPath } from '@/types'
-import { ChangeEvent, useEffect, useState } from 'react'
+import {useAppSelector} from '@/store'
+import {selectVegaString} from '@/store/features/DataSlice'
+import {CanvasPath} from '@/types'
+import {ChangeEvent, useEffect, useState} from 'react'
 
 interface DesignPanelProps {
   setColor: (color: string) => void
@@ -16,13 +16,13 @@ interface DesignPanelProps {
 }
 
 const DesignPanel = ({
-  setColor,
-  setThickness,
-  setOpacity,
-  setVegaString,
-  isShape,
-  selectedPath
-}: DesignPanelProps) => {
+                       setColor,
+                       setThickness,
+                       setOpacity,
+                       setVegaString,
+                       isShape,
+                       selectedPath
+                     }: DesignPanelProps) => {
   const [color, setInternalColor] = useState('#000000')
   const [thickness, setInternalThickness] = useState(2)
   const [opacity, setInternalOpacity] = useState(1)
@@ -106,7 +106,7 @@ const DesignPanel = ({
 
   return (
     <div className="flex flex-col p-2">
-      <div className="font-bold text-xl border-b-2 border-neutral-200 pb-2">Design Panel</div>
+      <div className="font-bold text-xl border-b-2 border-neutral-200 h-8">Design Panel</div>
       <div className="font-bold text-base mt-1">Configuration</div>
       <div className="h-60 border-b border-neutral-200 font-bold text-base">
         <Configuration
@@ -147,32 +147,32 @@ const DesignPanel = ({
         </div>
       </div>
       <div className="mt-1 h-[160px]">
-        <VLPreview />
+        <VLPreview/>
       </div>
       <div className="font-bold text-sm">Visualization Specification</div>
       <div className="mt-2 py-1 max-h-[500px] border border-neutral-200 overflow-auto no-scrollbar whitespace-pre">
-        <VLJsonView />
+        <VLJsonView/>
       </div>
     </div>
   )
 }
 
 const Configuration = ({
-  color,
-  thickness,
-  opacity,
-  width,
-  height,
-  radius,
-  handleColorChange,
-  handleThicknessChange,
-  handleOpacityChange,
-  handleWidthChange,
-  handleHeightChange,
-  handleRadiusChange,
-  isShape,
-  selectedPath
-}: {
+                         color,
+                         thickness,
+                         opacity,
+                         width,
+                         height,
+                         radius,
+                         handleColorChange,
+                         handleThicknessChange,
+                         handleOpacityChange,
+                         handleWidthChange,
+                         handleHeightChange,
+                         handleRadiusChange,
+                         isShape,
+                         selectedPath
+                       }: {
   color: string
   thickness: number
   opacity: number
@@ -189,55 +189,98 @@ const Configuration = ({
   selectedPath: CanvasPath | null
 }) => {
   return (
-    <div className="mt-1 font-bold text-base">
-      {/* 选择栏：颜色和粗细 */}
-      <div className="mt-4">
-        <label className="block text-sm font-medium text-gray-700">Color</label>
-        <input type="color" value={color} onChange={handleColorChange} className="mt-1 block w-full" />
-      </div>
-      <div className="mt-4 flex space-x-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Thickness</label>
-          <input
-            type="number"
-            min="1"
-            max="9"
-            value={thickness}
-            onChange={handleThicknessChange}
-            className="mt-1 block w-full"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Opacity</label>
-          <input
-            type="number"
-            min="0.1"
-            max="1"
-            step="0.1"
-            value={opacity}
-            onChange={handleOpacityChange}
-            className="mt-1 block w-full"
-          />
+    <div className="flex flex-col gap-2 h-full w-full font-bold text-base py-2">
+      <div className="flex flex-col gap-1">
+        <span className="block text-sm font-medium text-neutral-900">Layout</span>
+        <div className="flex gap-2 h-8 select-none">
+          <label htmlFor="config-X" className="relative w-16 font-input-label">
+            <input type="text" id='config-X' className="absolute block w-full bg-neutral-100 rounded p-1 pl-5 top-0"/>
+            <span className="absolute z-10 top-1 left-1.5">X</span>
+          </label>
+          <label htmlFor="config-Y" className="relative w-16 font-input-label">
+            <input type="text" id='config-Y' className="absolute block w-full bg-neutral-100 rounded p-1 pl-5 top-0"/>
+            <span className="absolute z-10 top-1 left-1.5">Y</span>
+          </label>
+          <div className="border-l-1 border-neutral-200 h-6"></div>
+          <label htmlFor="config-W" className="relative w-16 font-input-label">
+            <input id='config-W' className="absolute block w-full bg-neutral-100 rounded p-1 pl-5 top-0"
+                   type="number" min="1" value={width} onChange={handleWidthChange}
+            />
+            <span className="absolute z-10 top-1 left-1">W</span>
+          </label>
+          <label htmlFor="config-H" className="relative w-16 font-input-label">
+            <input id='config-H' className="absolute block w-full bg-neutral-100 rounded p-1 pl-5 top-0"
+                   type="number" min="1" value={height} onChange={handleHeightChange}
+            />
+            <span className="absolute z-10 top-1 left-1.5">H</span>
+          </label>
         </div>
       </div>
-      {isShape && selectedPath && selectedPath.shapeType === 'rectangle' && (
-        <div className="mt-4 flex space-x-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700">Width</label>
-            <input type="number" min="1" value={width} onChange={handleWidthChange} className="mt-1 block w-full" />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700">Height</label>
-            <input type="number" min="1" value={height} onChange={handleHeightChange} className="mt-1 block w-full" />
-          </div>
+      <div className="flex flex-col gap-1">
+        <span className="block text-sm font-medium text-neutral-900">Fill</span>
+        <div className="flex gap-2 h-8 select-none">
+          <label htmlFor="config-fill" className="relative w-24 font-input-label">
+            <input type="text" id='config-fill' className="absolute block w-full bg-neutral-100 rounded p-1 pl-7 top-0"
+                   value={color.toUpperCase()}
+                   onChange={handleColorChange}
+            />
+            <input type="color" value={color} onChange={handleColorChange}
+                   className="absolute z-10 top-0 left-1 block w-5 h-6 border-0"/>
+          </label>
+
+          <label htmlFor="config-opacity" className="relative w-18 font-input-label">
+            <input type="text" id='config-opacity'
+                   className="absolute block w-full bg-neutral-100 rounded p-1 pl-7 top-0"
+                   value={(opacity * 100).toFixed(0)}
+                   onChange={handleOpacityChange}/>
+            <span className="absolute z-10 top-1 left-1 block material-symbols-outlined icon-input-label">opacity</span>
+            <span className="absolute z-10 top-1 left-14 block">%</span>
+          </label>
         </div>
-      )}
-      {isShape && selectedPath && selectedPath.shapeType === 'circle' && (
-        <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700">Radius</label>
-          <input type="number" min="1" value={radius} onChange={handleRadiusChange} className="mt-1 block w-full" />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="block text-sm font-medium text-neutral-900">Stroke</span>
+        <div className="flex gap-2 h-8 select-none">
+          <label htmlFor="config-stroke" className="relative w-24 font-input-label">
+            <input type="text" id='config-stroke'
+                   className="absolute block w-full bg-neutral-100 rounded p-1 pl-7 top-0"
+                   value={color.toUpperCase()}
+                   onChange={handleColorChange}
+            />
+            <input type="color" value={color} onChange={handleColorChange}
+                   className="absolute z-10 top-0 left-1 block w-5 h-6 border-0"/>
+          </label>
+
+          <label htmlFor="config-stroke-width" className="relative w-18 font-input-label">
+            <input type="text" id='config-stroke-width'
+                   className="absolute block w-full bg-neutral-100 rounded p-1 pl-7 top-0"
+                   value={thickness}
+                   onChange={handleThicknessChange}/>
+            <span
+              className="absolute z-10 top-1 left-1 block material-symbols-outlined icon-input-label">line_weight</span>
+          </label>
         </div>
-      )}
+      </div>
+
+      {/*{isShape && selectedPath && selectedPath.shapeType === 'rectangle' && (*/}
+      {/*  <div className="mt-4 flex space-x-4">*/}
+      {/*    <div className="flex-1">*/}
+      {/*      <label className="block text-sm font-medium text-gray-700">Width</label>*/}
+      {/*      <input type="number" min="1" value={width} onChange={handleWidthChange} className="mt-1 block w-full"/>*/}
+      {/*    </div>*/}
+      {/*    <div className="flex-1">*/}
+      {/*      <label className="block text-sm font-medium text-gray-700">Height</label>*/}
+      {/*      <input type="number" min="1" value={height} onChange={handleHeightChange} className="mt-1 block w-full"/>*/}
+      {/*    </div>*/}
+      {/*  </div>*/}
+      {/*)}*/}
+      {/*{isShape && selectedPath && selectedPath.shapeType === 'circle' && (*/}
+      {/*  <div className="mt-4">*/}
+      {/*    <label className="block text-sm font-medium text-gray-700">Radius</label>*/}
+      {/*    <input type="number" min="1" value={radius} onChange={handleRadiusChange} className="mt-1 block w-full"/>*/}
+      {/*  </div>*/}
+      {/*)}*/}
     </div>
   )
 }

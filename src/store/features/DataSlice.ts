@@ -19,9 +19,6 @@ export const dataSlice = createSlice({
   initialState,
   reducers: {
     setDataSource: (state, action: PayloadAction<CSVFile>) => {
-      if (state.dataSource.url) {
-        URL.revokeObjectURL(state.dataSource.url);
-      }
       state.dataSource = action.payload
     },
     setVegaString: (state, action: PayloadAction<string>) => {
