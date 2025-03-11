@@ -30,21 +30,19 @@ const DataSourceLabel = () => {
   return <div className='flex items-center justify-between'>
     <span>Source:</span>
     <span
-      className='ml-1 px-1 min-w-6 text-center bg-gray-200 hover:bg-gray-100 rounded-sm text-base text-neutral-600 cursor-pointer select-none'>{dataSource}</span>
+      className='ml-1 px-1 min-w-6 text-center bg-gray-200 hover:bg-gray-100 rounded-sm text-base text-neutral-600 cursor-pointer select-none'>{dataSource.filename}</span>
   </div>
 }
 
 import React, {ChangeEvent, useCallback, useState} from 'react';
 import {Upload} from 'lucide-react';
-import {generateCSVPrompt, generateSystemPrompt, generateSystemPromptWithCSV} from "@/prompts";
-import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
+import {generateCSVPrompt, generateSystemPrompt} from "@/prompts";
+import {addMessage, setState} from "@/store/features/ChatSlice";
 import {sendRequest} from "@/model";
 import {Message} from "@/types";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
-  const messages = useAppSelector(selectMessages);
-  const lastMessageID = messages.length > 0 ? messages[messages.length - 1].id : 0;
   const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
 
@@ -53,13 +51,14 @@ const CSVReader = () => {
 
     const file = e.target.files[0];
     const filename = file.name;
-    dispatch(setDataSource(filename));
 
     const reader = new FileReader();
 
     reader.onload = (event) => {
       if (event.target && event.target.result) {
         const text = event.target.result as string;
+        dispatch(setDataSource({filename, content: text}))
+
         const rows = text.split('\n');
 
         // Get headers from first row

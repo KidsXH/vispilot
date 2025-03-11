@@ -1,13 +1,16 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
+import {CSVFile} from "@/types";
 
 interface DataSlice {
-  dataSource: string;
+  dataSource: CSVFile;
   vegaString: string;
 }
 
 const initialState: DataSlice = {
-  dataSource: '-',
+  dataSource: {
+    filename: '-',
+  },
   vegaString: '{}',
 }
 
@@ -15,7 +18,10 @@ export const dataSlice = createSlice({
   name: 'data',
   initialState,
   reducers: {
-    setDataSource: (state, action: PayloadAction<string>) => {
+    setDataSource: (state, action: PayloadAction<CSVFile>) => {
+      if (state.dataSource.url) {
+        URL.revokeObjectURL(state.dataSource.url);
+      }
       state.dataSource = action.payload
     },
     setVegaString: (state, action: PayloadAction<string>) => {

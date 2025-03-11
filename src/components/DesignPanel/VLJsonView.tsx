@@ -4,11 +4,12 @@ import JsonView from '@uiw/react-json-view';
 import {githubLightTheme} from '@uiw/react-json-view/githubLight';
 import {useEffect, useMemo, useRef} from "react";
 import {useAppSelector} from "@/store";
-import {selectVegaString} from "@/store/features/DataSlice";
+import {selectDataSource, selectVegaString} from "@/store/features/DataSlice";
 
 const VLJsonView = () => {
   const editorRef = useRef(null);
   const vegaString = useAppSelector(selectVegaString);
+  const filename = useAppSelector(selectDataSource).filename;
   const vegaSpec = useMemo(() => {
     try {
       const spec = JSON.parse(vegaString);
@@ -17,12 +18,12 @@ const VLJsonView = () => {
         return {};
       }
 
-      spec.data = spec.data.name || ''
+      spec.data = filename
       return spec;
     } catch (e) {
       return {};
     }
-  }, [vegaString])
+  }, [filename, vegaString])
 
   useEffect(() => {
     if (editorRef.current) {

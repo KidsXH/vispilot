@@ -52,3 +52,8 @@ export interface ModelOutput {
   chat: string;
   vega: string;
 }
+
+export interface CSVFile {
+  filename: string;
+  content?: string;
+}

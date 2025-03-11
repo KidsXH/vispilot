@@ -70,7 +70,7 @@ const Chat = () => {
     <div className='flex flex-col p-2'>
       <div className='font-bold text-xl'>Chat</div>
       {
-        dataSource === '-' ?
+        dataSource.filename === '-' ?
           <div className='flex items-center justify-center gap-2 h-[530px] text-gray-400 text-sm font-bold'>
             <span className='material-symbols-outlined'>smart_toy</span>
             <div className=''>: Please upload a data table to start.</div>
