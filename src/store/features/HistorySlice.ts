@@ -15,7 +15,7 @@ export const historySlice = createSlice({
   initialState,
   reducers: {
     addHistory: (state, action: PayloadAction<HistoryItem>) => {
-      state.history = [...state.history, action.payload]
+      state.history = [...state.history, structuredClone(action.payload)]
     },
     clearHistory: (state) => {
       state.history = []
