@@ -3,19 +3,16 @@
 import SketchPad from '@/components/Canvas/SketchCanvas'
 import { CanvasPath } from '@/types'
 
-const Canvas = ({
-  color,
-  thickness,
-  opacity,
-  setIsShape,
-  setSelectedPath
-}: {
+interface CanvasProps {
   color: string
   thickness: number
   opacity: number
+  vegaString?: string
   setIsShape: (isShape: boolean) => void
   setSelectedPath: (path: CanvasPath | null) => void
-}) => {
+}
+
+const Canvas = ({ color, thickness, opacity, vegaString, setIsShape, setSelectedPath }: CanvasProps) => {
   return (
     <div className="flex flex-col p-2 relative select-none">
       <div className="font-bold text-xl">Canvas</div>
@@ -24,6 +21,7 @@ const Canvas = ({
           color={color}
           thickness={thickness}
           opacity={opacity}
+          vegaString={vegaString}
           setIsShape={setIsShape}
           setSelectedPath={setSelectedPath}
         />

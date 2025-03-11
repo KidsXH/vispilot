@@ -6,19 +6,23 @@ import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { TopLevelSpec } from 'vega-lite'
 
+interface SketchPadProps {
+  color: string
+  thickness: number
+  opacity: number
+  vegaString?: string
+  setIsShape: (isShape: boolean) => void
+  setSelectedPath: (path: CanvasPath | null) => void
+}
+
 export default function SketchPad({
   color,
   thickness,
   opacity,
+  vegaString,
   setIsShape,
   setSelectedPath
-}: {
-  color: string
-  thickness: number
-  opacity: number
-  setIsShape: (isShape: boolean) => void
-  setSelectedPath: (path: CanvasPath | null) => void
-}) {
+}: SketchPadProps) {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
 
@@ -214,10 +218,12 @@ export default function SketchPad({
     if (currentPath) {
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
         setPaths([...paths, currentPath])
-        dispatch(addHistory({
-          type: 'canvas',
-          content: currentPath
-        }))
+        dispatch(
+          addHistory({
+            type: 'canvas',
+            content: currentPath
+          })
+        )
       }
     }
     setIsDrawing(false)
@@ -585,8 +591,8 @@ export default function SketchPad({
             ) : (
               <text
                 key={path.id}
-                x={path.points[0][0]}
-                y={path.points[0][1]}
+                x={path.points[0][0] + 9.5}
+                y={path.points[0][1] + 27}
                 fill={path.color}
                 opacity={path.opacity}
                 fontWeight={path.width * 100}
@@ -708,9 +714,9 @@ const ToolIcon = ({
 
 import { sendRequest } from '@/model'
 import { addMessage, selectMessages, setState } from '@/store/features/ChatSlice'
+import { addHistory } from '@/store/features/HistorySlice'
 import vegaEmbed from 'vega-embed'
 import { compile } from 'vega-lite'
-import {addHistory} from "@/store/features/HistorySlice";
 
 const EmbedVegaViews = () => {
   const vegaEmbeds = useAppSelector(selectVegaEmbeds)

@@ -4,11 +4,12 @@ import Canvas from '@/components/Canvas'
 import Chat from '@/components/Chat'
 import DataTable from '@/components/DataTable'
 import DesignPanel from '@/components/DesignPanel'
-import HistoryPanel from '../components/HistoryPanel'
 import { CanvasPath } from '@/types'
 import { useState } from 'react'
+import HistoryPanel from '../components/HistoryPanel'
 
 export default function Home() {
+  const [vegaString, setVegaString] = useState('')
   const [color, setColor] = useState('#000000')
   const [thickness, setThickness] = useState(2)
   const [opacity, setOpacity] = useState(1)
@@ -33,6 +34,7 @@ export default function Home() {
               setColor={setColor}
               setThickness={setThickness}
               setOpacity={setOpacity}
+              setVegaString={setVegaString}
               isShape={isShape}
               selectedPath={selectedPath}
             />
@@ -46,6 +48,7 @@ export default function Home() {
                 color={color}
                 thickness={thickness}
                 opacity={opacity}
+                vegaString={vegaString}
                 setIsShape={setIsShape}
                 setSelectedPath={setSelectedPath}
               />
