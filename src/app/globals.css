@@ -90,3 +90,10 @@ body {
   height: 72px;
   width: 120px;
 }
+
+.vl-preview .vega-embed {
+  @apply h-full
+}
+.vl-preview .vega-embed canvas {
+   @apply h-full
+ }
