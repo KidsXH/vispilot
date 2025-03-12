@@ -37,7 +37,6 @@ export default function Corpus() {
       .then(data => {
         const utteranceSamples = prepareData(data);
         dispatch(setUtteranceSamples(utteranceSamples));
-        dispatch(setFilteredIDs(utteranceSamples.map(sample => sample.id)));
       })
       .catch(error => {
         console.error('Error loading corpus data:', error);
