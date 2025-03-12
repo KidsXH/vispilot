@@ -18,6 +18,9 @@ const SampleList = () => {
   const gtVizRef = useRef<HTMLDivElement>(null);
   const genVizRef = useRef<HTMLDivElement>(null);
 
+  const [sortKey, setSortKey] = useState<string>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   useEffect(() => {
     if (selectedSample && previewTab === 'visualization') {
       if (gtVizRef.current && selectedSample.groundTruth) {
@@ -54,26 +57,73 @@ const SampleList = () => {
         <div className="col-span-6 overflow-auto max-h-[70vh]">
           <table className="min-w-full border-collapse">
             <thead>
-            <tr className="bg-gray-100 font-bold">
-              <th className="px-4 py-2 text-left text-sm text-gray-600">ID</th>
+            <tr className="bg-gray-100 font-bold select-none">
+              <th className="px-4 py-2 text-left text-sm text-gray-600 cursor-pointer"
+                onClick={() => {
+                  setSortKey('id');
+                  const newDirection = sortKey === 'id' && sortDirection === 'asc' ? 'desc' : 'asc';
+                  setSortDirection(newDirection);
+                }}
+              >ID</th>
               <th className="px-4 py-2 text-left text-sm text-gray-600">Utterance</th>
               <th className="px-4 py-2 text-left text-sm text-gray-600">Dataset</th>
-              <th className="px-4 py-2 text-center text-sm text-gray-600">
+              <th className="px-4 py-2 text-center text-sm text-gray-600 cursor-pointer"
+                  onClick={() => {
+                    setSortKey('data');
+                    const newDirection = sortKey === 'data' && sortDirection === 'asc' ? 'desc' : 'asc';
+                    setSortDirection(newDirection);
+                  }}>
                 <div className="bg-specdim-dataschema text-data px-2 py-1 rounded">Data</div>
               </th>
-              <th className="px-4 py-2 text-center text-sm text-gray-600">
+              <th className="px-4 py-2 text-center text-sm text-gray-600 cursor-pointer"
+                  onClick={() => {
+                    setSortKey('mark');
+                    const newDirection = sortKey === 'mark' && sortDirection === 'asc' ? 'desc' : 'asc';
+                    setSortDirection(newDirection);
+                  }}>
                 <div className="bg-specdim-mark text-mark px-2 py-1 rounded">Mark</div>
               </th>
-              <th className="px-4 py-2 text-center text-sm text-gray-600">
-                <div className="bg-specdim-encoding text-encoding px-2 py-1 rounded">Encoding</div>
+              <th className="px-4 py-2 text-center text-sm text-gray-600 cursor-pointer">
+                <div className="bg-specdim-encoding text-encoding px-2 py-1 rounded"
+                     onClick={() => {
+                       setSortKey('encoding');
+                       const newDirection = sortKey === 'encoding' && sortDirection === 'asc' ? 'desc' : 'asc';
+                       setSortDirection(newDirection);
+                     }}>Encoding</div>
               </th>
-              <th className="px-4 py-2 text-center text-sm text-gray-600">
+              <th className="px-4 py-2 text-center text-sm text-gray-600 cursor-pointer"
+                  onClick={() => {
+                    setSortKey('design');
+                    const newDirection = sortKey === 'design' && sortDirection === 'asc' ? 'desc' : 'asc';
+                    setSortDirection(newDirection);
+                  }}>
                 <div className="bg-specdim-design text-design px-2 py-1 rounded">Design</div>
               </th>
             </tr>
             </thead>
             <tbody>
-            {filteredSamples.map((sample) => (
+            {filteredSamples
+              .toSorted(
+                (a, b) => {
+                  if (sortKey === 'id') {
+                    return sortDirection === 'asc' ? a.id - b.id : b.id - a.id;
+                  }
+                  if (sortKey === 'data') {
+                    return sortDirection === 'asc' ? a.accuracy.dataSchema - b.accuracy.dataSchema : b.accuracy.dataSchema - a.accuracy.dataSchema;
+                  }
+                  if (sortKey === 'mark') {
+                    return sortDirection === 'asc' ? a.accuracy.mark - b.accuracy.mark : b.accuracy.mark - a.accuracy.mark;
+                  }
+                  if (sortKey === 'encoding') {
+                    return sortDirection === 'asc' ? a.accuracy.encoding - b.accuracy.encoding : b.accuracy.encoding - a.accuracy.encoding;
+                  }
+                  if (sortKey === 'design') {
+                    return sortDirection === 'asc' ? a.accuracy.design - b.accuracy.design : b.accuracy.design - a.accuracy.design;
+                  }
+                  return sortDirection === 'asc' ? a.id - b.id : b.id - a.id;
+                }
+              )
+              .map((sample) => (
               <tr
                 key={sample.id}
                 onClick={() => handleRowClick(sample)}
