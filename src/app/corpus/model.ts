@@ -20,15 +20,15 @@ export const testUtteranceSample = async (sample: UtteranceSample) => {
   const accuracy = 0.2 + Math.random() * ((explicitCount * 2 + implicitCount) / 10);
   const inferenceLevel = (noneCount * 20 + implicitCount * 5) / 100;
 
-  return {
-    ...sample,
-    dataSchema,
-    task,
-    mark,
-    encoding,
-    design,
-    accuracy,
-    inferenceLevel,
-    tested: 'yes',
-  } as UtteranceSample;
+  // return {
+  //   ...sample,
+  //   dataSchema,
+  //   task,
+  //   mark,
+  //   encoding,
+  //   design,
+  //   accuracy,
+  //   inferenceLevel,
+  //   tested: 'yes',
+  // } as UtteranceSample;
 }

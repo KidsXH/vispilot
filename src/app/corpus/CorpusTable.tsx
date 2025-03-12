@@ -58,9 +58,9 @@ export default function CorpusTable({data}: CorpusTableProps) {
       csvData: visDataset[filename]
     }
 
-    testUtteranceSampleTest(sample, dataset).then((result) => {
-      dispatch(setUtteranceSample({id: id, sample: result}));
-    })
+    // testUtteranceSampleTest(sample, dataset).then((result) => {
+    //   dispatch(setUtteranceSample({id: id, sample: result}));
+    // })
 
   }, [dispatch, utteranceSamples, visDataset]);
 

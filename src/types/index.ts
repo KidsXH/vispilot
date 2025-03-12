@@ -31,15 +31,24 @@ export interface UtteranceSample {
   id: number;
   utteranceSet: string;
   sequential: string;
-  visId: string;
+  visID: string;
   dataset: string;
-  dataSchema: SpecCategory | null;
-  task: SpecCategory | null;
-  mark: SpecCategory | null;
-  encoding: SpecCategory | null;
-  design: SpecCategory | null;
-  accuracy: number| null;    // Value between 0 and 1
-  inferenceLevel: number| null;  // Value between 0 and 1
+  groundTruth: any;
+  vegaLite: any;
+  specGen: any;
+  specGT: any;
+  inference: {
+    dataSchema: {[key: string]: string}
+    mark: {[key: string]: string};
+    encoding: {[key: string]: string};
+    design: {[key: string]: string};
+  }
+  accuracy: {
+    dataSchema: number;
+    mark: number;
+    encoding: number;
+    design: number;
+  }
   tested: TestState;
 }
 
@@ -57,3 +66,13 @@ export interface CSVFile {
   filename: string;
   content?: string;
 }
+
+
+export type CheckListConfig = {
+  data: string[];
+  mark: string[];
+  encoding: string[];
+  design: string[];
+}
+
+export type CheckListCategory = 'data' | 'mark' | 'encoding' | 'design';

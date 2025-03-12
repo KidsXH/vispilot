@@ -1,15 +1,20 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
-import {CSVData, UtteranceSample} from "@/types";
+import {CheckListConfig, CSVData, UtteranceSample} from "@/types";
+import {defaultCheckList} from "@/app/corpus/VisSpecList";
 
 interface CorpusSlice {
   visDataset: { [key: string]: CSVData }
   utteranceSamples: UtteranceSample[]
+  checklist: CheckListConfig
+  filteredIDs: number[]
 }
 
 const initialState: CorpusSlice = {
   visDataset: {},
   utteranceSamples: [],
+  checklist: defaultCheckList,
+  filteredIDs: []
 }
 
 export const corpusSlice = createSlice({
@@ -29,14 +34,22 @@ export const corpusSlice = createSlice({
       if (sampleIndex !== -1) {
         state.utteranceSamples = [...state.utteranceSamples.slice(0, sampleIndex), sample, ...state.utteranceSamples.slice(sampleIndex + 1)];
       }
+    },
+    setChecklist: (state, action: PayloadAction<CheckListConfig>) => {
+      state.checklist = structuredClone(action.payload);
+    },
+    setFilteredIDs: (state, action: PayloadAction<number[]>) => {
+      state.filteredIDs = [...action.payload];
     }
   },
 })
 
-export const {setVisDataset, setUtteranceSample, setUtteranceSamples} = corpusSlice.actions
+export const {setFilteredIDs, setVisDataset, setUtteranceSample, setUtteranceSamples, setChecklist} = corpusSlice.actions
 
 export const selectVisDataset = (state: RootState) => state.corpus.visDataset
 export const selectUtteranceSamples = (state: RootState) => state.corpus.utteranceSamples
+export const selectChecklist = (state: RootState) => state.corpus.checklist
+export const selectFilteredIDs = (state: RootState) => state.corpus.filteredIDs
 
 export default corpusSlice.reducer
 

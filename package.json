@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@headlessui/react": "^2.2.0",
     "@reduxjs/toolkit": "^2.5.1",
     "@tanstack/react-table": "^8.21.2",
     "@types/d3": "^7.4.3",

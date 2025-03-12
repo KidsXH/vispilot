@@ -15,6 +15,10 @@
     --font-system: 'Quantico', sans-serif;
     --font-sans: 'Geist', sans-serif;
     --font-mono: 'Geist Mono', serif;
+    --color-data: #6495ED;
+    --color-mark: #FF7F52;
+    --color-encoding: #008080;
+    --color-design: #9370DB;
 }
 
 .material-symbols-outlined {
@@ -91,6 +95,14 @@ body {
     width: 120px;
 }
 
+.corpus-vega {
+    @apply w-full overflow-auto
+}
+
+.corpus-vega canvas {
+    height: 240px;
+}
+
 .vl-preview .vega-embed {
     @apply h-full
 }
@@ -113,4 +125,20 @@ body {
 
 .icon-input-label {
     font-size: 18px;
+}
+
+.dataSchema {
+    @apply text-data
+}
+
+.mark {
+    @apply text-mark
+}
+
+.encoding {
+    @apply text-encoding
+}
+
+.design {
+    @apply text-design
 }
