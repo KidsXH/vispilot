@@ -349,6 +349,9 @@ const ChecklistModal = ({ isOpen, closeModal, checkList, defaultCheckList }: Che
                 >
                   Configure Checklist
                 </Dialog.Title>
+                <div className="mt-4 text-sm text-neutral-400">
+                  Only the following selected properties will be checked whether they are <span className="font-bold">implicitly</span> inferred or not.
+                </div>
                 <div className="mt-4 max-h-[60vh] overflow-y-auto">
                   {Object.keys(defaultCheckList).map(category => (
                     <div key={category} className="mb-4">
