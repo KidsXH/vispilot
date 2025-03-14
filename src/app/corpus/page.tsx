@@ -247,6 +247,8 @@ const prepareData = (data: any): UtteranceSample[] => {
         encoding: item.accuracy.encoding,
         design: item.accuracy.design,
       },
+      accGenDiff: item.gen_acc_diff,
+      accGTDiff: item.gt_acc_diff,
       tested: 'yes'
     } as UtteranceSample;
   });

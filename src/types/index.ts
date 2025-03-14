@@ -49,6 +49,8 @@ export interface UtteranceSample {
     encoding: number;
     design: number;
   }
+  accGenDiff: any;
+  accGTDiff: any;
   tested: TestState;
 }
 
