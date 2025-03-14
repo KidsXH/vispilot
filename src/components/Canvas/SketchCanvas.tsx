@@ -1,10 +1,10 @@
 import GlowingText from '@/components/Canvas/GlowingText'
-import { useAppDispatch, useAppSelector } from '@/store'
-import { addVegaEmbed, selectTool, selectVegaEmbeds, setTool, ShapeType } from '@/store/features/CanvasSlice'
-import { CanvasPath, Message } from '@/types'
-import { motion } from 'framer-motion'
-import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { TopLevelSpec } from 'vega-lite'
+import {useAppDispatch, useAppSelector} from '@/store'
+import {addVegaEmbed, selectTool, selectVegaEmbeds, setTool, ShapeType} from '@/store/features/CanvasSlice'
+import {CanvasPath, Message} from '@/types'
+import {motion} from 'framer-motion'
+import {PointerEvent, useCallback, useEffect, useRef, useState} from 'react'
+import {TopLevelSpec} from 'vega-lite'
 
 interface SketchPadProps {
   color: string
@@ -16,13 +16,13 @@ interface SketchPadProps {
 }
 
 export default function SketchPad({
-  color,
-  thickness,
-  opacity,
-  vegaString,
-  setIsShape,
-  setSelectedPath
-}: SketchPadProps) {
+                                    color,
+                                    thickness,
+                                    opacity,
+                                    vegaString,
+                                    setIsShape,
+                                    setSelectedPath
+                                  }: SketchPadProps) {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
 
@@ -35,7 +35,7 @@ export default function SketchPad({
   const [selectedPathId, setSelectedPathId] = useState<number | null>(null)
   const [editingPathId, setEditingPathId] = useState<number | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
-  const [coordinates, setCoordinates] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [coordinates, setCoordinates] = useState<{ x: number; y: number }>({x: 0, y: 0})
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
@@ -54,14 +54,13 @@ export default function SketchPad({
     return [0, 0]
   }
 
-  const handlePointerDown = useCallback(
-    (event: PointerEvent) => {
+  const handlePointerDown = useCallback((event: PointerEvent) => {
       if (tool != 'select') {
         setSelectedPathId(null)
       }
 
       const [x, y] = getCoordinates(event)
-      setCoordinates({ x, y })
+      setCoordinates({x, y})
 
       setIsShape(false)
       setSelectedPath(null)
@@ -173,7 +172,7 @@ export default function SketchPad({
       try {
         console.log('vegaString:', vegaString)
         const spec = JSON.parse(vegaString)
-        dispatch(addVegaEmbed({ spec, position: [100, 100] }))
+        dispatch(addVegaEmbed({spec, position: [100, 100]}))
       } catch (error) {
         console.error('Error parsing vegaString:', error)
       }
@@ -223,7 +222,7 @@ export default function SketchPad({
         setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? newPath : p)))
       }
     }
-    setCoordinates({ x, y })
+    setCoordinates({x, y})
   }
 
   const handlePointerUp = () => {
@@ -237,9 +236,6 @@ export default function SketchPad({
           })
         )
       }
-      // if (tool === 'note') {
-      //   setEditingPathId(currentPath.id)
-      // }
     }
     setIsDrawing(false)
     setCurrentPath(null)
@@ -295,16 +291,20 @@ export default function SketchPad({
     }
   }
 
-  const handleTextChange = (e: React.FormEvent<HTMLDivElement>, currentPathId: number) => {
-    const text = e.currentTarget.textContent || ''
+  const handleTextChange = (inputText: string, currentPathId: number) => {
+    const text = inputText;
     if (text.trim() === '') {
       const updatedPaths = paths.filter(path => path.id !== currentPathId)
       setPaths(updatedPaths)
     } else {
-      const updatedPaths = paths.map(path => (path.id === currentPathId ? { ...path, text } : path))
+      const updatedPaths = paths.map(path => (path.id === currentPathId ? {...path, text} : path))
       setPaths(updatedPaths)
     }
   }
+
+  useEffect(() => {
+    console.log('paths:', paths)
+  }, [paths]);
 
   const isPointInPath = (path: CanvasPath, point: [number, number]): boolean => {
     if (path.type === 'note') {
@@ -369,7 +369,7 @@ export default function SketchPad({
             sender: 'user',
             content: [
               // { type: 'text', text: 'Please recommend a visualization based on the sketch below.' },
-              { type: 'image_url', image_url: { url: imageUrl } }
+              {type: 'image_url', image_url: {url: imageUrl}}
             ]
           }
           dispatch(addMessage(message))
@@ -386,7 +386,7 @@ export default function SketchPad({
   const shapeToolList: ToolButtonInfo[] = [
     {
       name: 'rectangle',
-      icon: 'rectangle',
+      icon: 'square',
       title: 'Rectangle',
       handleClick: () => setSelectedShapeType('rectangle')
     },
@@ -410,7 +410,8 @@ export default function SketchPad({
         name: 'redo',
         icon: 'redo',
         title: 'Redo',
-        handleClick: () => {}
+        handleClick: () => {
+        }
       }
     ],
     [
@@ -467,6 +468,8 @@ export default function SketchPad({
     ]
   ]
 
+  const [textInput, setTextInput] = useState('')
+
   return (
     <div className="relative">
       {/*Top buttons*/}
@@ -514,7 +517,7 @@ export default function SketchPad({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-        style={{ touchAction: 'none' }}>
+        style={{touchAction: 'none'}}>
         {/* 已完成的路径 */}
         {paths.map((path: CanvasPath) => (
           <motion.path
@@ -526,10 +529,10 @@ export default function SketchPad({
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity={path.opacity}
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.5 }}
-            style={{ cursor: 'pointer' }}
+            initial={{pathLength: 0}}
+            animate={{pathLength: 1}}
+            transition={{duration: 0.5}}
+            style={{cursor: 'pointer'}}
           />
         ))}
 
@@ -537,80 +540,40 @@ export default function SketchPad({
         {paths.map(path => (
           <g key={path.id} onClick={e => e.stopPropagation()}>
             {path.type === 'note' && tool === 'note' ? (
-              editingPathId === path.id ? (
-                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="45">
-                  <div
-                    contentEditable={true}
-                    className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
-                      isEditingText && editingPathId === path.id ? 'border-black' : 'border-transparent'
-                    }`}
-                    style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
-                    onInput={e => {
-                      const inputText = e.currentTarget.textContent || ''
-                      handleTextChange(e, path.id)
-                    }}
-                    onFocus={e => {
-                      setIsEditingText(true)
-                      setEditingPathId(path.id)
-                      e.currentTarget.classList.remove('border-transparent')
-                      e.currentTarget.classList.add('border-black')
-                    }}
-                    onBlur={e => {
-                      setIsEditingText(false)
-                      if (!e.currentTarget.textContent?.trim()) {
-                        const updatedPaths = paths.filter(p => p.id !== path.id)
-                        setPaths(updatedPaths)
-                      } else {
-                        e.currentTarget.classList.remove('border-black')
-                        e.currentTarget.classList.add('border-transparent')
-                      }
-                      setEditingPathId(null)
-                    }}
-                    autoFocus
-                  />
-                </foreignObject>
-              ) : (
-                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="45">
-                  <div
-                    contentEditable={true}
-                    className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
-                      isEditingText && editingPathId === path.id ? 'border-black' : 'border-transparent'
-                    }`}
-                    style={{ color: path.color, fontWeight: path.width * 100, opacity: path.opacity }}
-                    onInput={e => {
-                      const inputText = e.currentTarget.textContent || ''
-                      handleTextChange(e, path.id)
-                    }}
-                    onFocus={e => {
-                      setIsEditingText(true)
-                      setEditingPathId(path.id)
-                      e.currentTarget.classList.remove('border-transparent')
-                      e.currentTarget.classList.add('border-black')
-                    }}
-                    onBlur={e => {
-                      setIsEditingText(false)
-                      if (!e.currentTarget.textContent?.trim()) {
-                        const updatedPaths = paths.filter(p => p.id !== path.id)
-                        setPaths(updatedPaths)
-                      } else {
-                        e.currentTarget.classList.remove('border-black')
-                        e.currentTarget.classList.add('border-transparent')
-                      }
-                      setEditingPathId(null)
-                    }}
-                    autoFocus>
-                    {path.text}
-                  </div>
-                </foreignObject>
-              )
+              <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="36">
+                <input
+                  contentEditable={true}
+                  className={`w-full px-2 py-1 rounded outline-none border-1 text-center`}
+                  style={{color: path.color, fontWeight: path.width * 100, opacity: path.opacity}}
+                  value={
+                    path.id === editingPathId && isEditingText ? textInput : path.text
+                  }
+                  onChange={e => setTextInput(e.target.value)}
+                  onFocus={e => {
+                    setIsEditingText(true)
+                    setTextInput(path.text || '')
+                    setEditingPathId(path.id)
+                  }}
+                  onBlur={e => {
+                    setIsEditingText(false)
+                    handleTextChange(textInput, path.id)
+                    setTextInput('');
+                    setEditingPathId(null)
+                  }}
+                  onPointerDown={
+                    e => e.stopPropagation()
+                  }
+                />
+              </foreignObject>
             ) : (
               <text
                 key={path.id}
-                x={path.points[0][0] + 9.5}
-                y={path.points[0][1] + 27}
+                x={path.points[0][0] + 75}
+                y={path.points[0][1] + 23}
                 fill={path.color}
                 opacity={path.opacity}
                 fontWeight={path.width * 100}
+                textAnchor={'middle'}
                 style={{
                   cursor: 'pointer',
                   background: selectedPathId === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
@@ -640,13 +603,13 @@ export default function SketchPad({
             }
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{ cursor: 'pointer' }}
+            style={{cursor: 'default'}}
           />
         )}
       </svg>
 
       {/*Embed Vega Views*/}
-      <EmbedVegaViews />
+      {/*<EmbedVegaViews />*/}
     </div>
   )
 }
@@ -659,11 +622,11 @@ interface ToolButtonInfo {
 }
 
 const ToolBox = ({
-  toolList,
-  shapeToolList,
-  selectedShapeType,
-  setSelectedShapeType
-}: {
+                   toolList,
+                   shapeToolList,
+                   selectedShapeType,
+                   setSelectedShapeType
+                 }: {
   toolList: ToolButtonInfo[][]
   shapeToolList: ToolButtonInfo[]
   selectedShapeType: ShapeType | null
@@ -675,24 +638,26 @@ const ToolBox = ({
       <div className="flex flex-col items-center justify-center space-y-2">
         {/* 形状选择器 */}
         {tool === 'shape' && (
-          <div className="flex items-center justify-center px-2 h-12 w-[90px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
+          <div
+            className="flex items-center justify-center px-2 h-12 w-[90px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
             <div className="flex items-center space-x-1">
               {shapeToolList.map((toolInfo, i) => (
                 <button key={`shape-tool-${i}`} onClick={() => setSelectedShapeType(toolInfo.name as ShapeType)}>
-                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={selectedShapeType === toolInfo.name} />
+                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={selectedShapeType === toolInfo.name}/>
                 </button>
               ))}
             </div>
           </div>
         )}
         {/* 主工具栏 */}
-        <div className="flex items-center justify-center px-2 h-12 w-[345px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
+        <div
+          className="flex items-center justify-center px-2 h-12 w-[345px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
           {toolList.map((toolGroup, index) => (
             <div className="flex items-center space-x-1" key={index}>
               {index > 0 && <div className="border border-neutral-300 h-6 ml-2.5 mr-2"></div>}
               {toolGroup.map((toolInfo, i) => (
                 <button key={`tool-${index}-${i}`} onClick={toolInfo.handleClick}>
-                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={tool === toolInfo.name} />
+                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={tool === toolInfo.name}/>
                 </button>
               ))}
             </div>
@@ -704,11 +669,11 @@ const ToolBox = ({
 }
 
 const ToolIcon = ({
-  className,
-  icon,
-  active,
-  text
-}: {
+                    className,
+                    icon,
+                    active,
+                    text
+                  }: {
   className?: string
   icon: string
   active?: boolean
@@ -727,67 +692,67 @@ const ToolIcon = ({
   )
 }
 
-import { sendRequest } from '@/model'
-import { addMessage, selectMessages, setState } from '@/store/features/ChatSlice'
-import { addHistory } from '@/store/features/HistorySlice'
-import { compile } from 'vega-lite'
+import {sendRequest} from '@/model'
+import {addMessage, selectMessages, setState} from '@/store/features/ChatSlice'
+import {addHistory} from '@/store/features/HistorySlice'
+import {compile} from 'vega-lite'
 
-const VegaLite = ({ spec }: { spec: TopLevelSpec }) => {
-  const visRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (visRef.current) {
-      visRef.current.innerHTML = ''
-      try {
-        const vegaSpec = compile(structuredClone(spec)).spec
-        const runtime = vega.parse(vegaSpec)
-
-        runtime.run()
-
-        runtime
-          .toSVG()
-          .then((svgString: string) => {
-            const parser = new DOMParser()
-            const doc = parser.parseFromString(svgString, 'image/svg+xml')
-            const svg = doc.documentElement
-            visRef.current?.appendChild(svg)
-          })
-          .catch(console.error)
-      } catch (error) {
-        console.error('Error rendering Vega-Lite spec:', error)
-      }
-    }
-  }, [spec])
-
-  return (
-    <div className={'canvas-vega-embed flex items-center justify-center hover:shadow-lg p-2 pt-4'} ref={visRef}></div>
-  )
-}
-
-const EmbedVegaViews = () => {
-  const vegaEmbeds = useAppSelector(selectVegaEmbeds)
-  if (vegaEmbeds.vegaSpecs.length === 0) {
-    return null
-  }
-  const selectPosition = vegaEmbeds.positions[vegaEmbeds.positions.length - 1]
-  const selectSpec = vegaEmbeds.vegaSpecs[vegaEmbeds.vegaSpecs.length - 1]
-
-  return (
-    <div className="absolute top-0 left-0">
-      <div
-        className="absolute"
-        style={{
-          top: selectPosition[1],
-          left: selectPosition[0],
-          zIndex: 0,
-          width: 800,
-          height: 400
-        }}>
-        <VegaLite spec={selectSpec} />
-      </div>
-    </div>
-  )
-}
+// const VegaLite = ({ spec }: { spec: TopLevelSpec }) => {
+//   const visRef = useRef<HTMLDivElement>(null)
+//
+//   useEffect(() => {
+//     if (visRef.current) {
+//       visRef.current.innerHTML = ''
+//       try {
+//         const vegaSpec = compile(structuredClone(spec)).spec
+//         const runtime = vega.parse(vegaSpec)
+//
+//         runtime.run()
+//
+//         runtime
+//           .toSVG()
+//           .then((svgString: string) => {
+//             const parser = new DOMParser()
+//             const doc = parser.parseFromString(svgString, 'image/svg+xml')
+//             const svg = doc.documentElement
+//             visRef.current?.appendChild(svg)
+//           })
+//           .catch(console.error)
+//       } catch (error) {
+//         console.error('Error rendering Vega-Lite spec:', error)
+//       }
+//     }
+//   }, [spec])
+//
+//   return (
+//     <div className={'canvas-vega-embed flex items-center justify-center hover:shadow-lg p-2 pt-4'} ref={visRef}></div>
+//   )
+// }
+//
+// const EmbedVegaViews = () => {
+//   const vegaEmbeds = useAppSelector(selectVegaEmbeds)
+//   if (vegaEmbeds.vegaSpecs.length === 0) {
+//     return null
+//   }
+//   const selectPosition = vegaEmbeds.positions[vegaEmbeds.positions.length - 1]
+//   const selectSpec = vegaEmbeds.vegaSpecs[vegaEmbeds.vegaSpecs.length - 1]
+//
+//   return (
+//     <div className="absolute top-0 left-0">
+//       <div
+//         className="absolute"
+//         style={{
+//           top: selectPosition[1],
+//           left: selectPosition[0],
+//           zIndex: 0,
+//           width: 800,
+//           height: 400
+//         }}>
+//         <VegaLite spec={selectSpec} />
+//       </div>
+//     </div>
+//   )
+// }
 
 function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number) {
   return new Promise((resolve, reject) => {
@@ -811,7 +776,7 @@ function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number
       svgClone.insertBefore(background, svgClone.firstChild)
 
       const svgString = new XMLSerializer().serializeToString(svgClone)
-      const blob = new Blob([svgString], { type: 'image/svg+xml' })
+      const blob = new Blob([svgString], {type: 'image/svg+xml'})
       const url = URL.createObjectURL(blob)
 
       const img = new Image()
@@ -840,15 +805,19 @@ function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number
 function distanceToTopEdge(x: number, y: number, startY: number): number {
   return Math.abs(y - startY)
 }
+
 function distanceToRightEdge(x: number, y: number, endX: number): number {
   return Math.abs(x - endX)
 }
+
 function distanceToBottomEdge(x: number, y: number, endY: number): number {
   return Math.abs(y - endY)
 }
+
 function distanceToLeftEdge(x: number, y: number, startX: number): number {
   return Math.abs(x - startX)
 }
+
 function distanceToRectangle(
   x: number,
   y: number,
@@ -875,6 +844,7 @@ function distanceToRectangle(
     (distances[3] < 10 && y >= edgeYBottom - 10 && y <= edgeYTop + 10)
   return isOk
 }
+
 function distanceToSegment(px: number, py: number, startX: number, startY: number, endX: number, endY: number): number {
   const dx = endX - startX
   const dy = endY - startY
