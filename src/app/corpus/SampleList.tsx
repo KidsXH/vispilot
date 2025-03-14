@@ -20,6 +20,7 @@ const SampleList = () => {
 
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'default' | 'inference' | 'accuracy'>('default');
 
   useEffect(() => {
     if (selectedSample && previewTab === 'visualization') {
@@ -158,27 +159,63 @@ const SampleList = () => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold text-neutral-600">Sample #{selectedSample.id}</h3>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setPreviewTab('visualization')}
-                    className={`px-3 py-1 rounded text-sm ${
-                      previewTab === 'visualization'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    Visualization
-                  </button>
-                  <button
-                    onClick={() => setPreviewTab('rawData')}
-                    className={`px-3 py-1 rounded text-sm ${
-                      previewTab === 'rawData'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    VL Code
-                  </button>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex space-x-2 justify-end">
+                    <button
+                      onClick={() => setPreviewTab('visualization')}
+                      className={`px-3 py-1 rounded text-sm ${
+                        previewTab === 'visualization'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Visualization
+                    </button>
+                    <button
+                      onClick={() => setPreviewTab('rawData')}
+                      className={`px-3 py-1 rounded text-sm ${
+                        previewTab === 'rawData'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      VL Code
+                    </button>
+                  </div>
+                  
+                  {/* Nested buttons */}
+                  <div className="flex space-x-2 justify-end">
+                    <button
+                      onClick={() => setViewMode('default')}
+                      className={`px-2 py-0.5 rounded text-xs ${
+                        viewMode === 'default'
+                          ? 'bg-indigo-400 text-white'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      Default
+                    </button>
+                    <button
+                      onClick={() => setViewMode('inference')}
+                      className={`px-2 py-0.5 rounded text-xs ${
+                        viewMode === 'inference'
+                          ? 'bg-indigo-400 text-white'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      Show Inference
+                    </button>
+                    <button
+                      onClick={() => setViewMode('accuracy')}
+                      className={`px-2 py-0.5 rounded text-xs ${
+                        viewMode === 'accuracy'
+                          ? 'bg-indigo-400 text-white'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      Show Acc
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -187,6 +224,7 @@ const SampleList = () => {
                 <div className="p-2 bg-gray-50 rounded border text-sm">{selectedSample.utteranceSet}</div>
               </div>
 
+              {/* Visualization or VL Code sections stay the same */}
               <div className="grid grid-cols-2 gap-4 mb-4" hidden={previewTab === 'rawData'}>
                 <div className="border rounded px-2 py-1 w-full">
                   <h4 className="text-sm mb-1 text-neutral-600">Generated Visualization</h4>
@@ -228,30 +266,90 @@ const SampleList = () => {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border rounded px-2 py-1">
-                  <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Specifications</h4>
-                  <div className="border rounded overflow-auto max-h-96">
-                    <ReactJson
-                      value={selectedSample.specGen}
-                      displayDataTypes={false}
-                      style={githubLightTheme}
-                      enableClipboard={false}
-                    />
+
+              {/* Default view - Generated and Ground Truth Specifications */}
+              {viewMode === 'default' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="border rounded px-2 py-1">
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Specifications</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.specGen}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
+                  </div>
+                  <div className='border rounded px-2 py-1'>
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Specifications</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.specGT}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className='border rounded px-2 py-1'>
-                  <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Specifications</h4>
-                  <div className="border rounded overflow-auto max-h-96">
-                    <ReactJson
-                      value={selectedSample.specGT}
-                      displayDataTypes={false}
-                      style={githubLightTheme}
-                      enableClipboard={false}
-                    />
+              )}
+
+              {/* Inference view - Generated Specifications and Inference Summary */}
+              {viewMode === 'inference' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="border rounded px-2 py-1">
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Specifications</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.specGen}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
+                  </div>
+                  <div className='border rounded px-2 py-1'>
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Inference Summary</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.inference}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Accuracy view - Generated and Ground Truth Difference Items */}
+              {viewMode === 'accuracy' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="border rounded px-2 py-1">
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Difference Item</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.accGenDiff}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
+                  </div>
+                  <div className='border rounded px-2 py-1'>
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Difference Item</h4>
+                    <div className="border rounded overflow-auto max-h-96">
+                      <ReactJson
+                        value={selectedSample.accGTDiff}
+                        displayDataTypes={false}
+                        style={githubLightTheme}
+                        enableClipboard={false}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center h-80 text-gray-400">
