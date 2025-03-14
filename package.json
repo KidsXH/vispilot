@@ -17,6 +17,7 @@
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "d3": "^7.9.0",
     "framer-motion": "^12.4.3",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.475.0",
     "material-symbols": "^0.28.2",
     "next": "15.1.7",
@@ -26,7 +27,8 @@
     "vega": "^5.32.0",
     "vega-embed": "^6.29.0",
     "vega-lite": "^5.23.0",
-    "vega-parser": "^6.5.0"
+    "vega-parser": "^6.5.0",
+    "vega-scenegraph": "^4.13.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

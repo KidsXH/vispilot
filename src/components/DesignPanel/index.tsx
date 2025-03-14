@@ -65,9 +65,14 @@ const DesignPanel = ({
 
   const handleOpacityChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newOpacity = parseFloat(event.target.value)
-    const actualOpacity = newOpacity / 100
-    setInternalOpacity(actualOpacity)
-    setOpacity(actualOpacity)
+    if (!isNaN(newOpacity) && newOpacity >= 0 && newOpacity <= 100) {
+      const actualOpacity = newOpacity / 100
+      setInternalOpacity(actualOpacity)
+      setOpacity(actualOpacity)
+    } else {
+      setInternalOpacity(1)
+      setOpacity(1)
+    }
   }
 
   const handleWidthChange = (event: ChangeEvent<HTMLInputElement>) => {

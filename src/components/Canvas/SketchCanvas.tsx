@@ -237,6 +237,9 @@ export default function SketchPad({
           })
         )
       }
+      // if (tool === 'note') {
+      //   setEditingPathId(currentPath.id)
+      // }
     }
     setIsDrawing(false)
     setCurrentPath(null)
