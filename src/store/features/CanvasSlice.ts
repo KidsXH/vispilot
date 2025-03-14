@@ -1,6 +1,6 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit'
-import {RootState} from '@/store'
-import {TopLevelSpec} from "vega-lite";
+import { RootState } from '@/store';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { TopLevelSpec } from "vega-lite";
 
 export type ToolType = 'pencil' | 'select' | 'selectArea' | 'shape' | 'axis' | 'note'
 export type ShapeType = 'rectangle' | 'circle'
@@ -38,10 +38,16 @@ export const canvasSlice = createSlice({
         positions: state.vegaEmbeds.positions.filter((_, index) => index !== action.payload),
       }
     },
+    addVegaEmbed: (state, action: PayloadAction<{ spec: TopLevelSpec; position: [number, number] }>) => {
+      state.vegaEmbeds.vegaSpecs.push(action.payload.spec)
+      state.vegaEmbeds.positions.push(action.payload.position)
+      console.log(action.payload.spec, action.payload.position)
+      console.log(state.vegaEmbeds.vegaSpecs, state.vegaEmbeds.positions)
+    },
   },
 })
 
-export const {setTool, addVegaEmbeds, removeVegaEmbeds} = canvasSlice.actions
+export const { setTool, addVegaEmbeds, removeVegaEmbeds, addVegaEmbed } = canvasSlice.actions
 
 export const selectTool = (state: RootState) => state.canvas.tool
 export const selectVegaEmbeds = (state: RootState) => state.canvas.vegaEmbeds

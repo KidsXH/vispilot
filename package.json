@@ -23,9 +23,10 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
-    "vega": "^5.31.0",
+    "vega": "^5.32.0",
     "vega-embed": "^6.29.0",
-    "vega-lite": "^5.23.0"
+    "vega-lite": "^5.23.0",
+    "vega-parser": "^6.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

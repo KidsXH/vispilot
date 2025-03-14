@@ -1,6 +1,6 @@
 import GlowingText from '@/components/Canvas/GlowingText'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { selectTool, selectVegaEmbeds, setTool, ShapeType } from '@/store/features/CanvasSlice'
+import { addVegaEmbed, selectTool, selectVegaEmbeds, setTool, ShapeType } from '@/store/features/CanvasSlice'
 import { CanvasPath, Message } from '@/types'
 import { motion } from 'framer-motion'
 import { PointerEvent, useCallback, useEffect, useRef, useState } from 'react'
@@ -167,6 +167,18 @@ export default function SketchPad({
       }
     }
   }, [opacity])
+
+  useEffect(() => {
+    if (vegaString) {
+      try {
+        console.log('vegaString:', vegaString)
+        const spec = JSON.parse(vegaString)
+        dispatch(addVegaEmbed({ spec, position: [100, 100] }))
+      } catch (error) {
+        console.error('Error parsing vegaString:', error)
+      }
+    }
+  }, [vegaString])
 
   const handlePointerMove = (event: PointerEvent) => {
     if (!isDrawing || !currentPath) return
@@ -523,7 +535,7 @@ export default function SketchPad({
           <g key={path.id} onClick={e => e.stopPropagation()}>
             {path.type === 'note' && tool === 'note' ? (
               editingPathId === path.id ? (
-                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
+                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="45">
                   <div
                     contentEditable={true}
                     className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
@@ -555,7 +567,7 @@ export default function SketchPad({
                   />
                 </foreignObject>
               ) : (
-                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="100" height="45">
+                <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="45">
                   <div
                     contentEditable={true}
                     className={`w-full h-full p-2 rounded bg-transparent outline-none border-2 ${
@@ -715,39 +727,62 @@ const ToolIcon = ({
 import { sendRequest } from '@/model'
 import { addMessage, selectMessages, setState } from '@/store/features/ChatSlice'
 import { addHistory } from '@/store/features/HistorySlice'
-import vegaEmbed from 'vega-embed'
 import { compile } from 'vega-lite'
-
-const EmbedVegaViews = () => {
-  const vegaEmbeds = useAppSelector(selectVegaEmbeds)
-
-  return (
-    <div className="absolute top-0 left-0">
-      {vegaEmbeds.vegaSpecs.map((spec: TopLevelSpec, index: number) => (
-        <div
-          key={index}
-          id={`canvas-vega-${index}`}
-          className="absolute"
-          style={{ top: vegaEmbeds.positions[index][1], left: vegaEmbeds.positions[index][0] }}>
-          <VegaLite spec={spec} />
-        </div>
-      ))}
-    </div>
-  )
-}
 
 const VegaLite = ({ spec }: { spec: TopLevelSpec }) => {
   const visRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (visRef.current) {
-      const sp = compile(structuredClone(spec)).spec
-      vegaEmbed(visRef.current, sp).then().catch(console.error)
+      visRef.current.innerHTML = ''
+      try {
+        const vegaSpec = compile(structuredClone(spec)).spec
+        const runtime = vega.parse(vegaSpec)
+
+        runtime.run()
+
+        runtime
+          .toSVG()
+          .then((svgString: string) => {
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(svgString, 'image/svg+xml')
+            const svg = doc.documentElement
+            visRef.current?.appendChild(svg)
+          })
+          .catch(console.error)
+      } catch (error) {
+        console.error('Error rendering Vega-Lite spec:', error)
+      }
     }
-  })
+  }, [spec])
 
   return (
     <div className={'canvas-vega-embed flex items-center justify-center hover:shadow-lg p-2 pt-4'} ref={visRef}></div>
+  )
+}
+
+const EmbedVegaViews = () => {
+  const vegaEmbeds = useAppSelector(selectVegaEmbeds)
+  if (vegaEmbeds.vegaSpecs.length === 0) {
+    return null
+  }
+  const selectPosition = vegaEmbeds.positions[vegaEmbeds.positions.length - 1]
+  const selectSpec = vegaEmbeds.vegaSpecs[vegaEmbeds.vegaSpecs.length - 1]
+
+  return (
+    <div className="absolute top-0 left-0">
+      <div
+        className="absolute"
+        style={{
+          top: selectPosition[1],
+          left: selectPosition[0],
+          zIndex: 0,
+          width: 800,
+          height: 400
+        }}>
+        <VegaLite spec={selectSpec} />
+      </div>
+    </div>
   )
 }
 
