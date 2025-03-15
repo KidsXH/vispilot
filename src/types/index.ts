@@ -1,15 +1,21 @@
 import { SpecCategory, TestState } from "@/app/corpus/page";
 
+export interface CanvasStyle {
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  opacity: number;
+}
+
 export interface CanvasPath {
   id: number;
   points: number[][];
-  color: string;
-  width: number;
   pressure: number;
-  opacity: number;
-  type: 'pencil'| 'axis' | 'shape' | 'note';
-  shapeType?: 'rectangle'| 'circle'| null;
+  style: CanvasStyle;
+  type: 'pencil'| 'axis' | 'shape' | 'note' | 'vega';
+  shapeType?: 'rectangle'| 'circle';
   text?: string;
+  vegaSVG?: string;
 }
 
 export interface Message {

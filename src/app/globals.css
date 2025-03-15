@@ -142,3 +142,7 @@ body {
 .design {
     @apply text-design
 }
+
+svg .vega-visualization.selectable:hover > *:first-child {
+    @apply stroke-gray-300 stroke-1 fill-white cursor-pointer;
+}

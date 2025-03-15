@@ -6,7 +6,12 @@ import {useEffect, useMemo, useRef} from "react";
 import {useAppSelector} from "@/store";
 import {selectDataSource} from "@/store/features/DataSlice";
 
-const VegaLite = ({vegaString, width, height}: { vegaString?: string, width?: number, height?: number }) => {
+const VegaLite = ({vegaString, width, height, renderCallback}: {
+  vegaString?: string,
+  width?: number,
+  height?: number,
+  renderCallback?: (svg: string | null) => void
+}) => {
   const visRef = useRef<HTMLDivElement>(null);
   const csvFile = useAppSelector(selectDataSource);
 
@@ -37,8 +42,21 @@ const VegaLite = ({vegaString, width, height}: { vegaString?: string, width?: nu
   }, [vegaString, width, height, config])
 
   useEffect(() => {
-    if (spec) {
-      vegaEmbed(visRef.current!, spec, {actions: false}).then().catch(console.error)
+    if (spec && visRef.current) {
+      vegaEmbed(visRef.current, spec, {actions: false}).then(
+        (result) => {
+          result.view.toSVG().then(
+            res => {
+              if (renderCallback !== undefined) {
+                renderCallback(res);
+              }
+            }
+          )
+        }
+      ).catch(e => {
+        console.error(e)
+        renderCallback(null)
+      })
     }
   })
   return <div ref={visRef}/>

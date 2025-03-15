@@ -9,10 +9,6 @@ import { useState } from 'react'
 import HistoryPanel from '../components/HistoryPanel'
 
 export default function Home() {
-  const [vegaString, setVegaString] = useState('')
-  const [color, setColor] = useState('#000000')
-  const [thickness, setThickness] = useState(2)
-  const [opacity, setOpacity] = useState(1)
   const [isShape, setIsShape] = useState(false)
   const [selectedPath, setSelectedPath] = useState<CanvasPath | null>(null)
 
@@ -29,12 +25,8 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-row-reverse grow border border-black min-w-0">
-          <div className="w-[340px] border-l-2 border-black">
+          <div className="min-w-[340px] w-[340px] border-l-2 border-black">
             <DesignPanel
-              setColor={setColor}
-              setThickness={setThickness}
-              setOpacity={setOpacity}
-              setVegaString={setVegaString}
               isShape={isShape}
               selectedPath={selectedPath}
             />
@@ -45,10 +37,6 @@ export default function Home() {
             </div>
             <div className="grow border-b border-black">
               <Canvas
-                color={color}
-                thickness={thickness}
-                opacity={opacity}
-                vegaString={vegaString}
                 setIsShape={setIsShape}
                 setSelectedPath={setSelectedPath}
               />

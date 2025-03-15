@@ -1,21 +1,29 @@
-import { RootState } from '@/store';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TopLevelSpec } from "vega-lite";
+import {RootState} from '@/store';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {CanvasStyle, CanvasPath} from "@/types";
 
 export type ToolType = 'pencil' | 'select' | 'selectArea' | 'shape' | 'axis' | 'note'
 export type ShapeType = 'rectangle' | 'circle'
 
 interface CanvasState {
   tool: 'pencil' | 'select' | 'selectArea' | 'shape' | 'axis' | 'note'
-  vegaEmbeds: { vegaSpecs: TopLevelSpec[], positions: number[][] }
+  currentStyle: CanvasStyle;
+  paths: CanvasPath[];
+  focusedPathID: number | null;
+  designIdea: string | null;
 }
 
 const initialState: CanvasState = {
   tool: 'pencil',
-  vegaEmbeds: {
-    vegaSpecs: [],
-    positions: [],
-  }
+  currentStyle: {
+    fill: 'none',
+    stroke: '#000000',
+    strokeWidth: 1,
+    opacity: 1,
+  },
+  paths: [],
+  focusedPathID: null,
+  designIdea: null,
 }
 
 export const canvasSlice = createSlice({
@@ -25,32 +33,70 @@ export const canvasSlice = createSlice({
     setTool: (state, action: PayloadAction<CanvasState['tool']>) => {
       state.tool = action.payload
     },
-    addVegaEmbeds: (state, action: PayloadAction<TopLevelSpec>) => {
-      const lastPosition = state.vegaEmbeds.positions[state.vegaEmbeds.positions.length - 1] || [896, -100]
-      state.vegaEmbeds = {
-        vegaSpecs: [...state.vegaEmbeds.vegaSpecs, action.payload],
-        positions: [...state.vegaEmbeds.positions, [lastPosition[0], lastPosition[1] + 180]],
+    setCurrentStyle: (state, action: PayloadAction<Partial<CanvasStyle>>) => {
+      state.currentStyle = {...state.currentStyle, ...action.payload}
+    },
+    addPath: (state, action: PayloadAction<CanvasPath>) => {
+      state.paths = [...state.paths, action.payload]
+    },
+    clearPaths: (state) => {
+      state.paths = []
+    },
+    setPath: (state, action: PayloadAction<{ id: number, path: CanvasPath }>) => {
+      state.paths = state.paths.map((path) => {
+        if (path.id === action.payload.id) {
+          return action.payload.path
+        }
+        return path
+      })
+    },
+    updatePathPoints: (state, action: PayloadAction<{ id: number, pathPoints: number[][] }>) => {
+      const index = state.paths.findIndex((path) => path.id === action.payload.id)
+      if (index !== -1) {
+        state.paths[index].points = action.payload.pathPoints
       }
     },
-    removeVegaEmbeds: (state, action: PayloadAction<number>) => {
-      state.vegaEmbeds = {
-        vegaSpecs: state.vegaEmbeds.vegaSpecs.filter((_, index) => index !== action.payload),
-        positions: state.vegaEmbeds.positions.filter((_, index) => index !== action.payload),
+    removePath: (state, action: PayloadAction<number>) => {
+      state.paths = state.paths.filter((path) => path.id !== action.payload)
+    },
+    addVegaPath: (state, action: PayloadAction<{ svg: string }>) => {
+      const newID = Date.now();
+      const newPath: CanvasPath = {
+        id: newID,
+        points: [[450, 230]],
+        style: state.currentStyle,
+        pressure: 1,
+        type: 'vega',
+        vegaSVG: action.payload.svg,
       }
+      state.paths = [newPath, ...state.paths]
     },
-    addVegaEmbed: (state, action: PayloadAction<{ spec: TopLevelSpec; position: [number, number] }>) => {
-      state.vegaEmbeds.vegaSpecs.push(action.payload.spec)
-      state.vegaEmbeds.positions.push(action.payload.position)
-      console.log(action.payload.spec, action.payload.position)
-      console.log(state.vegaEmbeds.vegaSpecs, state.vegaEmbeds.positions)
+    setFocusedPathID: (state, action: PayloadAction<number | null>) => {
+      state.focusedPathID = action.payload
     },
+    setDesignIdea: (state, action: PayloadAction<string | null>) => {
+      state.designIdea = action.payload
+    }
   },
 })
 
-export const { setTool, addVegaEmbeds, removeVegaEmbeds, addVegaEmbed } = canvasSlice.actions
+export const {
+  setTool,
+  addVegaPath,
+  addPath,
+  clearPaths,
+  setPath,
+  removePath,
+  setCurrentStyle,
+  updatePathPoints,
+  setFocusedPathID,
+  setDesignIdea
+} = canvasSlice.actions
 
 export const selectTool = (state: RootState) => state.canvas.tool
-export const selectVegaEmbeds = (state: RootState) => state.canvas.vegaEmbeds
-
+export const selectPaths = (state: RootState) => state.canvas.paths
+export const selectCurrentStyle = (state: RootState) => state.canvas.currentStyle
+export const selectFocusedPathID = (state: RootState) => state.canvas.focusedPathID
+export const selectDesignIdea = (state: RootState) => state.canvas.designIdea
 export default canvasSlice.reducer
 
