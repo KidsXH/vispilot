@@ -96,6 +96,20 @@ const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSamp
         })
       })
 
+
+
+      // If there are no keys in inference.design, treat as implicit
+      if (Object.keys(inference.design).length === 0) {
+        // debugger;
+        pattern.design = true;
+        // Add a placeholder entry to matchedSpecs
+        matchedSpecs.design.push({
+          id: sample.id,
+          spec: 'default',
+          isImplicit: true
+        });
+      }
+
       Object.keys(inference.design).forEach(_spec => {
         const spec = _spec.replace(/\//g, '.');
         const value = inference.design[_spec];
@@ -150,7 +164,7 @@ const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSamp
       const implicitSpecs = data.filter(d => d.isImplicit).map(d => d.id)
       const implicitCount = [...new Set(implicitSpecs)].length;
       const explicitCount = utteranceSamples.length - implicitCount;
-
+      
       console.log('Stack Data', spec, explicitCount, implicitCount)
 
       return {
