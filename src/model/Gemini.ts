@@ -68,6 +68,7 @@ export const parseResponseTextAsJson = (text: string) => {
   try {
     const json = JSON.parse(jsonText);
     return {
+      think: json.think,
       chat: json.chat,
       vega: json.vega,
     }
