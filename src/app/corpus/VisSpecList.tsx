@@ -36,7 +36,6 @@ export const defaultCheckList = {
     '(^encoding\\.[^\\.]+\\.timeUnit$)',
     '(^encoding\\.[^\\.]+\\.legend.title$)',
     '(^encoding\\.[^\\.]+\\.scale.rangeStep$)',
-    '(^default$)',
   ]
 }
 
