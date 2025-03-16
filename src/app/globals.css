@@ -19,6 +19,8 @@
     --color-mark: #FF7F52;
     --color-encoding: #008080;
     --color-design: #9370DB;
+    --color-chat: oklch(0.442 0.017 285.786);
+    --color-canvas: oklch(0.809 0.105 251.813);
 }
 
 .material-symbols-outlined {
@@ -89,6 +91,17 @@ body {
 .canvas-vega-embed summary {
     @apply mt-2 mr-2
 }
+
+.vega-container .vega-embed canvas {
+    height: 104px;
+    width: 184px;
+
+    @apply cursor-pointer;
+}
+.vega-container {
+    @apply cursor-pointer
+}
+
 
 .mini-vega .vega-embed canvas {
     height: 72px;
