@@ -4,15 +4,38 @@ import VLPreview from '@/components/DesignPanel/VLPreview'
 import {useAppDispatch, useAppSelector} from '@/store'
 import Configuration from '@/components/DesignPanel/Configuration'
 import {
-  addVegaPath,
+  addPath,
+  selectCurrentStyle,
   selectDesignIdea,
-  selectFocusedPathID,
-  selectPaths,
 } from "@/store/features/CanvasSlice";
+import {CanvasPath, Message} from "@/types";
+import {addHistory} from "@/store/features/HistorySlice";
+import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
+import {sendRequest} from "@/model";
 
 const DesignPanel = () => {
   const dispatch = useAppDispatch()
+  const currentStyle = useAppSelector(selectCurrentStyle)
   const designIdea = useAppSelector(selectDesignIdea)
+
+  const messages = useAppSelector(selectMessages)
+
+  const reGenerateDesign = () => {
+    const message: Message = {
+      id: messages.length + 1,
+      role: 'user',
+      sender: 'system',
+      content: [
+        {type: 'text', text: 'Please generate a new idea.'},
+      ]
+    }
+    dispatch(addMessage(message))
+    dispatch(setState('waiting'))
+    sendRequest([...messages, message]).then(response => {
+      dispatch(addMessage(response))
+      dispatch(setState('idle'))
+    })
+  }
 
   return (
     <div className="flex flex-col p-2">
@@ -26,7 +49,9 @@ const DesignPanel = () => {
         <div className="flex justify-end items-center gap-1 ml-auto">
           <button
             className="flex items-center gap-1 justify-center select-none cursor-pointer px-1 rounded hover:bg-neutral-100"
-            title="Generate New Design">
+            title="Generate New Design"
+            onClick={reGenerateDesign}
+          >
             <span className="material-symbols-outlined text-neutral-600 m-auto">refresh</span>
           </button>
           <button
@@ -34,10 +59,19 @@ const DesignPanel = () => {
             title="Add to Canvas"
             onClick={() => {
               if (designIdea) {
-                dispatch(addVegaPath({svg: designIdea}))
+                const newPath: CanvasPath = {
+                  id: Date.now(),
+                  points: [[450, 230]],
+                  style: currentStyle,
+                  pressure: 1,
+                  type: 'vega',
+                  vegaSVG: designIdea,
+                }
+                dispatch(addPath(newPath))
+                dispatch(addHistory({type: 'canvas', content: newPath}))
               }
             }}>
-            <span className="material-symbols-outlined text-neutral-600 m-auto">add_to_queue</span>
+            <span className="material-symbols-outlined text-neutral-600 m-auto">add_chart</span>
           </button>
         </div>
       </div>
