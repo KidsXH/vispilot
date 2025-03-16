@@ -17,6 +17,7 @@ import {
 import {CanvasPath, Message} from '@/types'
 import {PointerEvent, useCallback, useEffect, useRef, useState} from 'react'
 
+
 export default function SketchPad() {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
@@ -46,7 +47,7 @@ export default function SketchPad() {
       if (ctm) {
         const inversedCTM = ctm.inverse()
         const relativePoint = point.matrixTransform(inversedCTM)
-        return [relativePoint.x, relativePoint.y]
+        return [Math.floor(relativePoint.x), Math.floor(relativePoint.y)]
       }
     }
     return [0, 0]
@@ -115,12 +116,16 @@ export default function SketchPad() {
       const [x, y] = getCoordinates(event)
 
       if (tool === 'select' && isMoving && focusedPathID) {
-        const dx = x - coordinates.x
-        const dy = y - coordinates.y
-        const path = paths.find(path => path.id === focusedPathID)
-        if (!path) return
-        const newPoints = path.points.map(([px, py]) => [px + dx, py + dy])
-        dispatch(updatePathPoints({id: focusedPathID, pathPoints: newPoints}))
+        console.log('Move')
+        const dx = Math.floor(x - coordinates.x)
+        const dy = Math.floor(y - coordinates.y)
+        if (dx !== 0 || dy !== 0) {
+          const path = paths.find(path => path.id === focusedPathID)
+          if (path) {
+            const newPoints = path.points.map(([px, py]) => [px + dx, py + dy])
+            dispatch(updatePathPoints({id: focusedPathID, pathPoints: newPoints}))
+          }
+        }
       }
 
       if (isDrawing && currentPath) {
@@ -158,7 +163,6 @@ export default function SketchPad() {
   const handlePointerUp = useCallback(() => {
     if (currentPath) {
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
-        console.log('add', currentPath)
         dispatch(addPath(currentPath))
         dispatch(
           addHistory({
@@ -517,10 +521,10 @@ export default function SketchPad() {
                   : path.type === 'note' ? <>
                     <g onClick={e => e.stopPropagation()}>
                       {tool === 'note' ? (
-                        <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="36">
+                        <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="180" height="36">
                           <input
                             contentEditable={true}
-                            className={`w-full px-2 py-1 rounded outline-none border-1 text-center`}
+                            className={`w-full px-2 py-1 rounded outline-none border-1`}
                             style={{color: path.style.fill, fontWeight: 400, opacity: path.style.opacity}}
                             value={
                               path.id === editingPathId && isEditingText ? textInput : path.text
@@ -543,12 +547,12 @@ export default function SketchPad() {
                       ) : (
                         <text
                           key={path.id}
-                          x={path.points[0][0] + 75}
+                          x={path.points[0][0] + 9}
                           y={path.points[0][1] + 23}
                           fill={path.style.fill}
                           opacity={path.style.opacity}
                           fontWeight={400}
-                          textAnchor={'middle'}
+                          textAnchor={'start'}
                           style={{
                             cursor: 'pointer',
                             background: focusedPathID === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',

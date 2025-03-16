@@ -2,7 +2,7 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
 import {Message} from "@/types";
 
-export type ChatModels = 'Deepseek-VL2' | 'Qwen2-VL-7B' | 'Gemini 2.0 Flash' | 'GPT-4o' |'Claude 3.7';
+export type ChatModels = 'Deepseek-VL2' | 'Qwen2-VL-7B' | 'Gemini 2.0 Pro' | 'GPT-4o' |'Claude 3.7';
 export type ChatState = 'idle' | 'waiting';
 
 interface ChatSlice {
@@ -13,7 +13,7 @@ interface ChatSlice {
 
 const initialState: ChatSlice = {
   state: 'idle',
-  model: 'Gemini 2.0 Flash',
+  model: 'Gemini 2.0 Pro',
   messages: [],
 }
 

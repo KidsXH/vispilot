@@ -54,9 +54,11 @@ const VegaLite = ({vegaString, width, height, renderCallback}: {
           )
         }
       ).catch(e => {
+        if (renderCallback !== undefined) renderCallback(null)
         console.error(e)
-        renderCallback(null)
       })
+    } else {
+      if (renderCallback !== undefined) renderCallback(null)
     }
   })
   return <div ref={visRef}/>

@@ -9,8 +9,6 @@ import { useState } from 'react'
 import HistoryPanel from '../components/HistoryPanel'
 
 export default function Home() {
-  const [isShape, setIsShape] = useState(false)
-  const [selectedPath, setSelectedPath] = useState<CanvasPath | null>(null)
 
   return (
     <div className="flex flex-col w-[1920px] h-[1080px] mx-auto mt-20 border border-black bg-white font-sans">
@@ -26,20 +24,14 @@ export default function Home() {
         </div>
         <div className="flex flex-row-reverse grow border border-black min-w-0">
           <div className="min-w-[340px] w-[340px] border-l-2 border-black">
-            <DesignPanel
-              isShape={isShape}
-              selectedPath={selectedPath}
-            />
+            <DesignPanel />
           </div>
           <div className="flex flex-col-reverse grow min-w-0">
             <div className="h-72 border-t border-black">
               <HistoryPanel />
             </div>
             <div className="grow border-b border-black">
-              <Canvas
-                setIsShape={setIsShape}
-                setSelectedPath={setSelectedPath}
-              />
+              <Canvas />
             </div>
           </div>
         </div>

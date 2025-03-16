@@ -2,99 +2,24 @@
 import VLJsonView from '@/components/DesignPanel/VLJsonView'
 import VLPreview from '@/components/DesignPanel/VLPreview'
 import {useAppDispatch, useAppSelector} from '@/store'
-import {selectVegaString} from '@/store/features/DataSlice'
-import {CanvasPath} from '@/types'
-import {ChangeEvent, useEffect, useState} from 'react'
 import Configuration from '@/components/DesignPanel/Configuration'
-import {addVegaPath, selectCurrentStyle, selectDesignIdea, setCurrentStyle} from "@/store/features/CanvasSlice";
+import {
+  addVegaPath,
+  selectDesignIdea,
+  selectFocusedPathID,
+  selectPaths,
+} from "@/store/features/CanvasSlice";
 
-interface DesignPanelProps {
-  isShape: boolean
-  selectedPath: CanvasPath | null
-}
-
-const DesignPanel = ({
-                       isShape,
-                       selectedPath
-                     }: DesignPanelProps) => {
-  const [width, setWidth] = useState<number>(100)
-  const [height, setHeight] = useState<number>(100)
-  const [radius, setRadius] = useState<number>(100)
-
+const DesignPanel = () => {
   const dispatch = useAppDispatch()
-  const vegaString = useAppSelector(selectVegaString)
   const designIdea = useAppSelector(selectDesignIdea)
-
-  useEffect(() => {
-    if (selectedPath) {
-      const points = selectedPath.points
-      if (selectedPath.shapeType === 'rectangle') {
-        const [startX, startY] = points[0]
-        const [endX, endY] = points[1]
-        const computedWidth = Math.abs(endX - startX)
-        const computedHeight = Math.abs(endY - startY)
-        setWidth(Math.floor(computedWidth))
-        setHeight(Math.floor(computedHeight))
-      } else if (selectedPath.shapeType === 'circle') {
-        const [startX, startY] = points[0]
-        const [endX, endY] = points[1]
-        const computedRadius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)
-        setRadius(Math.floor(computedRadius))
-      }
-    }
-  }, [selectedPath])
-
-
-  const handleWidthChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newWidth = parseInt(event.target.value, 10)
-    setWidth(newWidth)
-    if (selectedPath && selectedPath.shapeType === 'rectangle') {
-      const points = selectedPath.points
-      const [startX, startY] = points[0]
-      const [endX, endY] = points[1]
-      points[1] = [startX + newWidth, endY]
-      selectedPath.points = points
-    }
-  }
-
-  const handleHeightChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newHeight = parseInt(event.target.value, 10)
-    setHeight(newHeight)
-    if (selectedPath && selectedPath.shapeType === 'rectangle') {
-      const points = selectedPath.points
-      const [startX, startY] = points[0]
-      const [endX, endY] = points[1]
-      points[1] = [endX, startY + newHeight]
-      selectedPath.points = points
-    }
-  }
-
-  const handleRadiusChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newRadius = parseInt(event.target.value, 10)
-    setRadius(newRadius)
-    if (selectedPath && selectedPath.shapeType === 'circle') {
-      const points = selectedPath.points
-      const [startX, startY] = points[0]
-      points[1] = [startX + newRadius, startY]
-      selectedPath.points = points
-    }
-  }
 
   return (
     <div className="flex flex-col p-2">
       <div className="font-bold text-xl border-b-2 border-neutral-200 h-8">Design Panel</div>
       <div className="font-bold text-base mt-1">Configuration</div>
       <div className="h-60 border-b border-neutral-200 font-bold text-base">
-        <Configuration
-          width={width}
-          height={height}
-          radius={radius}
-          handleWidthChange={handleWidthChange}
-          handleHeightChange={handleHeightChange}
-          handleRadiusChange={handleRadiusChange}
-          isShape={isShape}
-          selectedPath={selectedPath}
-        />
+        <Configuration/>
       </div>
       <div className="flex mt-1">
         <div className="font-bold text-base">Design Ideas</div>
