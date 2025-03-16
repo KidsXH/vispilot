@@ -1,41 +1,39 @@
 import GlowingText from '@/components/Canvas/GlowingText'
 import {useAppDispatch, useAppSelector} from '@/store'
-import {addVegaEmbed, selectTool, selectVegaEmbeds, setTool, ShapeType} from '@/store/features/CanvasSlice'
+import {
+  selectTool,
+  selectPaths,
+  setTool,
+  ShapeType,
+  selectCurrentStyle,
+  setPath,
+  addPath,
+  removePath,
+  clearPaths,
+  setCurrentStyle,
+  updatePathPoints,
+  selectFocusedPathID, setFocusedPathID
+} from '@/store/features/CanvasSlice'
 import {CanvasPath, Message} from '@/types'
-import {motion} from 'framer-motion'
 import {PointerEvent, useCallback, useEffect, useRef, useState} from 'react'
-import {TopLevelSpec} from 'vega-lite'
 
-interface SketchPadProps {
-  color: string
-  thickness: number
-  opacity: number
-  vegaString?: string
-  setIsShape: (isShape: boolean) => void
-  setSelectedPath: (path: CanvasPath | null) => void
-}
-
-export default function SketchPad({
-                                    color,
-                                    thickness,
-                                    opacity,
-                                    vegaString,
-                                    setIsShape,
-                                    setSelectedPath
-                                  }: SketchPadProps) {
+export default function SketchPad() {
   const dispatch = useAppDispatch()
   const tool = useAppSelector(selectTool)
+  const focusedPathID = useAppSelector(selectFocusedPathID);
+  const paths = useAppSelector(selectPaths)
+  const currentStyle = useAppSelector(selectCurrentStyle)
 
-  const [paths, setPaths] = useState<CanvasPath[]>([])
   const [currentPath, setCurrentPath] = useState<CanvasPath | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
   const svgRef = useRef<SVGSVGElement | null>(null)
 
-  const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle' | null>(null)
-  const [selectedPathId, setSelectedPathId] = useState<number | null>(null)
+  const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle'>('rectangle')
   const [editingPathId, setEditingPathId] = useState<number | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
   const [coordinates, setCoordinates] = useState<{ x: number; y: number }>({x: 0, y: 0})
+  const [textInput, setTextInput] = useState('')
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
@@ -55,180 +53,113 @@ export default function SketchPad({
   }
 
   const handlePointerDown = useCallback((event: PointerEvent) => {
-      if (tool != 'select') {
-        setSelectedPathId(null)
-      }
+      if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
+        const [x, y] = getCoordinates(event)
+        setCoordinates({x, y})
 
-      const [x, y] = getCoordinates(event)
-      setCoordinates({x, y})
-
-      setIsShape(false)
-      setSelectedPath(null)
-
-      if (isEditingText) {
-        setIsEditingText(false)
-        return
-      }
-
-      if (tool === 'pencil') {
-        setIsDrawing(true)
-        setCurrentPath({
-          id: Date.now(),
-          points: [[x, y]],
-          color: 'black',
-          width: 2,
-          pressure: event.pressure || 1,
-          opacity: 1,
-          type: 'pencil' as const
-        })
-      } else if (tool === 'axis') {
-        setIsDrawing(true)
-        setCurrentPath({
-          id: Date.now(),
-          points: [[x, y]],
-          color: 'black',
-          width: 2,
-          pressure: event.pressure || 1,
-          opacity: 1,
-          type: 'axis' as const
-        })
-      } else if (tool === 'shape') {
-        setIsDrawing(true)
-        setCurrentPath({
-          id: Date.now(),
-          points: [[x, y]],
-          color: 'black',
-          width: 2,
-          pressure: event.pressure || 1,
-          opacity: 1,
-          type: 'shape' as const,
-          shapeType: selectedShapeType
-        })
-      } else if (tool === 'note') {
-        setIsEditingText(true)
-        setIsDrawing(true)
-        setCurrentPath({
-          id: Date.now(),
-          points: [[x, y]],
-          color: 'black',
-          width: 2,
-          pressure: event.pressure || 1,
-          opacity: 1,
-          type: 'note' as const,
-          text: ''
-        })
-      } else if (tool === 'select') {
-        setIsDrawing(true)
-        const path = paths.find(path => {
-          return isPointInPath(path, [x, y])
-        })
-        if (path) {
-          if (path.type === 'shape') {
-            setIsShape(true)
-            setSelectedPath(path)
-          }
-          setSelectedPathId(path.id)
-          setCurrentPath(path)
-        } else {
-          setSelectedPathId(null)
+        if (isEditingText) {
+          setIsEditingText(false)
+        } else if (tool === 'pencil') {
+          setIsDrawing(true)
+          setCurrentPath({
+            id: Date.now(),
+            points: [[x, y]],
+            style: {...currentStyle},
+            pressure: event.pressure || 1,
+            type: 'pencil' as const
+          })
+        } else if (tool === 'axis') {
+          setIsDrawing(true)
+          setCurrentPath({
+            id: Date.now(),
+            points: [[x, y]],
+            style: {...currentStyle},
+            pressure: event.pressure || 1,
+            type: 'axis' as const
+          })
+        } else if (tool === 'shape') {
+          setIsDrawing(true)
+          setCurrentPath({
+            id: Date.now(),
+            points: [[x, y]],
+            style: {...currentStyle},
+            pressure: event.pressure || 1,
+            type: 'shape' as const,
+            shapeType: selectedShapeType
+          })
+        } else if (tool === 'note') {
+          setIsEditingText(true)
+          setIsDrawing(true)
+          setCurrentPath({
+            id: Date.now(),
+            points: [[x, y]],
+            style: {...currentStyle},
+            pressure: event.pressure || 1,
+            type: 'note' as const,
+            text: ''
+          })
         }
       }
     },
-    [tool, selectedShapeType, isEditingText, paths]
+    [tool, isEditingText, currentStyle, selectedShapeType, paths]
   )
 
   useEffect(() => {
-    if (color && selectedPathId) {
-      const path = paths.find(path => path.id === selectedPathId)
-      if (path) {
-        path.color = color
-        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
-      }
+    if (focusedPathID) {
+      const style = paths.find(path => path.id === focusedPathID)?.style
+      if (style) dispatch(setCurrentStyle(style))
     }
-  }, [color])
+  }, [dispatch, focusedPathID]);
 
-  useEffect(() => {
-    if (thickness && selectedPathId) {
-      const path = paths.find(path => path.id === selectedPathId)
-      if (path) {
-        path.width = thickness
-        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
-      }
-    }
-  }, [thickness])
+  const handlePointerMove = useCallback((event: PointerEvent) => {
+      const [x, y] = getCoordinates(event)
 
-  useEffect(() => {
-    if (opacity && selectedPathId) {
-      const path = paths.find(path => path.id === selectedPathId)
-      if (path) {
-        path.opacity = opacity
-        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? path : p)))
-      }
-    }
-  }, [opacity])
-
-  useEffect(() => {
-    if (vegaString) {
-      try {
-        console.log('vegaString:', vegaString)
-        const spec = JSON.parse(vegaString)
-        dispatch(addVegaEmbed({spec, position: [100, 100]}))
-      } catch (error) {
-        console.error('Error parsing vegaString:', error)
-      }
-    }
-  }, [vegaString])
-
-  const handlePointerMove = (event: PointerEvent) => {
-    if (!isDrawing || !currentPath) return
-
-    const [x, y] = getCoordinates(event)
-
-    if (tool === 'pencil') {
-      const newPath = {
-        ...currentPath,
-        points: [...currentPath.points, [x, y]],
-        pressure: event.pressure || 1,
-        type: 'pencil' as const
-      }
-      setCurrentPath(newPath)
-    } else if (tool === 'axis') {
-      const newPath = {
-        ...currentPath,
-        points: [currentPath.points[0], [x, y]],
-        pressure: event.pressure || 1,
-        type: 'axis' as const
-      }
-      setCurrentPath(newPath)
-    } else if (tool === 'shape') {
-      const newPath = {
-        ...currentPath,
-        points: [currentPath.points[0], [x, y]],
-        pressure: event.pressure || 1,
-        type: 'shape' as const,
-        shapeType: selectedShapeType
-      }
-      setCurrentPath(newPath)
-    } else if (tool === 'select') {
-      const path = paths.find(path => path.id === selectedPathId)
-      if (path) {
+      if (tool === 'select' && isMoving && focusedPathID) {
         const dx = x - coordinates.x
         const dy = y - coordinates.y
+        const path = paths.find(path => path.id === focusedPathID)
+        if (!path) return
         const newPoints = path.points.map(([px, py]) => [px + dx, py + dy])
-        const newPath = {
-          ...path,
-          points: newPoints
-        }
-        setPaths(prevPaths => prevPaths.map(p => (p.id === selectedPathId ? newPath : p)))
+        dispatch(updatePathPoints({id: focusedPathID, pathPoints: newPoints}))
       }
-    }
-    setCoordinates({x, y})
-  }
 
-  const handlePointerUp = () => {
+      if (isDrawing && currentPath) {
+        if (tool === 'pencil') {
+          const newPath = {
+            ...currentPath,
+            points: [...currentPath.points, [x, y]],
+            pressure: event.pressure || 1,
+            type: 'pencil' as const
+          }
+          setCurrentPath(newPath)
+        } else if (tool === 'axis') {
+          const newPath = {
+            ...currentPath,
+            points: [currentPath.points[0], [x, y]],
+            pressure: 1,
+            type: 'axis' as const
+          }
+          setCurrentPath(newPath)
+        } else if (tool === 'shape') {
+          const newPath = {
+            ...currentPath,
+            points: [currentPath.points[0], [x, y]],
+            pressure: 1,
+            type: 'shape' as const,
+            shapeType: selectedShapeType
+          }
+          setCurrentPath(newPath)
+        }
+      }
+
+      setCoordinates({x, y})
+    }
+    , [dispatch, coordinates.x, coordinates.y, currentPath, focusedPathID, isDrawing, isMoving, paths, selectedShapeType, tool])
+  const handlePointerUp = useCallback(() => {
     if (currentPath) {
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
-        setPaths([...paths, currentPath])
+        console.log('add', currentPath)
+        dispatch(addPath(currentPath))
         dispatch(
           addHistory({
             type: 'canvas',
@@ -239,7 +170,45 @@ export default function SketchPad({
     }
     setIsDrawing(false)
     setCurrentPath(null)
+  }, [dispatch, currentPath, tool])
+
+  useEffect(() => {
+    if (focusedPathID) {
+      const path = paths.find(path => path.id === focusedPathID)
+      if (path) {
+        const newPath = {...path, style: {...currentStyle}}
+        dispatch(setPath({id: focusedPathID, path: newPath}))
+      }
+    }
+  }, [dispatch, currentStyle]);
+
+  // update default style when tool changes
+  useEffect(() => {
+    if (tool !== 'select') {
+      setIsMoving(false)
+      dispatch(setFocusedPathID(null))
+    }
+    if (tool === 'pencil' || tool === 'axis') {
+      const newStyle = {...currentStyle, fill: 'none', stroke: '#000000'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+    if (tool === 'note') {
+      const newStyle = {...currentStyle, fill: '#000000', stroke: 'none'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+    if (tool === 'shape') {
+      const newStyle = {...currentStyle, fill: '#ffffff', stroke: '#000000'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+  }, [dispatch, tool]);
+
+  const handleElementPointerDown = (pathID: number) => {
+    if (tool === 'select') {
+      setIsMoving(true)
+      dispatch(setFocusedPathID(pathID));
+    }
   }
+
 
   // 渲染路径
   const renderPath = (pathData: CanvasPath) => {
@@ -291,20 +260,21 @@ export default function SketchPad({
     }
   }
 
-  const handleTextChange = (inputText: string, currentPathId: number) => {
+  const handleTextChange = (inputText: string, currentPathID: number) => {
     const text = inputText;
     if (text.trim() === '') {
-      const updatedPaths = paths.filter(path => path.id !== currentPathId)
-      setPaths(updatedPaths)
+      dispatch(removePath(currentPathID))
     } else {
-      const updatedPaths = paths.map(path => (path.id === currentPathId ? {...path, text} : path))
-      setPaths(updatedPaths)
+      const path = paths.find(path => path.id === currentPathID)
+      if (path) {
+        const newPath = {
+          ...path,
+          text: text
+        }
+        dispatch(setPath({id: currentPathID, path: newPath}))
+      }
     }
   }
-
-  useEffect(() => {
-    console.log('paths:', paths)
-  }, [paths]);
 
   const isPointInPath = (path: CanvasPath, point: [number, number]): boolean => {
     if (path.type === 'note') {
@@ -327,13 +297,15 @@ export default function SketchPad({
       return false
     } else if (path.type === 'shape') {
       const [x, y] = point
-      const [startX, startY] = path.points[0]
-      const [endX, endY] = path.points[1]
+      const startX = Math.min(path.points[0][0], path.points[1][0])
+      const startY = Math.min(path.points[0][1], path.points[1][1])
+      const endX = Math.max(path.points[0][0], path.points[1][0])
+      const endY = Math.max(path.points[0][1], path.points[1][1])
       if (path.shapeType === 'circle') {
         const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)
         return Math.abs((x - startX) ** 2 + (y - startY) ** 2 - radius ** 2) < 1000
       } else if (path.shapeType === 'rectangle') {
-        return distanceToRectangle(x, y, startX, startY, endX, endY)
+        return checkPointInRect([x, y], [startX, startY, endX, endY])
       }
       return false
     } else if (path.type === 'axis') {
@@ -345,15 +317,16 @@ export default function SketchPad({
     }
     return false
   }
-
   // 撤销功能
   const handleUndo = () => {
-    setPaths(prev => prev.slice(0, -1))
+    if (paths.length === 0) return
+    const lastID = paths[paths.length - 1].id
+    dispatch(removePath(lastID))
   }
 
   // 清空画布
   const handleClear = () => {
-    setPaths([])
+    dispatch(clearPaths())
   }
 
   const messages = useAppSelector(selectMessages)
@@ -468,8 +441,6 @@ export default function SketchPad({
     ]
   ]
 
-  const [textInput, setTextInput] = useState('')
-
   return (
     <div className="relative">
       {/*Top buttons*/}
@@ -518,74 +489,81 @@ export default function SketchPad({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
         style={{touchAction: 'none'}}>
+
         {/* 已完成的路径 */}
         {paths.map((path: CanvasPath) => (
-          <motion.path
-            key={path.id}
-            d={renderPath(path)}
-            fill="none"
-            stroke={path.color}
-            strokeWidth={selectedPathId === path.id ? path.width * path.pressure * 2 : path.width * path.pressure}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={path.opacity}
-            initial={{pathLength: 0}}
-            animate={{pathLength: 1}}
-            transition={{duration: 0.5}}
-            style={{cursor: 'pointer'}}
-          />
-        ))}
-
-        {/* 文本路径 */}
-        {paths.map(path => (
-          <g key={path.id} onClick={e => e.stopPropagation()}>
-            {path.type === 'note' && tool === 'note' ? (
-              <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="36">
-                <input
-                  contentEditable={true}
-                  className={`w-full px-2 py-1 rounded outline-none border-1 text-center`}
-                  style={{color: path.color, fontWeight: path.width * 100, opacity: path.opacity}}
-                  value={
-                    path.id === editingPathId && isEditingText ? textInput : path.text
-                  }
-                  onChange={e => setTextInput(e.target.value)}
-                  onFocus={e => {
-                    setIsEditingText(true)
-                    setTextInput(path.text || '')
-                    setEditingPathId(path.id)
-                  }}
-                  onBlur={e => {
-                    setIsEditingText(false)
-                    handleTextChange(textInput, path.id)
-                    setTextInput('');
-                    setEditingPathId(null)
-                  }}
-                  onPointerDown={
-                    e => e.stopPropagation()
-                  }
-                />
-              </foreignObject>
-            ) : (
-              <text
-                key={path.id}
-                x={path.points[0][0] + 75}
-                y={path.points[0][1] + 23}
-                fill={path.color}
-                opacity={path.opacity}
-                fontWeight={path.width * 100}
-                textAnchor={'middle'}
-                style={{
-                  cursor: 'pointer',
-                  background: selectedPathId === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
-                  transition: 'background 0.3s ease'
-                }}
-                onClick={e => {
-                  e.stopPropagation()
-                  setSelectedPathId(path.id)
-                }}>
-                {path.text}
-              </text>
-            )}
+          <g key={path.id}
+             fill={path.style.fill}
+             stroke={path.style.stroke}
+             strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * path.pressure * 2 : path.style.strokeWidth * path.pressure}
+             strokeLinecap="round"
+             strokeLinejoin="round"
+             opacity={path.style.opacity}
+             style={{cursor: tool === 'select' ? 'pointer' : 'default'}}
+             onPointerDown={() => handleElementPointerDown(path.id)}
+             onPointerUp={() => setIsMoving(false)}
+          >
+            {path.type === 'pencil' || path.type === 'axis' || path.type === 'shape' ?
+              <path d={renderPath(path)}/> : (
+                path.type === 'vega' ?
+                  <g transform={`translate(${path.points[0][0]}, ${path.points[0][1]})`}
+                     fill="none"
+                     stroke="none"
+                     strokeWidth="1"
+                     opacity="1"
+                  >
+                    <SVGRenderer svgString={path.vegaSVG || ''}/>
+                  </g>
+                  : path.type === 'note' ? <>
+                    <g onClick={e => e.stopPropagation()}>
+                      {tool === 'note' ? (
+                        <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="150" height="36">
+                          <input
+                            contentEditable={true}
+                            className={`w-full px-2 py-1 rounded outline-none border-1 text-center`}
+                            style={{color: path.style.fill, fontWeight: 400, opacity: path.style.opacity}}
+                            value={
+                              path.id === editingPathId && isEditingText ? textInput : path.text
+                            }
+                            onChange={e => setTextInput(e.target.value)}
+                            onFocus={() => {
+                              setIsEditingText(true)
+                              setTextInput(path.text || '')
+                              setEditingPathId(path.id)
+                            }}
+                            onBlur={() => {
+                              setIsEditingText(false)
+                              handleTextChange(textInput, path.id)
+                              setTextInput('');
+                              setEditingPathId(null)
+                            }}
+                            onPointerDown={e => e.stopPropagation()}
+                          />
+                        </foreignObject>
+                      ) : (
+                        <text
+                          key={path.id}
+                          x={path.points[0][0] + 75}
+                          y={path.points[0][1] + 23}
+                          fill={path.style.fill}
+                          opacity={path.style.opacity}
+                          fontWeight={400}
+                          textAnchor={'middle'}
+                          style={{
+                            cursor: 'pointer',
+                            background: focusedPathID === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
+                            transition: 'background 0.3s ease'
+                          }}
+                          onClick={e => {
+                            e.stopPropagation()
+                            dispatch(setFocusedPathID(path.id))
+                          }}>
+                          {path.text}
+                        </text>
+                      )}
+                    </g>
+                  </> : null
+              )}
           </g>
         ))}
 
@@ -593,23 +571,12 @@ export default function SketchPad({
         {currentPath && (
           <path
             d={renderPath(currentPath)}
-            fill="none"
-            stroke={currentPath.color}
-            opacity={currentPath.opacity}
-            strokeWidth={
-              selectedPathId === currentPath.id
-                ? currentPath.width * currentPath.pressure * 2
-                : currentPath.width * currentPath.pressure
-            }
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{cursor: 'default'}}
+            style={{...currentPath.style, cursor: 'default'}}
           />
         )}
       </svg>
-
-      {/*Embed Vega Views*/}
-      {/*<EmbedVegaViews />*/}
     </div>
   )
 }
@@ -621,66 +588,53 @@ interface ToolButtonInfo {
   handleClick: () => void
 }
 
-const ToolBox = ({
-                   toolList,
-                   shapeToolList,
-                   selectedShapeType,
-                   setSelectedShapeType
-                 }: {
+const ToolBox = ({toolList, shapeToolList, selectedShapeType, setSelectedShapeType}: {
   toolList: ToolButtonInfo[][]
   shapeToolList: ToolButtonInfo[]
-  selectedShapeType: ShapeType | null
-  setSelectedShapeType: (shapeType: ShapeType | null) => void
+  selectedShapeType: ShapeType
+  setSelectedShapeType: (shapeType: ShapeType) => void
 }) => {
   const tool = useAppSelector(selectTool)
-  return (
-    <>
-      <div className="flex flex-col items-center justify-center space-y-2">
-        {/* 形状选择器 */}
-        {tool === 'shape' && (
-          <div
-            className="flex items-center justify-center px-2 h-12 w-[90px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
-            <div className="flex items-center space-x-1">
-              {shapeToolList.map((toolInfo, i) => (
-                <button key={`shape-tool-${i}`} onClick={() => setSelectedShapeType(toolInfo.name as ShapeType)}>
-                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={selectedShapeType === toolInfo.name}/>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {/* 主工具栏 */}
+  return <>
+    <div className="flex flex-col items-center justify-center space-y-2">
+      {/* 形状选择器 */}
+      {tool === 'shape' && (
         <div
-          className="flex items-center justify-center px-2 h-12 w-[345px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
-          {toolList.map((toolGroup, index) => (
-            <div className="flex items-center space-x-1" key={index}>
-              {index > 0 && <div className="border border-neutral-300 h-6 ml-2.5 mr-2"></div>}
-              {toolGroup.map((toolInfo, i) => (
-                <button key={`tool-${index}-${i}`} onClick={toolInfo.handleClick}>
-                  <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={tool === toolInfo.name}/>
-                </button>
-              ))}
-            </div>
-          ))}
+          className="flex items-center justify-center px-2 h-12 w-[90px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
+          <div className="flex items-center space-x-1">
+            {shapeToolList.map((toolInfo, i) => (
+              <button key={`shape-tool-${i}`} onClick={() => setSelectedShapeType(toolInfo.name as ShapeType)}>
+                <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={selectedShapeType === toolInfo.name}/>
+              </button>
+            ))}
+          </div>
         </div>
+      )}
+      {/* 主工具栏 */}
+      <div
+        className="flex items-center justify-center px-2 h-12 w-[345px] shadow-md border border-neutral-100 rounded bg-white text-neutral-600">
+        {toolList.map((toolGroup, index) => (
+          <div className="flex items-center space-x-1" key={index}>
+            {index > 0 && <div className="border border-neutral-300 h-6 ml-2.5 mr-2"></div>}
+            {toolGroup.map((toolInfo, i) => (
+              <button key={`tool-${index}-${i}`} onClick={toolInfo.handleClick}>
+                <ToolIcon icon={toolInfo.icon} text={toolInfo.title} active={tool === toolInfo.name}/>
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
-    </>
-  )
+    </div>
+  </>
 }
 
-const ToolIcon = ({
-                    className,
-                    icon,
-                    active,
-                    text
-                  }: {
+const ToolIcon = ({className, icon, active, text}: {
   className?: string
   icon: string
   active?: boolean
   text?: string
 }) => {
-  return (
-    <>
+  return <>
       <span
         className={`material-symbols-outlined rounded p-1 select-none cursor-pointer ${
           active ? 'bg-blue-300 text-white' : 'hover:bg-gray-100'
@@ -688,119 +642,125 @@ const ToolIcon = ({
         title={text}>
         {icon}
       </span>
-    </>
-  )
+  </>
 }
 
 import {sendRequest} from '@/model'
 import {addMessage, selectMessages, setState} from '@/store/features/ChatSlice'
 import {addHistory} from '@/store/features/HistorySlice'
-import {compile} from 'vega-lite'
 
-// const VegaLite = ({ spec }: { spec: TopLevelSpec }) => {
-//   const visRef = useRef<HTMLDivElement>(null)
-//
-//   useEffect(() => {
-//     if (visRef.current) {
-//       visRef.current.innerHTML = ''
-//       try {
-//         const vegaSpec = compile(structuredClone(spec)).spec
-//         const runtime = vega.parse(vegaSpec)
-//
-//         runtime.run()
-//
-//         runtime
-//           .toSVG()
-//           .then((svgString: string) => {
-//             const parser = new DOMParser()
-//             const doc = parser.parseFromString(svgString, 'image/svg+xml')
-//             const svg = doc.documentElement
-//             visRef.current?.appendChild(svg)
-//           })
-//           .catch(console.error)
-//       } catch (error) {
-//         console.error('Error rendering Vega-Lite spec:', error)
-//       }
-//     }
-//   }, [spec])
-//
-//   return (
-//     <div className={'canvas-vega-embed flex items-center justify-center hover:shadow-lg p-2 pt-4'} ref={visRef}></div>
-//   )
-// }
-//
-// const EmbedVegaViews = () => {
-//   const vegaEmbeds = useAppSelector(selectVegaEmbeds)
-//   if (vegaEmbeds.vegaSpecs.length === 0) {
-//     return null
-//   }
-//   const selectPosition = vegaEmbeds.positions[vegaEmbeds.positions.length - 1]
-//   const selectSpec = vegaEmbeds.vegaSpecs[vegaEmbeds.vegaSpecs.length - 1]
-//
-//   return (
-//     <div className="absolute top-0 left-0">
-//       <div
-//         className="absolute"
-//         style={{
-//           top: selectPosition[1],
-//           left: selectPosition[0],
-//           zIndex: 0,
-//           width: 800,
-//           height: 400
-//         }}>
-//         <VegaLite spec={selectSpec} />
-//       </div>
-//     </div>
-//   )
-// }
-
-function svgToBase64Png(svgElement: SVGSVGElement, width: number, height: number) {
+const svgToBase64Png = (svgElement: SVGSVGElement, width: number, height: number): Promise<string> => {
   return new Promise((resolve, reject) => {
     try {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')!
+      // Create canvas with specified dimensions
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
 
-      canvas.width = width || svgElement.clientWidth || svgElement.getBoundingClientRect().width
-      canvas.height = height || svgElement.clientHeight || svgElement.getBoundingClientRect().height
+      canvas.width = width || svgElement.clientWidth || svgElement.getBoundingClientRect().width;
+      canvas.height = height || svgElement.clientHeight || svgElement.getBoundingClientRect().height;
 
-      // 克隆 SVG 元素以避免修改原始元素
-      const svgClone = svgElement.cloneNode(true)
+      // Create SVG data URL
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
 
-      // 创建背景矩形
-      const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-      background.setAttribute('width', '100%')
-      background.setAttribute('height', '100%')
-      background.setAttribute('fill', 'white')
+      // Find all images in the SVG
+      const images = Array.from(svgElement.querySelectorAll('image'));
 
-      // 将背景插入到 SVG 的最前面
-      svgClone.insertBefore(background, svgClone.firstChild)
+      if (images.length === 0) {
+        // No images, proceed with regular conversion
+        const DOMURL = window.URL || window.webkitURL || window;
+        const url = DOMURL.createObjectURL(svgBlob);
 
-      const svgString = new XMLSerializer().serializeToString(svgClone)
-      const blob = new Blob([svgString], {type: 'image/svg+xml'})
-      const url = URL.createObjectURL(blob)
+        const img = new Image();
+        img.onload = () => {
+          // Fill canvas with white background
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const img = new Image()
-      img.onload = () => {
-        ctx.fillStyle = 'white' // 设置 canvas 背景色为白色
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          // Draw SVG onto canvas
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        const base64String = canvas.toDataURL('image/png')
-        URL.revokeObjectURL(url)
-        resolve(base64String)
+          // Convert to base64
+          const png = canvas.toDataURL('image/png');
+          DOMURL.revokeObjectURL(url);
+          resolve(png);
+        };
+        img.onerror = reject;
+        img.src = url;
+      } else {
+        // Create a new SVG with embedded images
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', String(canvas.width));
+        svg.setAttribute('height', String(canvas.height));
+
+        // Add white background
+        const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        background.setAttribute('width', '100%');
+        background.setAttribute('height', '100%');
+        background.setAttribute('fill', 'white');
+        svg.appendChild(background);
+
+        // Clone the original SVG content
+        Array.from(svgElement.childNodes).forEach(node => {
+          svg.appendChild(node.cloneNode(true));
+        });
+
+        // Wait for all images to be processed
+        Promise.all(
+          images.map(image => {
+            return new Promise<void>((imageResolve) => {
+              const href = image.getAttribute('href') || image.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+              if (!href) {
+                imageResolve();
+                return;
+              }
+
+              // Load the image
+              const img = new Image();
+              img.onload = () => {
+                // Create canvas for this image
+                const imgCanvas = document.createElement('canvas');
+                imgCanvas.width = img.width;
+                imgCanvas.height = img.height;
+                const imgCtx = imgCanvas.getContext('2d')!;
+                imgCtx.drawImage(img, 0, 0);
+
+                // Update href with embedded data
+                const imgNode = svg.querySelector(`image[href="${href}"]`) ||
+                  svg.querySelector(`image[*|href="${href}"]`);
+                if (imgNode) {
+                  imgNode.setAttribute('href', imgCanvas.toDataURL());
+                }
+                imageResolve();
+              };
+              img.onerror = () => imageResolve(); // Continue even if image fails
+              img.src = href;
+            });
+          })
+        ).then(() => {
+          // Convert final SVG to data URL
+          const finalSvgData = new XMLSerializer().serializeToString(svg);
+          const finalSvgBlob = new Blob([finalSvgData], {type: 'image/svg+xml;charset=utf-8'});
+          const DOMURL = window.URL || window.webkitURL || window;
+          const url = DOMURL.createObjectURL(finalSvgBlob);
+
+          const finalImg = new Image();
+          finalImg.onload = () => {
+            // Draw complete SVG with embedded images to canvas
+            ctx.drawImage(finalImg, 0, 0, canvas.width, canvas.height);
+            const png = canvas.toDataURL('image/png');
+            DOMURL.revokeObjectURL(url);
+            resolve(png);
+          };
+          finalImg.onerror = reject;
+          finalImg.src = url;
+        });
       }
-
-      img.onerror = error => {
-        URL.revokeObjectURL(url)
-        reject(error)
-      }
-
-      img.src = url
     } catch (error) {
-      reject(error)
+      reject(error);
     }
-  })
-}
+  });
+};
 
 function distanceToTopEdge(x: number, y: number, startY: number): number {
   return Math.abs(y - startY)
@@ -870,3 +830,31 @@ function distanceToSegment(px: number, py: number, startX: number, startY: numbe
     return Math.sqrt((px - projectionX) ** 2 + (py - projectionY) ** 2)
   }
 }
+
+const checkPointInRect = (point: [number, number], rect: [number, number, number, number]): boolean => {
+  const [x, y] = point
+  const [startX, startY, endX, endY] = rect
+  return x >= startX && x <= endX && y >= startY && y <= endY
+}
+
+const SVGRenderer = ({svgString}: { svgString: string }) => {
+  const containerRef = useRef<SVGGElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      // Parse the SVG string
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+      const svgElement = svgDoc.documentElement;
+
+      // Clear previous content
+      while (containerRef.current.firstChild) {
+        containerRef.current.removeChild(containerRef.current.firstChild);
+      }
+
+      containerRef.current.appendChild(document.importNode(svgElement, true));
+    }
+  }, [svgString]);
+
+  return <g ref={containerRef} className="vega-visualization"/>;
+};
