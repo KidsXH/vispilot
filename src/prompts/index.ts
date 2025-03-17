@@ -48,9 +48,9 @@ Perform the following steps based on the input type:
 4. Generate a Vega-Lite specification that you think best represents the user's intent.
 
 #### Sketch Image Input:
-1. Interpret the image content and **user actions** performed on the image.
+1. Interpret the image content and **User Actions** performed on the image. You have to find where are **User Actions** located in the image. If you are told the user selects an axis title, you need to check the sketch image to see where the selected axis title is located: on the x-axis or y-axis.
 2. Think and infer the user intent based on the conversation, the sketch image, and the provided CSV file.
-3. Think and plan for creating visualization using a sequence of **operations**.
+3. Think and plan for creating visualization using a sequence of **Operations**.
 4. Respond user with a chat message telling your understanding of the user intent and your plan to generate a Vega-Lite specification.
 5. Generate a Vega-Lite specification that you think best represents the user's intent.
 

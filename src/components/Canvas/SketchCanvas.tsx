@@ -339,20 +339,36 @@ export default function SketchPad() {
             role: 'user',
             sender: 'user',
             content: [
-              // { type: 'text', text: 'Please recommend a visualization based on the sketch below.' },
               {type: 'image_url', image_url: {url: imageUrl}}
             ]
           }
           dispatch(addMessage(message))
+          
+          const messageList = [...messages, message]
+          
+          
+          if (vegaElementHighlight.elements.length > 0) {
+            const attachedMessage: Message = {
+              id: messages.length + 2,
+              role: 'user',
+              sender: 'system',
+              content: [
+                {type: 'text', text: `**User Actions**: User selects the elements in Vega-Lite Visualization: ${vegaElementHighlight.elements.join(', ')}`}
+              ]
+            }
+            dispatch(addMessage(attachedMessage))
+            messageList.push(attachedMessage)
+          }          
+
           dispatch(setState('waiting'))
-          sendRequest([...messages, message]).then(response => {
+          sendRequest(messageList).then(response => {
             dispatch(addMessage(response))
             dispatch(setState('idle'))
           })
         })
         .catch(console.error)
     }
-  }, [dispatch, messages])
+  }, [dispatch, messages, vegaElementHighlight])
 
   const shapeToolList: ToolButtonInfo[] = [
     {
