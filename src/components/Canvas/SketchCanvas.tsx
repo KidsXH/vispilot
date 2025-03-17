@@ -334,22 +334,12 @@ export default function SketchPad() {
       svgToBase64Png(svgElem, 1250, 700)
         .then(base64 => {
           const imageUrl = base64 as string
-          const message: Message = {
-            id: messages.length + 1,
-            role: 'user',
-            sender: 'user',
-            content: [
-              {type: 'image_url', image_url: {url: imageUrl}}
-            ]
-          }
-          dispatch(addMessage(message))
-          
-          const messageList = [...messages, message]
-          
-          
+
+          const messageList = [...messages]
+
           if (vegaElementHighlight.elements.length > 0) {
             const attachedMessage: Message = {
-              id: messages.length + 2,
+              id: messages.length + 1,
               role: 'user',
               sender: 'system',
               content: [
@@ -358,7 +348,19 @@ export default function SketchPad() {
             }
             dispatch(addMessage(attachedMessage))
             messageList.push(attachedMessage)
-          }          
+          }
+
+          const message: Message = {
+            id: messages.length + 2,
+            role: 'user',
+            sender: 'user',
+            content: [
+              {type: 'image_url', image_url: {url: imageUrl}}
+            ]
+          }
+          dispatch(addMessage(message))
+          messageList.push(message)
+
 
           dispatch(setState('waiting'))
           sendRequest(messageList).then(response => {
@@ -598,9 +600,9 @@ export default function SketchPad() {
                 y={clientXYToCanvasCoords(vegaElementHighlight.containerPos)[1] + vegaElementHighlight.bbox[1]}
                 width={vegaElementHighlight.bbox[2]}
                 height={vegaElementHighlight.bbox[3]}
-                stroke={'oklch(0.809 0.105 251.813)'}
+                stroke={'oklch(0.704 0.191 22.216)'}
                 strokeWidth={1}
-                fill={'oklch(0.809 0.105 251.813)'}
+                fill={'oklch(0.704 0.191 22.216)'}
                 fillOpacity={0.1}
             />
         }

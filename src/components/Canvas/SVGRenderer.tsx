@@ -199,11 +199,11 @@ const getVegaElementsInSelection = (
         bounds: getElementBounds(svgElement, element as SVGElement)
       });
       if (element.classList.contains('role-axis-label')) {
-        selectedElementInfo.push({elem: element as SVGElement, type: 'axis-label'});
+        selectedElementInfo.push({elem: element as SVGElement, type: 'axis-labels'});
       } else if (element.classList.contains('role-axis-title')) {
         selectedElementInfo.push({elem: element as SVGElement, type: 'axis-title'});
       } else {
-        selectedElementInfo.push({elem: element as SVGElement, type: 'axis-tick'});
+        selectedElementInfo.push({elem: element as SVGElement, type: 'axis-ticks'});
       }
     }
   });
