@@ -11,6 +11,11 @@ interface CanvasState {
   paths: CanvasPath[];
   focusedPathID: number | null;
   designIdea: string | null;
+  vegaElementHighlight: {
+    containerPos: [number, number];
+    bbox: [number, number, number, number];
+    elements: string[];
+  }
 }
 
 const initialState: CanvasState = {
@@ -24,6 +29,11 @@ const initialState: CanvasState = {
   paths: [],
   focusedPathID: null,
   designIdea: null,
+  vegaElementHighlight: {
+    containerPos: [0, 0],
+    bbox: [0, 0, 0, 0],
+    elements: [],
+  }
 }
 
 export const canvasSlice = createSlice({
@@ -76,6 +86,16 @@ export const canvasSlice = createSlice({
     },
     setDesignIdea: (state, action: PayloadAction<string | null>) => {
       state.designIdea = action.payload
+    },
+    setVegaElementHighlight: (state, action: PayloadAction<{ containerPos: [number, number], bbox: [number, number, number, number], elements: string[] }>) => {
+      state.vegaElementHighlight = structuredClone(action.payload)
+    },
+    clearVegaElementHighlight: (state) => {
+      state.vegaElementHighlight = {
+        containerPos: [0, 0],
+        bbox: [0, 0, 0, 0],
+        elements: [],
+      }
     }
   },
 })
@@ -90,7 +110,9 @@ export const {
   setCurrentStyle,
   updatePathPoints,
   setFocusedPathID,
-  setDesignIdea
+  setDesignIdea,
+  setVegaElementHighlight,
+  clearVegaElementHighlight
 } = canvasSlice.actions
 
 export const selectTool = (state: RootState) => state.canvas.tool
@@ -98,5 +120,7 @@ export const selectPaths = (state: RootState) => state.canvas.paths
 export const selectCurrentStyle = (state: RootState) => state.canvas.currentStyle
 export const selectFocusedPathID = (state: RootState) => state.canvas.focusedPathID
 export const selectDesignIdea = (state: RootState) => state.canvas.designIdea
+export const selectVegaElementHighlight = (state: RootState) => state.canvas.vegaElementHighlight
+
 export default canvasSlice.reducer
 

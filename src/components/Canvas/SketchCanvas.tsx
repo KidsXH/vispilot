@@ -12,7 +12,7 @@ import {
   clearPaths,
   setCurrentStyle,
   updatePathPoints,
-  selectFocusedPathID, setFocusedPathID
+  selectFocusedPathID, setFocusedPathID, selectVegaElementHighlight, clearVegaElementHighlight
 } from '@/store/features/CanvasSlice'
 import {CanvasPath, Message} from '@/types'
 import {PointerEvent, useCallback, useEffect, useRef, useState} from 'react'
@@ -28,6 +28,8 @@ export default function SketchPad() {
   const [currentPath, setCurrentPath] = useState<CanvasPath | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [isMoving, setIsMoving] = useState(false)
+  const [isPencil, setIsPencil] = useState<boolean>(false)
+
   const svgRef = useRef<SVGSVGElement | null>(null)
 
   const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle'>('rectangle')
@@ -35,6 +37,43 @@ export default function SketchPad() {
   const [isEditingText, setIsEditingText] = useState(false)
   const [coordinates, setCoordinates] = useState<{ x: number; y: number }>({x: 0, y: 0})
   const [textInput, setTextInput] = useState('')
+
+  const vegaElementHighlight = useAppSelector(selectVegaElementHighlight)
+
+  // update default style when tool changes
+  useEffect(() => {
+    if (tool !== 'select') {
+      setIsMoving(false)
+      dispatch(setFocusedPathID(null))
+    }
+    if (tool === 'pencil' || tool === 'axis') {
+      const newStyle = {...currentStyle, fill: 'none', stroke: '#000000'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+    if (tool === 'note') {
+      const newStyle = {...currentStyle, fill: '#000000', stroke: 'none'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+    if (tool === 'shape') {
+      const newStyle = {...currentStyle, fill: '#ffffff', stroke: '#000000'}
+      dispatch(setCurrentStyle(newStyle))
+    }
+  }, [dispatch, tool]);
+  useEffect(() => {
+    if (focusedPathID) {
+      const path = paths.find(path => path.id === focusedPathID)
+      if (path) {
+        const newPath = {...path, style: {...currentStyle}}
+        dispatch(setPath({id: focusedPathID, path: newPath}))
+      }
+    }
+  }, [dispatch, currentStyle]);
+  useEffect(() => {
+    if (focusedPathID) {
+      const style = paths.find(path => path.id === focusedPathID)?.style
+      if (style) dispatch(setCurrentStyle(style))
+    }
+  }, [dispatch, focusedPathID]);
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
@@ -53,7 +92,33 @@ export default function SketchPad() {
     return [0, 0]
   }
 
+  const clientXYToCanvasCoords = (pos: [number, number]) => {
+    const svg = svgRef.current
+    if (svg) {
+      const point = svg.createSVGPoint()
+      point.x = pos[0]
+      point.y = pos[1]
+      const ctm = svg.getScreenCTM()
+      if (ctm) {
+        const inversedCTM = ctm.inverse()
+        const relativePoint = point.matrixTransform(inversedCTM)
+        return [Math.floor(relativePoint.x), Math.floor(relativePoint.y)]
+      }
+    }
+    return [0, 0]
+  }
+
   const handlePointerDown = useCallback((event: PointerEvent) => {
+      // Check if the input is from a pen/stylus
+      if (event.pointerType === 'pen') {
+        setIsPencil(true)
+        // Capture pointer to get events outside canvas
+        if (svgRef.current) {
+          svgRef.current.setPointerCapture(event.pointerId)
+        }
+      } else {
+        setIsPencil(false)
+      }
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
         const [x, y] = getCoordinates(event)
         setCoordinates({x, y})
@@ -101,16 +166,10 @@ export default function SketchPad() {
           })
         }
       }
+
     },
     [tool, isEditingText, currentStyle, selectedShapeType, paths]
   )
-
-  useEffect(() => {
-    if (focusedPathID) {
-      const style = paths.find(path => path.id === focusedPathID)?.style
-      if (style) dispatch(setCurrentStyle(style))
-    }
-  }, [dispatch, focusedPathID]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
       const [x, y] = getCoordinates(event)
@@ -158,53 +217,28 @@ export default function SketchPad() {
       }
 
       setCoordinates({x, y})
-    }
-    , [dispatch, coordinates.x, coordinates.y, currentPath, focusedPathID, isDrawing, isMoving, paths, selectedShapeType, tool])
-  const handlePointerUp = useCallback(() => {
-    if (currentPath) {
-      if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
-        dispatch(addPath(currentPath))
-        dispatch(
-          addHistory({
-            type: 'canvas',
-            content: currentPath
-          })
-        )
-      }
-    }
-    setIsDrawing(false)
-    setCurrentPath(null)
-  }, [dispatch, currentPath, tool])
+    },
+    [dispatch, coordinates.x, coordinates.y, currentPath, focusedPathID, isDrawing, isMoving, paths, selectedShapeType, tool])
 
-  useEffect(() => {
-    if (focusedPathID) {
-      const path = paths.find(path => path.id === focusedPathID)
-      if (path) {
-        const newPath = {...path, style: {...currentStyle}}
-        dispatch(setPath({id: focusedPathID, path: newPath}))
+  const handlePointerUp = useCallback((event: PointerEvent) => {
+      if (svgRef.current && isPencil) {
+        svgRef.current.releasePointerCapture(event.pointerId)
       }
-    }
-  }, [dispatch, currentStyle]);
-
-  // update default style when tool changes
-  useEffect(() => {
-    if (tool !== 'select') {
-      setIsMoving(false)
-      dispatch(setFocusedPathID(null))
-    }
-    if (tool === 'pencil' || tool === 'axis') {
-      const newStyle = {...currentStyle, fill: 'none', stroke: '#000000'}
-      dispatch(setCurrentStyle(newStyle))
-    }
-    if (tool === 'note') {
-      const newStyle = {...currentStyle, fill: '#000000', stroke: 'none'}
-      dispatch(setCurrentStyle(newStyle))
-    }
-    if (tool === 'shape') {
-      const newStyle = {...currentStyle, fill: '#ffffff', stroke: '#000000'}
-      dispatch(setCurrentStyle(newStyle))
-    }
-  }, [dispatch, tool]);
+      if (currentPath) {
+        if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
+          dispatch(addPath(currentPath))
+          dispatch(
+            addHistory({
+              type: 'canvas',
+              content: currentPath
+            })
+          )
+        }
+      }
+      setIsDrawing(false)
+      setCurrentPath(null)
+    },
+    [dispatch, currentPath, tool])
 
   const handleElementPointerDown = (pathID: number) => {
     if (tool === 'select') {
@@ -280,47 +314,6 @@ export default function SketchPad() {
     }
   }
 
-  const isPointInPath = (path: CanvasPath, point: [number, number]): boolean => {
-    if (path.type === 'note') {
-      const [x, y] = point
-      const [startX, startY] = path.points[0]
-      let isOk = x >= startX - 10 && x <= startX + 100 + 10 && y >= startY - 10 && y <= startY + 45 + 10
-      return isOk
-    } else if (path.type === 'pencil') {
-      const [x, y] = point
-      const points = Array.from(path.points)
-      for (let i = 0; i < points.length - 1; i++) {
-        const [startX, startY] = points[i]
-        const [endX, endY] = points[i + 1]
-        const distance = distanceToSegment(x, y, startX, startY, endX, endY)
-
-        if (distance < 10) {
-          return true
-        }
-      }
-      return false
-    } else if (path.type === 'shape') {
-      const [x, y] = point
-      const startX = Math.min(path.points[0][0], path.points[1][0])
-      const startY = Math.min(path.points[0][1], path.points[1][1])
-      const endX = Math.max(path.points[0][0], path.points[1][0])
-      const endY = Math.max(path.points[0][1], path.points[1][1])
-      if (path.shapeType === 'circle') {
-        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)
-        return Math.abs((x - startX) ** 2 + (y - startY) ** 2 - radius ** 2) < 1000
-      } else if (path.shapeType === 'rectangle') {
-        return checkPointInRect([x, y], [startX, startY, endX, endY])
-      }
-      return false
-    } else if (path.type === 'axis') {
-      const [x, y] = point
-      const [startX, startY] = path.points[0]
-      const [endX, endY] = path.points[1]
-      const distance = distanceToSegment(x, y, startX, startY, endX, endY)
-      return distance < 10
-    }
-    return false
-  }
   // 撤销功能
   const handleUndo = () => {
     if (paths.length === 0) return
@@ -330,6 +323,7 @@ export default function SketchPad() {
 
   // 清空画布
   const handleClear = () => {
+    dispatch(clearVegaElementHighlight())
     dispatch(clearPaths())
   }
 
@@ -516,7 +510,7 @@ export default function SketchPad() {
                      strokeWidth="1"
                      opacity="1"
                   >
-                    <SVGRenderer svgString={path.vegaSVG || ''}/>
+                    <SVGRenderer svgString={path.vegaSVG || ''} selectable={tool === 'selectArea'}/>
                   </g>
                   : path.type === 'note' ? <>
                     <g onClick={e => e.stopPropagation()}>
@@ -580,7 +574,28 @@ export default function SketchPad() {
             style={{...currentPath.style, cursor: 'default'}}
           />
         )}
+
+        {
+          vegaElementHighlight.elements.length > 0 &&
+            <rect
+                x={clientXYToCanvasCoords(vegaElementHighlight.containerPos)[0] + vegaElementHighlight.bbox[0]}
+                y={clientXYToCanvasCoords(vegaElementHighlight.containerPos)[1] + vegaElementHighlight.bbox[1]}
+                width={vegaElementHighlight.bbox[2]}
+                height={vegaElementHighlight.bbox[3]}
+                stroke={'oklch(0.809 0.105 251.813)'}
+                strokeWidth={1}
+                fill={'oklch(0.809 0.105 251.813)'}
+                fillOpacity={0.1}
+            />
+        }
       </svg>
+
+      {/* Optional: Display indicator that Apple Pencil is being used */}
+      {isPencil && currentPath && (
+        <div className="absolute bottom-4 right-4 bg-blue-500 text-white px-2 py-1 rounded-md text-sm">
+          Pencil (Pressure: {currentPath.pressure.toFixed(2)})
+        </div>
+      )}
     </div>
   )
 }
@@ -652,6 +667,7 @@ const ToolIcon = ({className, icon, active, text}: {
 import {sendRequest} from '@/model'
 import {addMessage, selectMessages, setState} from '@/store/features/ChatSlice'
 import {addHistory} from '@/store/features/HistorySlice'
+import SVGRenderer from "@/components/Canvas/SVGRenderer";
 
 const svgToBase64Png = (svgElement: SVGSVGElement, width: number, height: number): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -764,101 +780,4 @@ const svgToBase64Png = (svgElement: SVGSVGElement, width: number, height: number
       reject(error);
     }
   });
-};
-
-function distanceToTopEdge(x: number, y: number, startY: number): number {
-  return Math.abs(y - startY)
-}
-
-function distanceToRightEdge(x: number, y: number, endX: number): number {
-  return Math.abs(x - endX)
-}
-
-function distanceToBottomEdge(x: number, y: number, endY: number): number {
-  return Math.abs(y - endY)
-}
-
-function distanceToLeftEdge(x: number, y: number, startX: number): number {
-  return Math.abs(x - startX)
-}
-
-function distanceToRectangle(
-  x: number,
-  y: number,
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number
-): boolean {
-  const distances = [
-    distanceToTopEdge(x, y, startY),
-    distanceToRightEdge(x, y, endX),
-    distanceToBottomEdge(x, y, endY),
-    distanceToLeftEdge(x, y, startX)
-  ]
-  const edgeXLeft = Math.min(startX, endX)
-  const edgeXRight = Math.max(startX, endX)
-  const edgeYTop = Math.max(startY, endY)
-  const edgeYBottom = Math.min(startY, endY)
-  let isOk = false
-  isOk =
-    (distances[0] < 10 && x >= edgeXLeft - 10 && x <= edgeXRight + 10) ||
-    (distances[1] < 10 && y >= edgeYBottom - 10 && y <= edgeYTop + 10) ||
-    (distances[2] < 10 && x >= edgeXLeft - 10 && x <= edgeXRight + 10) ||
-    (distances[3] < 10 && y >= edgeYBottom - 10 && y <= edgeYTop + 10)
-  return isOk
-}
-
-function distanceToSegment(px: number, py: number, startX: number, startY: number, endX: number, endY: number): number {
-  const dx = endX - startX
-  const dy = endY - startY
-  const segmentLengthSquared = dx * dx + dy * dy
-
-  if (segmentLengthSquared === 0) {
-    return Math.sqrt((px - startX) ** 2 + (py - startY) ** 2)
-  }
-
-  // 计算投影参数 t
-  const t = ((px - startX) * dx + (py - startY) * dy) / segmentLengthSquared
-
-  if (t < 0) {
-    // 投影点在线段起点之外，计算点到起点的距离
-    return Math.sqrt((px - startX) ** 2 + (py - startY) ** 2)
-  } else if (t > 1) {
-    // 投影点在线段终点之外，计算点到终点的距离
-    return Math.sqrt((px - endX) ** 2 + (py - endY) ** 2)
-  } else {
-    // 投影点在线段上，计算点到直线的距离
-    const projectionX = startX + t * dx
-    const projectionY = startY + t * dy
-    return Math.sqrt((px - projectionX) ** 2 + (py - projectionY) ** 2)
-  }
-}
-
-const checkPointInRect = (point: [number, number], rect: [number, number, number, number]): boolean => {
-  const [x, y] = point
-  const [startX, startY, endX, endY] = rect
-  return x >= startX && x <= endX && y >= startY && y <= endY
-}
-
-const SVGRenderer = ({svgString}: { svgString: string }) => {
-  const containerRef = useRef<SVGGElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      // Parse the SVG string
-      const parser = new DOMParser();
-      const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
-      const svgElement = svgDoc.documentElement;
-
-      // Clear previous content
-      while (containerRef.current.firstChild) {
-        containerRef.current.removeChild(containerRef.current.firstChild);
-      }
-
-      containerRef.current.appendChild(document.importNode(svgElement, true));
-    }
-  }, [svgString]);
-
-  return <g ref={containerRef} className="vega-visualization"/>;
 };
