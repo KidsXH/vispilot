@@ -175,7 +175,6 @@ export default function SketchPad() {
       const [x, y] = getCoordinates(event)
 
       if (tool === 'select' && isMoving && focusedPathID) {
-        console.log('Move')
         const dx = Math.floor(x - coordinates.x)
         const dy = Math.floor(y - coordinates.y)
         if (dx !== 0 || dy !== 0) {

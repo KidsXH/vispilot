@@ -19,7 +19,7 @@ const DataTableModal: React.FC<DataTableModalProps> = ({isOpen, onClose}) => {
   useEffect(() => {
     if (containerRef.current && selectedColumn) {
       const selectedElement = containerRef.current.querySelector('.selectedColumnHeader');
-      console.log(selectedElement)
+
       if (selectedElement) {
         // set scrollLeft of containerRef
         const container = containerRef.current;

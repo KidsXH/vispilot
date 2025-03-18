@@ -87,7 +87,6 @@ const Configuration = () => {
   const handleHeightChange = (event: ChangeEvent<HTMLInputElement>) => {
     const h = isNaN(parseInt(event.target.value, 10)) ? 0 : parseInt(event.target.value, 10)
     const newHeight = Math.max(1, h)
-    console.log(event.target.value, newHeight)
     setHeight(newHeight)
     if (focusedPath && focusedPath.shapeType === 'rectangle') {
       const points = focusedPath.points;
