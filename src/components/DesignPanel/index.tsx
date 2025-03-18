@@ -10,7 +10,7 @@ import {
 } from "@/store/features/CanvasSlice";
 import {CanvasPath, Message} from "@/types";
 import {addHistory} from "@/store/features/HistorySlice";
-import {addMessage, selectMessages, setState} from "@/store/features/ChatSlice";
+import {addMessage, selectMessages, selectModel, setState} from "@/store/features/ChatSlice";
 import {sendRequest} from "@/model";
 
 const DesignPanel = () => {
@@ -19,6 +19,7 @@ const DesignPanel = () => {
   const designIdea = useAppSelector(selectDesignIdea)
 
   const messages = useAppSelector(selectMessages)
+  const modelConfig = useAppSelector(selectModel)
 
   const reGenerateDesign = () => {
     const message: Message = {
@@ -31,7 +32,7 @@ const DesignPanel = () => {
     }
     dispatch(addMessage(message))
     dispatch(setState('waiting'))
-    sendRequest([...messages, message]).then(response => {
+    sendRequest([...messages, message], modelConfig).then(response => {
       dispatch(addMessage(response))
       dispatch(setState('idle'))
     })
