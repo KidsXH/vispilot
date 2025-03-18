@@ -125,7 +125,7 @@ const CSVReader = () => {
     };
 
     reader.readAsText(file);
-  }, [dispatch]);
+  }, [dispatch, model]);
 
   return (
     <div className="max-w-4xl mx-auto select-none">

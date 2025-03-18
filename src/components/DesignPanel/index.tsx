@@ -12,6 +12,7 @@ import {CanvasPath, Message} from "@/types";
 import {addHistory} from "@/store/features/HistorySlice";
 import {addMessage, selectMessages, selectModel, setState} from "@/store/features/ChatSlice";
 import {sendRequest} from "@/model";
+import {useCallback} from "react";
 
 const DesignPanel = () => {
   const dispatch = useAppDispatch()
@@ -21,7 +22,7 @@ const DesignPanel = () => {
   const messages = useAppSelector(selectMessages)
   const modelConfig = useAppSelector(selectModel)
 
-  const reGenerateDesign = () => {
+  const reGenerateDesign = useCallback(() => {
     const message: Message = {
       id: messages.length + 1,
       role: 'user',
@@ -36,7 +37,7 @@ const DesignPanel = () => {
       dispatch(addMessage(response))
       dispatch(setState('idle'))
     })
-  }
+  }, [dispatch, messages, modelConfig])
 
   return (
     <div className="flex flex-col p-2">
