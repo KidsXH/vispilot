@@ -1,9 +1,10 @@
 import {Message, MessageContent} from "@/types";
 import {GoogleGenerativeAI, Content, Part} from "@google/generative-ai";
+import {ModelConfig} from "@/store/features/ChatSlice";
 
-export const requestToGemini = async (messages: Message[]) => {
-  const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
-  const model = genAI.getGenerativeModel({model: "gemini-2.0-flash"});
+export const requestToGemini = async (messages: Message[], modelConfig: ModelConfig) => {
+  const genAI = new GoogleGenerativeAI(modelConfig.key || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+  const model = genAI.getGenerativeModel({model: modelNameToID(modelConfig.name)});
 
   const historyMessage = messages.slice(1, messages.length - 1);
   const history = historyMessage.map((message) => {
@@ -31,9 +32,6 @@ export const requestToGemini = async (messages: Message[]) => {
   })
 
   const msg = messageContentToParts(messages[messages.length - 1].content);
-
-
-  console.log('History', history, 'New Msg', msg);
 
   const result = await chat.sendMessage(msg)
   const text = result.response.text();
@@ -76,4 +74,14 @@ export const parseResponseTextAsJson = (text: string) => {
     console.error('Error parsing JSON:', e);
     return null;
   }
+}
+
+const modelNameToID = (modelName: string) => {
+  if (modelName === 'Gemini 2.0 Flash') {
+    return 'gemini-2.0-flash';
+  }
+  if (modelName === 'Gemini 2.0 Pro') {
+    return 'gemini-2.0-pro-exp-02-05';
+  }
+  return ''
 }

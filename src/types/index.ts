@@ -72,7 +72,7 @@ export interface ModelOutput {
 
 export interface CSVFile {
   filename: string;
-  content?: string;
+  content: string;
 }
 
 

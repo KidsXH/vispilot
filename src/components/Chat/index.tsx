@@ -9,6 +9,7 @@ import {sendRequest} from "@/model";
 import {selectDataSource, setVegaString} from "@/store/features/DataSlice";
 import {parseResponseTextAsJson} from "@/model/Gemini";
 import {addHistory} from "@/store/features/HistorySlice";
+import ConfigModal from "@/components/Chat/ConfigModal";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -18,6 +19,7 @@ const Chat = () => {
   const messageDivRef = useRef<HTMLDivElement>(null);
   const dataSource = useAppSelector(selectDataSource);
 
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [inputText, setInputText] = useState('')
 
   const handleSendMessage = useCallback((inputText: string) => {
@@ -32,11 +34,11 @@ const Chat = () => {
     dispatch(setState('waiting'))
     dispatch(addMessage(newMessage))
 
-    sendRequest([...messages, newMessage]).then((response) => {
+    sendRequest([...messages, newMessage], model).then((response) => {
       dispatch(addMessage(response))
       dispatch(setState('idle'))
     })
-  }, [dispatch, messages])
+  }, [dispatch, messages, model])
 
   useEffect(() => {
     if (messageDivRef.current) {
@@ -124,7 +126,13 @@ const Chat = () => {
             export_notes
           </div>
           <div
-            className='mr-auto py-0.5 px-2 bg-gray-200 text-sm rounded-sm cursor-pointer select-none hover:bg-gray-100 text-neutral-600'>To: {model}</div>
+            className='mr-auto py-0.5 px-2 bg-gray-200 text-sm rounded-sm cursor-pointer select-none hover:bg-gray-100 text-neutral-600'
+            onClick={() => setIsConfigModalOpen(true)}
+          >
+            To: {model.name}
+          </div>
+
+          <ConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)}/>
         </div>
       </div>
     </div>

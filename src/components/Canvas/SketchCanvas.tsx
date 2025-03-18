@@ -328,6 +328,7 @@ export default function SketchPad() {
   }
 
   const messages = useAppSelector(selectMessages)
+  const model = useAppSelector(selectModel)
   const handleAskVisPilot = useCallback(() => {
     const svgElem = svgRef.current
     if (svgElem) {
@@ -363,14 +364,14 @@ export default function SketchPad() {
 
 
           dispatch(setState('waiting'))
-          sendRequest(messageList).then(response => {
+          sendRequest(messageList, model).then(response => {
             dispatch(addMessage(response))
             dispatch(setState('idle'))
           })
         })
         .catch(console.error)
     }
-  }, [dispatch, messages, vegaElementHighlight])
+  }, [dispatch, messages, model, vegaElementHighlight])
 
   const shapeToolList: ToolButtonInfo[] = [
     {
@@ -683,7 +684,7 @@ const ToolIcon = ({className, icon, active, text}: {
 }
 
 import {sendRequest} from '@/model'
-import {addMessage, selectMessages, setState} from '@/store/features/ChatSlice'
+import {addMessage, selectMessages, selectModel, setState} from '@/store/features/ChatSlice'
 import {addHistory} from '@/store/features/HistorySlice'
 import SVGRenderer from "@/components/Canvas/SVGRenderer";
 

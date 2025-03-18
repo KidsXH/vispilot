@@ -10,6 +10,7 @@ interface DataSlice {
 const initialState: DataSlice = {
   dataSource: {
     filename: '-',
+    content: '',
   },
   vegaString: '{}',
 }

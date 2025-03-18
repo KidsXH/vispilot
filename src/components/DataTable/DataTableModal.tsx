@@ -8,10 +8,9 @@ import {addPath} from "@/store/features/CanvasSlice";
 interface DataTableModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectColumn: (columnName: string, value?: string) => void;
 }
 
-const DataTableModal: React.FC<DataTableModalProps> = ({isOpen, onClose, onSelectColumn}) => {
+const DataTableModal: React.FC<DataTableModalProps> = ({isOpen, onClose}) => {
   const dispatch = useAppDispatch();
   const dataSource = useAppSelector(selectDataSource);
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
@@ -38,7 +37,7 @@ const DataTableModal: React.FC<DataTableModalProps> = ({isOpen, onClose, onSelec
   }, [selectedColumn]);
 
   // Parse CSV content
-  const rows = dataSource.content!.split('\n');
+  const rows = dataSource.content.split('\n');
   const headers = rows[0].split(',').map(header => header.trim());
   const data = rows.slice(1).map(row => {
     const values = row.split(',').map(value => value.trim());

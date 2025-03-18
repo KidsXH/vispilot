@@ -36,15 +36,6 @@ const DataSourceLabel = () => {
     setIsModalOpen(false);
   };
 
-  const handleSelectColumn = (columnName: string, value?: string) => {
-    // Add annotation to SketchPad
-    const annotationText = value
-      ? `${columnName}: ${value}`
-      : columnName;
-
-    // addAnnotationToSketch(annotationText);
-  };
-
   return (
     <>
       <div className='flex items-center justify-between'>
@@ -60,7 +51,6 @@ const DataSourceLabel = () => {
       <DataTableModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSelectColumn={handleSelectColumn}
       />
     </>
   );
@@ -69,13 +59,14 @@ const DataSourceLabel = () => {
 import React, {ChangeEvent, useCallback, useState} from 'react';
 import {Upload} from 'lucide-react';
 import {generateCSVPrompt, generateSystemPrompt} from "@/prompts";
-import {addMessage, setState} from "@/store/features/ChatSlice";
+import {addMessage, selectModel, setState} from "@/store/features/ChatSlice";
 import {sendRequest} from "@/model";
 import {Message} from "@/types";
 import DataTableModal from "@/components/DataTable/DataTableModal";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
+  const model = useAppSelector(selectModel)
   const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
 
@@ -126,7 +117,7 @@ const CSVReader = () => {
         dispatch(addMessage(systemMessage));
         dispatch(addMessage(userMessage));
         dispatch(setState('waiting'));
-        sendRequest([systemMessage, userMessage]).then(response => {
+        sendRequest([systemMessage, userMessage], model).then(response => {
           dispatch(addMessage(response));
           dispatch(setState('idle'));
         });
