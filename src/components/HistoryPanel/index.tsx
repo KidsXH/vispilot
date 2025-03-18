@@ -1,11 +1,8 @@
 'use client'
 
 import {useAppDispatch, useAppSelector} from "@/store";
-import {useEffect, useRef, useState} from "react";
-import {createPortal} from 'react-dom';
-// import {historyData} from "@/mocks/historyData";
-import * as d3 from 'd3';
-import {CanvasPath, HistoryItem, ModelOutput} from "@/types";
+import {useEffect, useRef} from "react";
+import {CanvasPath} from "@/types";
 import {selectHistory} from "@/store/features/HistorySlice";
 import VegaLite from "@/components/VegaLite";
 
@@ -26,7 +23,7 @@ const HistoryPanel = () => {
   const modelItemCount = historyData.filter((item) => item.type === 'model').length;
   const canvasItemCount = historyData.filter((item) => item.type === 'canvas').length;
   const chatItemCount = historyData.filter((item) => item.type === 'chat').length;
-  const lineWidth = (chatItemCount + canvasItemCount) * 44 + modelItemCount * 224 + historyData.length * 32;
+  const lineWidth = (chatItemCount + canvasItemCount) * 44 + modelItemCount * 224 + (historyData.length - 1) * 32;
 
   useEffect(() => {
     if (svgContainerRef.current) {
