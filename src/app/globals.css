@@ -93,8 +93,8 @@ body {
 }
 
 .vega-container .vega-embed canvas {
-    height: 104px;
-    width: 184px;
+    height: 104px !important;
+    width: 184px !important;
 
     @apply cursor-pointer;
 }
