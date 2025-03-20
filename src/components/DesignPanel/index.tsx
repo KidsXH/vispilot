@@ -4,7 +4,7 @@ import VLPreview from '@/components/DesignPanel/VLPreview'
 import {useAppDispatch, useAppSelector} from '@/store'
 import Configuration from '@/components/DesignPanel/Configuration'
 import {
-  addPath,
+  addPath, selectCanvasSize,
   selectCurrentStyle,
   selectDesignIdea, setTool,
 } from "@/store/features/CanvasSlice";
@@ -21,6 +21,8 @@ const DesignPanel = () => {
 
   const messages = useAppSelector(selectMessages)
   const modelConfig = useAppSelector(selectModel)
+
+  const {width, height} = useAppSelector(selectCanvasSize)
 
   const reGenerateDesign = useCallback(() => {
     const message: Message = {
@@ -63,7 +65,7 @@ const DesignPanel = () => {
               if (designIdea) {
                 const newPath: CanvasPath = {
                   id: Date.now(),
-                  points: [[450, 230]],
+                  points: [[width / 2 - 150, height / 2 - 150]],
                   style: currentStyle,
                   pressure: 1,
                   type: 'vega',

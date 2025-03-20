@@ -17,6 +17,7 @@ import {resetDataSource, selectDataSource, setVegaString} from "@/store/features
 import {parseResponseTextAsJson} from "@/model/Gemini";
 import {addHistory, clearHistory} from "@/store/features/HistorySlice";
 import ConfigModal from "@/components/Chat/ConfigModal";
+import {setDesignIdea} from "@/store/features/CanvasSlice";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
@@ -101,6 +102,7 @@ const Chat = () => {
             dispatch(clearMessages());
             dispatch(resetDataSource());
             dispatch(setVegaString(''));
+            dispatch(setDesignIdea(''));
           }}
         >
           {/*<span className='material-symbols-outlined' style={{fontSize: 18}}>delete</span>*/}

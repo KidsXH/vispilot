@@ -15,7 +15,9 @@ interface CanvasState {
     containerPos: [number, number];
     bbox: [number, number, number, number];
     elements: string[];
-  }
+  },
+  width: number;
+  height: number;
 }
 
 const initialState: CanvasState = {
@@ -33,7 +35,9 @@ const initialState: CanvasState = {
     containerPos: [0, 0],
     bbox: [0, 0, 0, 0],
     elements: [],
-  }
+  },
+  width: 1000,
+  height: 500,
 }
 
 export const canvasSlice = createSlice({
@@ -87,7 +91,11 @@ export const canvasSlice = createSlice({
     setDesignIdea: (state, action: PayloadAction<string | null>) => {
       state.designIdea = action.payload
     },
-    setVegaElementHighlight: (state, action: PayloadAction<{ containerPos: [number, number], bbox: [number, number, number, number], elements: string[] }>) => {
+    setVegaElementHighlight: (state, action: PayloadAction<{
+      containerPos: [number, number],
+      bbox: [number, number, number, number],
+      elements: string[]
+    }>) => {
       state.vegaElementHighlight = structuredClone(action.payload)
     },
     clearVegaElementHighlight: (state) => {
@@ -96,6 +104,11 @@ export const canvasSlice = createSlice({
         bbox: [0, 0, 0, 0],
         elements: [],
       }
+    },
+    setCanvasSize: (state, action: PayloadAction<{ width: number; height: number }>) => {
+      const {width, height} = action.payload;
+      state.width = width;
+      state.height = height;
     }
   },
 })
@@ -112,7 +125,8 @@ export const {
   setFocusedPathID,
   setDesignIdea,
   setVegaElementHighlight,
-  clearVegaElementHighlight
+  clearVegaElementHighlight,
+  setCanvasSize
 } = canvasSlice.actions
 
 export const selectTool = (state: RootState) => state.canvas.tool
@@ -121,6 +135,10 @@ export const selectCurrentStyle = (state: RootState) => state.canvas.currentStyl
 export const selectFocusedPathID = (state: RootState) => state.canvas.focusedPathID
 export const selectDesignIdea = (state: RootState) => state.canvas.designIdea
 export const selectVegaElementHighlight = (state: RootState) => state.canvas.vegaElementHighlight
+export const selectCanvasSize = (state: RootState) => ({
+  width: state.canvas.width,
+  height: state.canvas.height,
+})
 
 export default canvasSlice.reducer
 

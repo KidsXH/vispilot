@@ -113,12 +113,13 @@ body {
 
 .vl-preview .vega-embed {
     height: 100% !important;
-    width: 100% !important;
+    /*width: 100% !important;*/
+    @apply border
 }
 
 .vl-preview .vega-embed canvas {
     height: 100% !important;
-    width: 100% !important;
+    /*width: 100% !important;*/
 }
 
 .font-input-label {

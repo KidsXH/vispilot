@@ -12,7 +12,7 @@ import {
   clearPaths,
   setCurrentStyle,
   updatePathPoints,
-  selectFocusedPathID, setFocusedPathID, selectVegaElementHighlight, clearVegaElementHighlight
+  selectFocusedPathID, setFocusedPathID, selectVegaElementHighlight, clearVegaElementHighlight, setCanvasSize
 } from '@/store/features/CanvasSlice'
 import {CanvasPath, Message} from '@/types'
 import {PointerEvent, useCallback, useEffect, useRef, useState} from 'react'
@@ -31,6 +31,7 @@ export default function SketchPad() {
   const [isPencil, setIsPencil] = useState<boolean>(false)
 
   const svgRef = useRef<SVGSVGElement | null>(null)
+  const svgBBox = svgRef.current?.getBoundingClientRect();
 
   const [selectedShapeType, setSelectedShapeType] = useState<'rectangle' | 'circle'>('rectangle')
   const [editingPathId, setEditingPathId] = useState<number | null>(null)
@@ -74,6 +75,12 @@ export default function SketchPad() {
       if (style) dispatch(setCurrentStyle(style))
     }
   }, [dispatch, focusedPathID]);
+
+  useEffect(() => {
+    if (svgBBox) {
+      dispatch(setCanvasSize({width: svgBBox.width, height: svgBBox.height}))
+    }
+  }, [dispatch, svgBBox]);
 
   // 获取鼠标在SVG中的相对坐标
   const getCoordinates = (event: PointerEvent) => {
