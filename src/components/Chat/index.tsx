@@ -2,13 +2,20 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useAppDispatch, useAppSelector} from "@/store";
-import {addMessage, selectMessages, selectModel, selectState, setState} from "@/store/features/ChatSlice";
+import {
+  addMessage,
+  clearMessages, removeLastQA,
+  selectMessages,
+  selectModel,
+  selectState,
+  setState
+} from "@/store/features/ChatSlice";
 import {Message} from "@/types";
 import Image from "next/image";
 import {sendRequest} from "@/model";
-import {selectDataSource, setVegaString} from "@/store/features/DataSlice";
+import {resetDataSource, selectDataSource, setVegaString} from "@/store/features/DataSlice";
 import {parseResponseTextAsJson} from "@/model/Gemini";
-import {addHistory} from "@/store/features/HistorySlice";
+import {addHistory, clearHistory} from "@/store/features/HistorySlice";
 import ConfigModal from "@/components/Chat/ConfigModal";
 
 const Chat = () => {
@@ -82,8 +89,24 @@ const Chat = () => {
   }, [dispatch, messages])
 
   return (
-    <div className='flex flex-col p-2'>
-      <div className='font-bold text-xl'>Chat</div>
+    <div className='flex flex-col p-2 pt-1'>
+      <div className='flex items-center'>
+        <div className='font-bold text-xl'>Chat</div>
+
+        <div
+          className='flex items-center gap-0.5 px-2 cursor-pointer select-none rounded hover:bg-neutral-200 p-0.5 text-neutral-400 hover:text-neutral-600 ml-auto'
+          title='New Chat'
+          onClick={() => {
+            dispatch(clearHistory());
+            dispatch(clearMessages());
+            dispatch(resetDataSource());
+          }}
+        >
+          {/*<span className='material-symbols-outlined' style={{fontSize: 18}}>delete</span>*/}
+          <span className='text-sm font-bold'>Clear</span>
+        </div>
+      </div>
+
       {
         dataSource.filename === '-' ?
           <div className='flex items-center justify-center gap-2 h-[530px] text-gray-400 text-sm font-bold'>
@@ -130,9 +153,12 @@ const Chat = () => {
         <div className='flex flex-row-reverse space-x-1 items-center'>
           <div
             className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'
-            title='New Chat'
+            title={'Withdraw'}
+            onClick={() => {
+              dispatch(removeLastQA())
+            }}
           >
-            add
+            fast_rewind
           </div>
           <div
             className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'

@@ -56,7 +56,7 @@ const DataSourceLabel = () => {
   );
 };
 
-import React, {ChangeEvent, useCallback, useState} from 'react';
+import React, {ChangeEvent, useCallback, useEffect, useState} from 'react';
 import {Upload} from 'lucide-react';
 import {generateCSVPrompt, generateSystemPrompt} from "@/prompts";
 import {addMessage, selectModel, setState} from "@/store/features/ChatSlice";
@@ -66,9 +66,12 @@ import DataTableModal from "@/components/DataTable/DataTableModal";
 
 const CSVReader = () => {
   const dispatch = useAppDispatch();
+  const dataSource = useAppSelector(selectDataSource)
   const model = useAppSelector(selectModel)
   const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
+
+
 
   const handleFileUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files === null) return;
@@ -126,6 +129,13 @@ const CSVReader = () => {
 
     reader.readAsText(file);
   }, [dispatch, model]);
+
+  useEffect(() => {
+    if (dataSource.filename === '-') {
+      setCsvData([]);
+      setHeaders([]);
+    }
+  }, [dataSource]);
 
   return (
     <div className="max-w-4xl mx-auto select-none">

@@ -25,10 +25,16 @@ export const dataSlice = createSlice({
     setVegaString: (state, action: PayloadAction<string>) => {
       state.vegaString = action.payload
     },
+    resetDataSource: (state) => {
+      state.dataSource = {
+        filename: '-',
+        content: '',
+      }
+    },
   },
 })
 
-export const {setDataSource, setVegaString} = dataSlice.actions
+export const {setDataSource, setVegaString, resetDataSource} = dataSlice.actions
 
 export const selectDataSource = (state: RootState) => state.data.dataSource
 export const selectVegaString = (state: RootState) => state.data.vegaString
