@@ -46,7 +46,7 @@ const Chat = () => {
       dispatch(setState('idle'))
     })
   }, [dispatch, messages, model])
-  
+
   const handleExportChat = useCallback(() => {
     // Export chat messages to a json file
     const blob = new Blob([JSON.stringify(messages)], {type: 'application/json'});
@@ -184,22 +184,46 @@ const Chat = () => {
 export default Chat;
 
 const MessageBox = ({message}: { message: Message }) => {
-  return (
-    <div
-      className={`flex flex-col rounded p-2 max-w-72
+  const dispatch = useAppDispatch();
+  return (<>
+    <div className='flex flex-col max-w-72'>
+      <div
+        className={`flex flex-col rounded p-2 max-w-72
         ${message.sender === 'user' ? 'bg-blue-200' : 'bg-gray-200 w-72'}`}
-    >
-      {message.content.map((content, index) =>
-        <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
-          {
-            content.type === "text" ?
-              (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
-              <Image className='w-[270px] h-[150px]' src={content.image!} width={270} height={150}
-                     alt={'sketch'}/>
-          }
-        </div>
-      )}
+      >
+        {message.content.map((content, index) =>
+          <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
+            {
+              content.type === "text" ?
+                (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
+                <Image className='w-[270px] h-[150px]' src={content.image!} width={270} height={150}
+                       alt={'sketch'}/>
+            }
+          </div>
+        )}
+      </div>
+      {message.sender === 'assistant' &&
+          <div className='flex items-center justify-end gap-1 max-w-72 mt-0.5 text-xs text-neutral-400'>
+            {parseResponseTextAsJson(message.content[0].text!)?.vega && <>
+                <button className='px-1 hover:underline cursor-pointer'
+                        title={'View Visualization'}
+                        onClick={() => {
+                          const parsedText = parseResponseTextAsJson(message.content[0].text!);
+                          if (parsedText) {
+                            const vegaString = JSON.stringify(parsedText.vega);
+                            dispatch(setVegaString(vegaString));
+                          }
+                        }}
+                  >
+                    <span className=''>View</span>
+                </button>
+                <div className='border-l-2 h-3'></div>
+            </>
+            }
+            {new Date(message.id).toLocaleString()}
+          </div>
+      }
     </div>
-  );
+  </>);
 };
 
