@@ -119,10 +119,9 @@ export default function SketchPad() {
       } else {
         setIsPencil(false)
       }
+      const [x, y] = getCoordinates(event)
+      setCoordinates({x, y})
       if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
-        const [x, y] = getCoordinates(event)
-        setCoordinates({x, y})
-
         if (isEditingText) {
           setIsEditingText(false)
         } else if (tool === 'pencil') {
@@ -175,7 +174,6 @@ export default function SketchPad() {
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
       const [x, y] = getCoordinates(event)
-
       if (tool === 'select' && isMoving && focusedPathID) {
         const dx = Math.floor(x - coordinates.x)
         const dy = Math.floor(y - coordinates.y)
@@ -463,7 +461,7 @@ export default function SketchPad() {
   ]
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/*Top buttons*/}
       <div className="absolute top-4 right-4 flex z-10 text-neutral-600">
         <button
@@ -492,7 +490,7 @@ export default function SketchPad() {
       </div>
 
       {/*Toolbox*/}
-      <div className="absolute bottom-10 left-1/2 -ml-32">
+      <div className="absolute bottom-10 left-1/2 -ml-[172px]">
         <ToolBox
           toolList={toolList}
           shapeToolList={shapeToolList}
@@ -504,7 +502,7 @@ export default function SketchPad() {
       {/*Path svg*/}
       <svg
         ref={svgRef}
-        className="w-full h-[700px] touch-none"
+        className="w-full 2k:h-[700px] h-full touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

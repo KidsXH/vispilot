@@ -32,8 +32,8 @@ const VegaLite = ({vegaString, width, height, renderCallback}: {
           }
         };
       }
-      spec.width = width || 230;
-      spec.height = height || 110;
+      // spec.width = width || 230;
+      // spec.height = height || 110;
       spec.padding = 5;
       return compile(spec, {config}).spec;
     } catch (e) {

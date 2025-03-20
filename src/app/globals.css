@@ -15,6 +15,8 @@
     --font-system: 'Quantico', sans-serif;
     --font-sans: 'Geist', sans-serif;
     --font-mono: 'Geist Mono', serif;
+    --breakpoint-desktop: 1366px;
+    --breakpoint-2k: 1920px;
     --color-data: #6495ED;
     --color-mark: #FF7F52;
     --color-encoding: #008080;
@@ -110,11 +112,13 @@ body {
 }
 
 .vl-preview .vega-embed {
-    @apply h-full
+    height: 100% !important;
+    width: 100% !important;
 }
 
 .vl-preview .vega-embed canvas {
-    @apply h-full
+    height: 100% !important;
+    width: 100% !important;
 }
 
 .font-input-label {

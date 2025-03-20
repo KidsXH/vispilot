@@ -12,8 +12,8 @@ const VLPreview = () => {
   }
 
   return (<>
-      <div className="h-[160px] w-full overflow-auto no-scrollbar">
-        <div className="flex items-center justify-center h-full min-w-max pt-2 vl-preview">
+      <div className="h-[210px] w-full overflow-auto no-scrollbar">
+        <div className="flex items-center justify-center h-full pt-2 vl-preview">
           <VegaLite vegaString={vegaString} renderCallback={renderCallback} />
         </div>
       </div>

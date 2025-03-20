@@ -14,7 +14,7 @@ const DataTable = () => {
             <DataSourceLabel/>
           </div>
         </div>
-        <div className='max-w-[320px] h-[320px] overflow-auto no-scrollbar'>
+        <div className='max-w-[320px] 2k:h-[320px] h-[200px] overflow-auto no-scrollbar'>
           <CSVReader/>
         </div>
       </div>
@@ -141,7 +141,7 @@ const CSVReader = () => {
     <div className="max-w-4xl mx-auto select-none">
       {
         csvData.length === 0 &&
-          <div className="mt-24">
+          <div className="2k:mt-24 mt-4">
               <label
                   htmlFor="csvInput"
                   className="flex items-center justify-center w-full h-32 px-2 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"

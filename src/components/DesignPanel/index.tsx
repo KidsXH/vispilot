@@ -40,10 +40,10 @@ const DesignPanel = () => {
   }, [dispatch, messages, modelConfig])
 
   return (
-    <div className="flex flex-col p-2">
-      <div className="font-bold text-xl border-b-2 border-neutral-200 h-8">Design Panel</div>
+    <div className="flex flex-col p-2 h-full">
+      <div className="font-bold text-xl border-b-2 border-neutral-200 min-h-8">Design Panel</div>
       <div className="font-bold text-base mt-1">Configuration</div>
-      <div className="h-60 border-b border-neutral-200 font-bold text-base">
+      <div className="min-h-60 border-b border-neutral-200 font-bold text-base">
         <Configuration/>
       </div>
       <div className="flex mt-1">
@@ -78,11 +78,11 @@ const DesignPanel = () => {
           </button>
         </div>
       </div>
-      <div className="mt-1 h-[160px]">
+      <div className="mt-1 h-[220px]">
         <VLPreview/>
       </div>
       <div className="font-bold text-sm">Visualization Specification</div>
-      <div className="mt-2 py-1 max-h-[500px] border border-neutral-200 overflow-auto no-scrollbar whitespace-pre">
+      <div className="grow mt-2 py-1 min-h-0 border border-neutral-200 overflow-auto no-scrollbar whitespace-pre">
         <VLJsonView/>
       </div>
     </div>

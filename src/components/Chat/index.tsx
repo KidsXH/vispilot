@@ -89,7 +89,7 @@ const Chat = () => {
   }, [dispatch, messages])
 
   return (
-    <div className='flex flex-col p-2 pt-1'>
+    <div className='flex flex-col p-2 pt-1 h-full'>
       <div className='flex items-center'>
         <div className='font-bold text-xl'>Chat</div>
 
@@ -106,14 +106,14 @@ const Chat = () => {
           <span className='text-sm font-bold'>Clear</span>
         </div>
       </div>
-
+      <div className='2k:h-[530px] grow min-h-0'>
       {
         dataSource.filename === '-' ?
-          <div className='flex items-center justify-center gap-2 h-[530px] text-gray-400 text-sm font-bold'>
+          <div className='flex items-center justify-center h-full gap-2  text-gray-400 text-sm font-bold'>
             <span className='material-symbols-outlined'>smart_toy</span>
             <div className=''>: Please upload a data table to start.</div>
           </div> :
-          <div className='flex flex-col h-[530px] overflow-y-scroll no-scrollbar' ref={messageDivRef}>
+          <div className='flex flex-col h-full overflow-y-scroll no-scrollbar' ref={messageDivRef}>
             {messages.filter((message) => message.sender !== 'system')
               .map((message) => {
                 return (
@@ -136,6 +136,7 @@ const Chat = () => {
             }
           </div>
       }
+      </div>
       <div className='flex flex-col space-y-2'>
         <input
           type='text'
@@ -205,7 +206,7 @@ const MessageBox = ({message}: { message: Message }) => {
       {message.sender === 'assistant' &&
           <div className='flex items-center justify-end gap-1 max-w-72 mt-0.5 text-xs text-neutral-400'>
             {parseResponseTextAsJson(message.content[0].text!)?.vega && <>
-                <button className='px-1 hover:underline cursor-pointer'
+                <button className='hover:underline cursor-pointer'
                         title={'View Visualization'}
                         onClick={() => {
                           const parsedText = parseResponseTextAsJson(message.content[0].text!);

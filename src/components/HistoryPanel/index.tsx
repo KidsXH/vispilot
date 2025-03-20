@@ -34,7 +34,7 @@ const HistoryPanel = () => {
   return (
     <>
       <div className="flex flex-col p-2 min-w-0">
-        <div className="font-bold text-xl">History</div>
+        <div className="font-bold text-xl">Authoring Flow</div>
         <div
           className="h-[240px] flex overflow-x-auto overflow-y-hidden items-center w-full pb-2 pl-10 mt-1 gap-8 relative"
           ref={svgContainerRef}>
