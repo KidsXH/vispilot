@@ -38,7 +38,7 @@ const HistoryPanel = () => {
         <div
           className="h-[240px] flex overflow-x-auto overflow-y-hidden items-center w-full pb-2 pl-10 mt-1 gap-8 relative"
           ref={svgContainerRef}>
-          <div className="absolute top-14 h-1 bg-gray-300" style={{ width: lineWidth }} />
+          {historyData.length > 0 && <div className="absolute top-14 h-1 bg-gray-300" style={{width: lineWidth}}/>}
           {historyData.map((d, i) => {
             return (
               <div key={i} className="h-56">

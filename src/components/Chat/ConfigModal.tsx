@@ -1,7 +1,19 @@
-import React, {useState, useEffect} from 'react';
-import {X, Key} from 'lucide-react';
+import React, {useState, useEffect, useCallback} from 'react';
+import {X, Settings} from 'lucide-react';
 import {useAppDispatch, useAppSelector} from "@/store";
-import {setState, setModel, selectModel, ChatModels} from "@/store/features/ChatSlice";
+import {
+  setState,
+  setModel,
+  selectModel,
+  ChatModels,
+  selectMessages,
+  clearMessages,
+  importMessages
+} from "@/store/features/ChatSlice";
+import {clearHistory} from "@/store/features/HistorySlice";
+import {resetDataSource, setVegaString} from "@/store/features/DataSlice";
+import {Message} from "@/types";
+import {setDesignIdea} from "@/store/features/CanvasSlice";
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -16,6 +28,8 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
   const [showKey, setShowKey] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({text: '', type: null});
 
+  const chatMessages = useAppSelector(selectMessages);
+
   const dispatch = useAppDispatch();
 
   const availableModels = [
@@ -25,7 +39,30 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
     {id: 'claude-3.7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'Anthropic'}
   ];
 
-  const handleSave = () => {
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files === null) return;
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target && event.target.result) {
+        const text = event.target.result as string;
+        try {
+          const parsedMessages: Message[] = JSON.parse(text);
+          dispatch(clearMessages());
+          dispatch(setVegaString(''));
+          dispatch(setDesignIdea(''));
+          dispatch(importMessages(parsedMessages));
+          setMessage({text: 'Messages imported successfully', type: 'success'});
+        } catch (error) {
+          setMessage({text: 'Failed to import messages', type: 'error'});
+        }
+      }
+    };
+
+    reader.readAsText(file);
+  }, [dispatch])
+
+  const handleSave = useCallback(() => {
     if (modelName === 'GPT-4o' || modelName === 'Claude 3.7 Sonnet') {
       setMessage({text: `${modelName} is not supported yet. Please use Gemini 2.0 Pro or Flash`, type: 'error'});
       return;
@@ -35,7 +72,6 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
       setMessage({text: 'Please enter an API key', type: 'error'});
       return;
     }
-
 
     setIsSaving(true);
     try {
@@ -55,7 +91,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [apiKey, dispatch, modelName, onClose])
 
   // Load saved API key
   useEffect(() => {
@@ -78,15 +114,15 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
           <div className="bg-white rounded-lg shadow-lg w-[480px] max-w-full select-none">
               <div className="flex justify-between items-center p-4 border-b">
                   <h2 className="text-xl font-semibold flex items-center">
-                      <Key size={18} className="mr-2"/>
-                      Configure Model Settings
+                      <Settings size={18} className="mr-2"/>
+                      Chat Configuration
                   </h2>
                   <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
                       <X size={20}/>
                   </button>
               </div>
 
-              <div className="p-4">
+              <div className="p-4 border-b">
                   <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Select Model</label>
                       <select
@@ -126,22 +162,43 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
                           Your API key will be stored locally and used for requests to {modelName}.
                       </p>
                   </div>
-
-                {message.text && (
-                  <div className={`p-2 rounded text-sm mb-4 ${
-                    message.type === 'success' ? 'bg-green-100 text-green-800' :
-                      message.type === 'error' ? 'bg-red-100 text-red-800' : ''
-                  }`}>
-                    {message.text}
-                  </div>
-                )}
               </div>
 
-              <div className="border-t p-4 flex justify-end">
+              <div className="p-4 border-b">
+                  <div className="text-sm text-gray-600">Chat Messages</div>
+                  <div className="flex flex-col gap-1 text-xs mt-2 text-gray-500">
+                      <div># Model
+                          Responses: {chatMessages.filter(message => message.role === 'assistant').length}</div>
+                      <div># User Requests: {chatMessages.filter(message => message.sender === 'user').length}</div>
+                  </div>
+                  <label htmlFor='msgInput'
+                    className='px-2 py-1 rounded text-white bg-gray-400 hover:bg-gray-600 inline-flex items-center text-sm cursor-pointer mt-2.5'
+                  >
+                      <span>Import Messages</span>
+                      <input
+                          id="msgInput"
+                          type="file"
+                          accept=".json"
+                          className="hidden"
+                          onChange={handleImport}
+                      />
+                  </label>
+              </div>
+
+            {message.text && (
+              <div className={`p-2 rounded text-sm mt-4 ${
+                message.type === 'success' ? 'bg-green-100 text-green-800' :
+                  message.type === 'error' ? 'bg-red-100 text-red-800' : ''
+              }`}>
+                {message.text}
+              </div>
+            )}
+
+              <div className="p-4 flex justify-end">
                   <button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 flex items-center"
+                      className="px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 flex items-center cursor-pointer"
                   >
                     {isSaving ? (
                       <>

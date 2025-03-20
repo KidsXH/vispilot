@@ -100,6 +100,7 @@ const Chat = () => {
             dispatch(clearHistory());
             dispatch(clearMessages());
             dispatch(resetDataSource());
+            dispatch(setVegaString(''));
           }}
         >
           {/*<span className='material-symbols-outlined' style={{fontSize: 18}}>delete</span>*/}
