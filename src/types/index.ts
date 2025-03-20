@@ -26,9 +26,9 @@ export interface Message {
 }
 
 export interface MessageContent {
-  type: 'text' | 'image_url';
+  type: 'text' | 'image';
   text?: string;
-  image_url?: { url: string }
+  image?: string;
 }
 
 export type CSVData = {[key: string]: string}[]

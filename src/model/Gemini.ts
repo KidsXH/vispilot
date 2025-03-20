@@ -36,11 +36,11 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
   const result = await chat.sendMessage(msg)
   const text = result.response.text();
 
-  console.log('Res Raw', text)
-  console.log('Res Parsed', parseResponseTextAsJson(text))
+  console.log('Model Response', text)
+  console.log('Parsed Response', parseResponseTextAsJson(text))
 
   return {
-    id: messages[messages.length - 1].id + 1,
+    id: Date.now(),
     role: 'assistant',
     sender: 'assistant',
     content: [{type: 'text', text: text}]
@@ -53,7 +53,7 @@ const messageContentToParts = (content: MessageContent[]) => {
       ({text: content.text}) :
       ({inlineData: {mimeType: 'image/png',
           // remove the data:image/png;base64,
-          data: (content.image_url!.url).replace('data:image/png;base64,', ''),
+          data: (content.image!).replace('data:image/png;base64,', ''),
       }})) as Part
   })
 }

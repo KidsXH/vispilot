@@ -103,13 +103,13 @@ const CSVReader = () => {
         const systemPrompt = generateSystemPrompt();
         const csvPrompt = generateCSVPrompt({filename, csvData: parsedData, headers});
         const systemMessage: Message = {
-          id: 0,
+          id: Date.now(),
           role: 'system',
           sender: 'system',
           content: [{type: 'text', text: systemPrompt}]
         }
         const userMessage: Message = {
-          id: 1,
+          id: Date.now() + 1,
           role: 'user',
           sender: 'system',
           content: [{type: 'text', text: csvPrompt}],

@@ -24,9 +24,9 @@ const Chat = () => {
 
   const handleSendMessage = useCallback((inputText: string) => {
     // Add message to the chat
-    const lastMessageID = messages[messages.length - 1]?.id || 0;
+    // const lastMessageID = messages[messages.length - 1]?.id || 0;
     const newMessage: Message = {
-      id: lastMessageID + 1,
+      id: Date.now(),
       role: 'user',
       sender: 'user',
       content: [{type: 'text', text: inputText}],
@@ -39,6 +39,19 @@ const Chat = () => {
       dispatch(setState('idle'))
     })
   }, [dispatch, messages, model])
+  
+  const handleExportChat = useCallback(() => {
+    // Export chat messages to a json file
+    const blob = new Blob([JSON.stringify(messages)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'chat.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [messages])
 
   useEffect(() => {
     if (messageDivRef.current) {
@@ -122,7 +135,10 @@ const Chat = () => {
             add
           </div>
           <div
-            className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'>
+            className='material-symbols-outlined cursor-pointer select-none rounded hover:bg-neutral-200 p-1 text-neutral-600'
+            title={'Export Chat'}
+            onClick={handleExportChat}
+          >
             export_notes
           </div>
           <div
@@ -152,7 +168,7 @@ const MessageBox = ({message}: { message: Message }) => {
           {
             content.type === "text" ?
               (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
-              <Image className='w-[270px] h-[150px]' src={content.image_url!.url} width={270} height={150}
+              <Image className='w-[270px] h-[150px]' src={content.image!} width={270} height={150}
                      alt={'sketch'}/>
           }
         </div>

@@ -341,7 +341,7 @@ export default function SketchPad() {
 
           if (vegaElementHighlight.elements.length > 0) {
             const attachedMessage: Message = {
-              id: messages.length + 1,
+              id: Date.now(),
               role: 'user',
               sender: 'system',
               content: [
@@ -356,11 +356,11 @@ export default function SketchPad() {
           }
 
           const message: Message = {
-            id: messages.length + 2,
+            id: Date.now(),
             role: 'user',
             sender: 'user',
             content: [
-              {type: 'image_url', image_url: {url: imageUrl}}
+              {type: 'image', image: imageUrl}
             ]
           }
           dispatch(addMessage(message))
@@ -513,8 +513,7 @@ export default function SketchPad() {
 
         {/* 已完成的路径 */}
         {paths.map((path: CanvasPath) => {
-          return <>
-            <g key={path.id}
+          return <g key={path.id}
                fill={path.style.fill}
                stroke={path.style.stroke}
                strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * path.pressure * 4 : path.style.strokeWidth * path.pressure * 2}
@@ -590,7 +589,7 @@ export default function SketchPad() {
                     </> : null
                 )}
             </g>
-          </>
+
         })
         }
 

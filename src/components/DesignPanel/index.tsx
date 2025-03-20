@@ -24,11 +24,11 @@ const DesignPanel = () => {
 
   const reGenerateDesign = useCallback(() => {
     const message: Message = {
-      id: messages.length + 1,
+      id: Date.now(),
       role: 'user',
       sender: 'system',
       content: [
-        {type: 'text', text: 'Please generate a new idea.'},
+        {type: 'text', text: 'Please generate another solution.'},
       ]
     }
     dispatch(addMessage(message))
