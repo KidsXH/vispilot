@@ -156,14 +156,16 @@ export default function SketchPad() {
         } else if (tool === 'note') {
           setIsEditingText(true)
           setIsDrawing(true)
-          setCurrentPath({
+          const newPath = {
             id: Date.now(),
             points: [[x, y]],
             style: {...currentStyle},
             pressure: event.pressure || 1,
             type: 'note' as const,
             text: ''
-          })
+          }
+          setCurrentPath(newPath)
+          dispatch(setFocusedPathID(newPath.id))
         }
       }
 
@@ -343,7 +345,10 @@ export default function SketchPad() {
               role: 'user',
               sender: 'system',
               content: [
-                {type: 'text', text: `**User Actions**: User selects the elements in Vega-Lite Visualization: ${vegaElementHighlight.elements.join(', ')}`}
+                {
+                  type: 'text',
+                  text: `**User Actions**: User selects the elements in Vega-Lite Visualization: ${vegaElementHighlight.elements.join(', ')}`
+                }
               ]
             }
             dispatch(addMessage(attachedMessage))
@@ -449,7 +454,7 @@ export default function SketchPad() {
       {
         name: 'selectArea',
         icon: 'ink_selection',
-        title: 'Select area',
+        title: 'Select in Chart',
         handleClick: () => {
           dispatch(setTool('selectArea'))
         }
@@ -507,81 +512,87 @@ export default function SketchPad() {
         style={{touchAction: 'none'}}>
 
         {/* 已完成的路径 */}
-        {paths.map((path: CanvasPath) => (
-          <g key={path.id}
-             fill={path.style.fill}
-             stroke={path.style.stroke}
-             strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * path.pressure * 2 : path.style.strokeWidth * path.pressure}
-             strokeLinecap="round"
-             strokeLinejoin="round"
-             opacity={path.style.opacity}
-             style={{cursor: tool === 'select' ? 'pointer' : 'default'}}
-             onPointerDown={() => handleElementPointerDown(path.id)}
-             onPointerUp={() => setIsMoving(false)}
-          >
-            {path.type === 'pencil' || path.type === 'axis' || path.type === 'shape' ?
-              <path d={renderPath(path)}/> : (
-                path.type === 'vega' ?
-                  <g transform={`translate(${path.points[0][0]}, ${path.points[0][1]})`}
-                     fill="none"
-                     stroke="none"
-                     strokeWidth="1"
-                     opacity="1"
-                  >
-                    <SVGRenderer svgString={path.vegaSVG || ''} selectable={tool === 'selectArea'}/>
-                  </g>
-                  : path.type === 'note' ? <>
-                    <g onClick={e => e.stopPropagation()}>
-                      {tool === 'note' ? (
-                        <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="180" height="36">
-                          <input
-                            contentEditable={true}
-                            className={`w-full px-2 py-1 rounded outline-none border-1`}
-                            style={{color: path.style.fill, fontWeight: 400, opacity: path.style.opacity}}
-                            value={
-                              path.id === editingPathId && isEditingText ? textInput : path.text
-                            }
-                            onChange={e => setTextInput(e.target.value)}
-                            onFocus={() => {
-                              setIsEditingText(true)
-                              setTextInput(path.text || '')
-                              setEditingPathId(path.id)
-                            }}
-                            onBlur={() => {
-                              setIsEditingText(false)
-                              handleTextChange(textInput, path.id)
-                              setTextInput('');
-                              setEditingPathId(null)
-                            }}
-                            onPointerDown={e => e.stopPropagation()}
-                          />
-                        </foreignObject>
-                      ) : (
-                        <text
-                          key={path.id}
-                          x={path.points[0][0] + 9}
-                          y={path.points[0][1] + 23}
-                          fill={path.style.fill}
-                          opacity={path.style.opacity}
-                          fontWeight={400}
-                          textAnchor={'start'}
-                          style={{
-                            cursor: 'pointer',
-                            background: focusedPathID === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
-                            transition: 'background 0.3s ease'
-                          }}
-                          onClick={e => {
-                            e.stopPropagation()
-                            dispatch(setFocusedPathID(path.id))
-                          }}>
-                          {path.text}
-                        </text>
-                      )}
+        {paths.map((path: CanvasPath) => {
+          return <>
+            <g key={path.id}
+               fill={path.style.fill}
+               stroke={path.style.stroke}
+               strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * path.pressure * 4 : path.style.strokeWidth * path.pressure * 2}
+               strokeLinecap="round"
+               strokeLinejoin="round"
+               opacity={path.style.opacity}
+               style={{cursor: tool === 'select' ? 'pointer' : 'default'}}
+               onPointerDown={() => handleElementPointerDown(path.id)}
+               onPointerUp={() => setIsMoving(false)}
+            >
+              {path.type === 'pencil' || path.type === 'axis' || path.type === 'shape' ?
+                <path d={renderPath(path)}/> : (
+                  path.type === 'vega' ?
+                    <g transform={`translate(${path.points[0][0]}, ${path.points[0][1]})`}
+                       fill="none"
+                       stroke="none"
+                       strokeWidth="1"
+                       opacity="1"
+                    >
+                      <SVGRenderer svgString={path.vegaSVG || ''} selectable={tool === 'selectArea'}/>
                     </g>
-                  </> : null
-              )}
-          </g>
-        ))}
+                    : path.type === 'note' ? <>
+                      <g onClick={e => e.stopPropagation()}>
+                        {tool === 'note' ? (
+                          <foreignObject x={path.points[0][0]} y={path.points[0][1]} width="180" height="36">
+                            <input
+                              contentEditable={true}
+                              className={`w-full px-2 py-1 rounded outline-none border-1`}
+                              style={{color: path.style.fill, fontWeight: 400, opacity: path.style.opacity}}
+                              value={
+                                path.id === editingPathId && isEditingText ? textInput : path.text
+                              }
+                              onChange={e => setTextInput(e.target.value)}
+                              onFocus={() => {
+                                setIsEditingText(true)
+                                setTextInput(path.text || '')
+                                setEditingPathId(path.id)
+                              }}
+                              onBlur={() => {
+                                setIsEditingText(false)
+                                handleTextChange(textInput, path.id)
+                                setTextInput('');
+                                setEditingPathId(null)
+                                dispatch(setTool('select'))
+                                dispatch(setFocusedPathID(null))
+                              }}
+                              onPointerDown={e => e.stopPropagation()}
+                              autoFocus={focusedPathID === path.id}
+                            />
+                          </foreignObject>
+                        ) : (
+                          <text
+                            key={path.id}
+                            x={path.points[0][0] + 9}
+                            y={path.points[0][1] + 23}
+                            fill={path.style.fill}
+                            opacity={path.style.opacity}
+                            fontWeight={400}
+                            textAnchor={'start'}
+                            style={{
+                              cursor: 'pointer',
+                              background: focusedPathID === path.id ? 'rgba(0, 0, 0, 0.1)' : 'none',
+                              transition: 'background 0.3s ease'
+                            }}
+                            onClick={e => {
+                              e.stopPropagation()
+                              dispatch(setFocusedPathID(path.id))
+                            }}>
+                            {path.text}
+                          </text>
+                        )}
+                      </g>
+                    </> : null
+                )}
+            </g>
+          </>
+        })
+        }
 
         {/* 当前正在绘制的路径 */}
         {currentPath && (

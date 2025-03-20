@@ -6,7 +6,7 @@ import Configuration from '@/components/DesignPanel/Configuration'
 import {
   addPath,
   selectCurrentStyle,
-  selectDesignIdea,
+  selectDesignIdea, setTool,
 } from "@/store/features/CanvasSlice";
 import {CanvasPath, Message} from "@/types";
 import {addHistory} from "@/store/features/HistorySlice";
@@ -69,6 +69,7 @@ const DesignPanel = () => {
                   type: 'vega',
                   vegaSVG: designIdea,
                 }
+                dispatch(setTool('select'))
                 dispatch(addPath(newPath))
                 dispatch(addHistory({type: 'canvas', content: newPath}))
               }

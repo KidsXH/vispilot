@@ -19,7 +19,7 @@ const Chat = () => {
   const messageDivRef = useRef<HTMLDivElement>(null);
   const dataSource = useAppSelector(selectDataSource);
 
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(true);
   const [inputText, setInputText] = useState('')
 
   const handleSendMessage = useCallback((inputText: string) => {
@@ -152,7 +152,7 @@ const MessageBox = ({message}: { message: Message }) => {
           {
             content.type === "text" ?
               (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
-              <Image className='w-[270px] h-[150px] mt-2' src={content.image_url!.url} width={270} height={150}
+              <Image className='w-[270px] h-[150px]' src={content.image_url!.url} width={270} height={150}
                      alt={'sketch'}/>
           }
         </div>
