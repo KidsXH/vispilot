@@ -137,7 +137,7 @@ export default function SketchPad() {
             id: Date.now(),
             points: [[x, y]],
             style: {...currentStyle},
-            pressure: event.pressure || 1,
+            pressure: event.pointerType === 'pen' ? event.pressure * 10 || 1 : 1,
             type: 'pencil' as const
           })
         } else if (tool === 'axis') {
@@ -146,7 +146,7 @@ export default function SketchPad() {
             id: Date.now(),
             points: [[x, y]],
             style: {...currentStyle},
-            pressure: event.pressure || 1,
+            pressure: 1,
             type: 'axis' as const
           })
         } else if (tool === 'shape') {
@@ -155,7 +155,7 @@ export default function SketchPad() {
             id: Date.now(),
             points: [[x, y]],
             style: {...currentStyle},
-            pressure: event.pressure || 1,
+            pressure: 1,
             type: 'shape' as const,
             shapeType: selectedShapeType
           })
@@ -166,7 +166,7 @@ export default function SketchPad() {
             id: Date.now(),
             points: [[x, y]],
             style: {...currentStyle},
-            pressure: event.pressure || 1,
+            pressure: 1,
             type: 'note' as const,
             text: ''
           }
@@ -198,7 +198,7 @@ export default function SketchPad() {
           const newPath = {
             ...currentPath,
             points: [...currentPath.points, [x, y]],
-            pressure: event.pressure || 1,
+            pressure: isPencil ? event.pressure * 10 || 1 : 1,
             type: 'pencil' as const
           }
           setCurrentPath(newPath)
@@ -224,7 +224,7 @@ export default function SketchPad() {
 
       setCoordinates({x, y})
     },
-    [dispatch, coordinates.x, coordinates.y, currentPath, focusedPathID, isDrawing, isMoving, paths, selectedShapeType, tool])
+    [dispatch, tool, isMoving, focusedPathID, isDrawing, currentPath, coordinates.x, coordinates.y, paths, isPencil, selectedShapeType])
 
   const handlePointerUp = useCallback((event: PointerEvent) => {
       if (svgRef.current && isPencil) {
@@ -244,7 +244,7 @@ export default function SketchPad() {
       setIsDrawing(false)
       setCurrentPath(null)
     },
-    [dispatch, currentPath, tool])
+    [isPencil, currentPath, tool, dispatch])
 
   const handleElementPointerDown = (pathID: number) => {
     if (tool === 'select') {
@@ -337,8 +337,8 @@ export default function SketchPad() {
   const model = useAppSelector(selectModel)
   const handleAskVisPilot = useCallback(() => {
     const svgElem = svgRef.current
-    if (svgElem) {
-      svgToBase64Png(svgElem, 1250, 700)
+    if (svgElem && svgBBox) {
+      svgToBase64Png(svgElem, svgBBox.width, svgBBox.height)
         .then(base64 => {
           const imageUrl = base64 as string
 
@@ -380,7 +380,7 @@ export default function SketchPad() {
         })
         .catch(console.error)
     }
-  }, [dispatch, messages, model, vegaElementHighlight])
+  }, [dispatch, messages, model, svgBBox, vegaElementHighlight.elements])
 
   const shapeToolList: ToolButtonInfo[] = [
     {
