@@ -770,6 +770,7 @@ const svgToBase64Png = (svgElement: SVGSVGElement, width: number, height: number
 
               // Load the image
               const img = new Image();
+              img.crossOrigin = "anonymous";
               img.onload = () => {
                 // Create canvas for this image
                 const imgCanvas = document.createElement('canvas');
