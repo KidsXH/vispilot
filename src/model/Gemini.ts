@@ -27,7 +27,7 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
     },
     history: history,
     generationConfig: {
-      maxOutputTokens: 1000,
+      maxOutputTokens: 8000,
     },
   })
 
@@ -78,7 +78,7 @@ export const parseResponseTextAsJson = (text: string) => {
 
 const modelNameToID = (modelName: string) => {
   if (modelName === 'Gemini 2.0 Flash') {
-    return 'gemini-2.0-flash';
+    return 'gemini-2.0-flash-001';
   }
   if (modelName === 'Gemini 2.0 Pro') {
     return 'gemini-2.0-pro-exp-02-05';
