@@ -60,7 +60,7 @@ const VegaLite = ({vegaString, width, height, renderCallback}: {
     } else {
       if (renderCallback !== undefined) renderCallback(null)
     }
-  }, [spec, visRef.current])
+  }, [vegaString])
   return <div ref={visRef}/>
 }
 
