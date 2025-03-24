@@ -78,6 +78,8 @@ Perform the following steps based on the input type:
     - Constrain Specification: 'transform.*', 'encoding.*.aggregate' or 'encoding.*.sort'
   - **SeparateScale**: Create separate scales, and thus separate axes
     - Constrain Specification: 'resolve.scale'
+  - **Move**: Edit the orientation of the visual elements.
+    - Constrain Specification: '*.orient' as 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'
   - **Edit**: Edit some specification of existing Vega-Lite visualization in the sketch image.
     - Edit the data field, encoding, mark, style, layout, transform, etc.
   - **Delete**: Delete some specification of in existing Vega-Lite visualization in the visualization.
