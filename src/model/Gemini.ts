@@ -27,6 +27,7 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
     },
     history: history,
     generationConfig: {
+      // responseMimeType: "application/json",
       maxOutputTokens: 8000,
     },
   })

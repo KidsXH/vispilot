@@ -76,6 +76,8 @@ Perform the following steps based on the input type:
     - Constrain Specification: 'encoding.*.column', 'encoding.*.row', 'facet.*', 'repeat.*'
   - **Transform**: Apply data transformations to data fields, such as filtering, aggregating, sorting, etc.
     - Constrain Specification: 'transform.*', 'encoding.*.aggregate' or 'encoding.*.sort'
+  - **SeparateScale**: Create separate scales, and thus separate axes
+    - Constrain Specification: 'resolve.scale'
   - **Edit**: Edit some specification of existing Vega-Lite visualization in the sketch image.
     - Edit the data field, encoding, mark, style, layout, transform, etc.
   - **Delete**: Delete some specification of in existing Vega-Lite visualization in the visualization.
