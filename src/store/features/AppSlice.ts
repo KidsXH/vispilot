@@ -2,31 +2,25 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '@/store'
 
 interface AppState {
-  value: number
+  vegaLiteSize: [number | 'auto', number | 'auto']
 }
 
 const initialState: AppState = {
-  value: 0,
+  vegaLiteSize: [400, 300],
 }
 
 export const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    increment: (state) => {
-      state.value += 1
-    },
-    decrement: (state) => {
-      state.value -= 1
-    },
-    incrementByAmount: (state, action: PayloadAction<number>) => {
-      state.value += action.payload
+    setVegaLiteSize: (state, action: PayloadAction<[number | 'auto', number | 'auto']>) => {
+      state.vegaLiteSize = action.payload
     },
   },
 })
 
-export const { increment, decrement, incrementByAmount } = appSlice.actions
+export const { setVegaLiteSize } = appSlice.actions
 
-export const selectCount = (state: RootState) => state.app.value
+export const selectVegaLiteSize = (state: RootState) => state.app.vegaLiteSize
 
 export default appSlice.reducer

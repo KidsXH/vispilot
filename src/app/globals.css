@@ -17,6 +17,7 @@
     --font-mono: 'Geist Mono', serif;
     --breakpoint-desktop: 1366px;
     --breakpoint-2k: 1920px;
+    --color-system: oklch(0.554 0.046 257.417);
     --color-data: #6495ED;
     --color-mark: #FF7F52;
     --color-encoding: #008080;

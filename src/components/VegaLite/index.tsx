@@ -32,8 +32,8 @@ const VegaLite = ({vegaString, width, height, renderCallback}: {
           }
         };
       }
-      spec.width = width || 400;
-      spec.height = height || 300;
+      if (width) spec.width = width;
+      if (height) spec.height = height;
       spec.padding = 5;
       return compile(spec, {config}).spec;
     } catch (e) {
@@ -59,8 +59,11 @@ const VegaLite = ({vegaString, width, height, renderCallback}: {
       })
     } else {
       if (renderCallback !== undefined) renderCallback(null)
+      if (visRef.current) {
+        visRef.current.innerHTML = '';
+      }
     }
-  }, [vegaString])
+  }, [spec])
   return <div ref={visRef}/>
 }
 

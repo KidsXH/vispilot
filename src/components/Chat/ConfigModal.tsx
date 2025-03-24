@@ -10,8 +10,7 @@ import {
   clearMessages,
   importMessages
 } from "@/store/features/ChatSlice";
-import {clearHistory} from "@/store/features/HistorySlice";
-import {resetDataSource, setVegaString} from "@/store/features/DataSlice";
+import {setVegaString} from "@/store/features/DataSlice";
 import {Message} from "@/types";
 import {setDesignIdea} from "@/store/features/CanvasSlice";
 
