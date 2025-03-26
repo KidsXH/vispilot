@@ -9,6 +9,7 @@ import InterpretationVis from "@/app/corpus/InterpretationVis";
 import VisSpecList from "@/app/corpus/VisSpecList";
 import AccuracyVis from "@/app/corpus/AccuracyVis";
 import SampleList from "@/app/corpus/SampleList";
+import InferenceDistribution from "@/app/corpus/InferenceDistribution";
 
 export type SpecCategory = 'Explicit' | 'Implicit';
 export type TestState = 'no' | 'yes' | 'pending';
@@ -206,18 +207,23 @@ export default function Corpus() {
         <div className='col-span-1'>
           <VisSpecList utteranceSamples={utteranceSamples}/>
         </div>
-        <div className='col-span-1'>
-          <InterpretationVis utteranceSamples={utteranceSamples}/>
+        <div className='col-span-2 grid grid-cols-2'>
+          <div className='col-span-1'>
+            <InterpretationVis utteranceSamples={utteranceSamples}/>
+          </div>
+          <div className="col-span-1 pt-6 px-2">
+            <InferenceDistribution/>
+          </div>
         </div>
-        <div className='col-span-4'>
-          <AccuracyVis />
+        <div className='col-span-3'>
+          <AccuracyVis/>
           <div className='grid grid-cols-5'>
-              <svg ref={svgRef} className="border"/>
+            <svg ref={svgRef} className="border"/>
           </div>
         </div>
       </div>
       <div className="w-full">
-        <SampleList />
+        <SampleList/>
       </div>
     </div>
   );
