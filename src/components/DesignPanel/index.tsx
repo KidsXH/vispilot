@@ -30,7 +30,7 @@ const DesignPanel = () => {
       role: 'user',
       sender: 'system',
       content: [
-        {type: 'text', text: 'Please generate another solution.'},
+        {type: 'text', text: 'You misinterpreted the user intent, provide a new plan with deep thinking.'},
       ]
     }
     dispatch(addMessage(message))
