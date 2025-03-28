@@ -110,35 +110,35 @@ const Chat = () => {
         </div>
       </div>
       <div className='2k:h-[530px] grow min-h-0'>
-      {
-        dataSource.filename === '-' ?
-          <div className='flex items-center justify-center h-full gap-2  text-gray-400 text-sm font-bold'>
-            <span className='material-symbols-outlined'>smart_toy</span>
-            <div className=''>: Please upload a data table to start.</div>
-          </div> :
-          <div className='flex flex-col h-full overflow-y-scroll no-scrollbar' ref={messageDivRef}>
-            {messages.filter((message) => message.sender !== 'system')
-              .map((message) => {
-                return (
-                  <div
-                    key={message.id}
-                    className={`flex my-2
+        {
+          dataSource.filename === '-' ?
+            <div className='flex items-center justify-center h-full gap-2  text-gray-400 text-sm font-bold'>
+              <span className='material-symbols-outlined'>smart_toy</span>
+              <div className=''>: Please upload a data table to start.</div>
+            </div> :
+            <div className='flex flex-col h-full overflow-y-scroll no-scrollbar' ref={messageDivRef}>
+              {messages.filter((message) => message.sender !== 'system')
+                .map((message) => {
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex my-2
                 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}
-                  >
-                    <MessageBox message={message}/>
-                  </div>
-                );
-              })}
-            {
-              state === 'waiting' &&
-                <div className='flex justify-center mb-2'>
+                    >
+                      <MessageBox message={message}/>
+                    </div>
+                  );
+                })}
+              {
+                state === 'waiting' &&
+                  <div className='flex justify-center mb-2'>
             <span className='animate-spin rounded-full material-symbols-outlined select-none'>
               progress_activity
             </span>
-                </div>
-            }
-          </div>
-      }
+                  </div>
+              }
+            </div>
+        }
       </div>
       <div className='flex flex-col space-y-2'>
         <input
@@ -189,26 +189,52 @@ export default Chat;
 
 const MessageBox = ({message}: { message: Message }) => {
   const dispatch = useAppDispatch();
+  const [showThink, setShowThink] = useState(false);
   return (<>
     <div className='flex flex-col max-w-72'>
       <div
         className={`flex flex-col rounded p-2 max-w-72
         ${message.sender === 'user' ? 'bg-blue-200' : 'bg-gray-200 w-72'}`}
       >
-        {message.content.map((content, index) =>
-          <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
-            {
-              content.type === "text" ?
-                (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
-                <Image className='w-[270px] h-[150px]' src={content.image!} width={270} height={150}
-                       alt={'sketch'}/>
-            }
-          </div>
+        {message.content.map((content, index) => {
+            const parsedText = content.text ? parseResponseTextAsJson(content.text) : null;
+            return <div key={index} className={`break-words hyphens-auto whitespace-break-spaces`}>
+              {content.type === 'text' && parsedText?.think && showThink &&
+                  <div className={`text-neutral-700 border-b-2 border-neutral-100 pb-1 mb-1 text-sm`}>
+                    {`<Think>: ${parsedText.think}`}
+                  </div>
+              }
+              {
+                content.type === "text" ?
+                  (message.role === 'assistant' ? parseResponseTextAsJson(content.text!)?.chat : content.text) :
+                  <Image className='w-[270px] h-[150px]' src={content.image!} width={270} height={150}
+                         alt={'sketch'}/>
+              }
+            </div>
+          }
         )}
       </div>
       {message.sender === 'assistant' &&
           <div className='flex items-center justify-end gap-1 max-w-72 mt-0.5 text-xs text-neutral-400'>
+            {showThink ? <button className='hover:underline cursor-pointer'
+                                 title={'Hide Thinking Process'}
+                                 onClick={() => {
+                                   setShowThink(false);
+                                 }}
+              >
+                <span className=''>Chat-Only</span>
+              </button> :
+              <button className='hover:underline cursor-pointer'
+                      title={'Show Thinking Process'}
+                      onClick={() => {
+                        setShowThink(true);
+                      }}
+              >
+                <span className=''>Think</span>
+              </button>
+            }
             {parseResponseTextAsJson(message.content[0].text!)?.vega && <>
+                <div className='border-l-2 h-3'></div>
                 <button className='hover:underline cursor-pointer'
                         title={'View Visualization'}
                         onClick={() => {
@@ -218,12 +244,12 @@ const MessageBox = ({message}: { message: Message }) => {
                             dispatch(setVegaString(vegaString));
                           }
                         }}
-                  >
+                >
                     <span className=''>View</span>
                 </button>
-                <div className='border-l-2 h-3'></div>
             </>
             }
+            <div className='border-l-2 h-3'></div>
             {new Date(message.id).toLocaleString()}
           </div>
       }

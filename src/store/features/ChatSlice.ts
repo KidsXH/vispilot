@@ -2,7 +2,7 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
 import {Message} from "@/types";
 
-export type ChatModels = 'Gemini 2.0 Flash' | 'Gemini 2.0 Pro' | 'GPT-4o' |'Claude 3.7 Sonnet';
+export type ChatModels = 'Gemini 2.0 Flash' | 'Gemini 2.0 Pro' | 'Gemini 2.5 Pro' | 'GPT-4o' |'Claude 3.7 Sonnet';
 export type ChatState = 'idle' | 'waiting';
 
 export interface ModelConfig {

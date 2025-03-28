@@ -84,5 +84,8 @@ const modelNameToID = (modelName: string) => {
   if (modelName === 'Gemini 2.0 Pro') {
     return 'gemini-2.0-pro-exp-02-05';
   }
+  if (modelName === 'Gemini 2.5 Pro') {
+    return 'gemini-2.5-pro-exp-03-25';
+  }
   return ''
 }
