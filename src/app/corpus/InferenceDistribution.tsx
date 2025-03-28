@@ -16,7 +16,7 @@ const InferenceDistribution = () => {
     // Collect paths of implicit inference items
     Object.entries(sample.inference).forEach(([category, inferences]) => {
       Object.entries(inferences).forEach(([key, value]) => {
-        if (value && value === 'implicit inference') {
+        if (value && value.toLowerCase() === 'implicit inference') {
           // replace '/' with '.' and remove spaces
           implicitPaths.push(`${category}.${key.replace(/\//g, '.').replace(/\s+/g, '')}`);
         }
@@ -209,6 +209,40 @@ const InferenceDistribution = () => {
       .attr("width", x0.bandwidth())
       .attr("height", d => height - y(d.value as number))
       .attr("fill", d => d.key === 'implicit' ? colorImplicit : colorMissing)
+      // Add tooltip functionality
+      .on("mouseover", function(event, d) {
+        const [mouseX, mouseY] = d3.pointer(event, svg.node());
+
+        // Create tooltip group
+        const tooltip = svg.append("g")
+          .attr("class", "tooltip")
+          .attr("transform", `translate(${mouseX + 10},${mouseY - 15})`);
+
+        // Add background rectangle
+        tooltip.append("rect")
+          .attr("fill", "white")
+          .attr("stroke", "#ccc")
+          .attr("rx", 3)
+          .attr("ry", 3);
+
+        // Add text
+        const text = tooltip.append("text")
+          .attr("y", 15)
+          .attr("x", 5)
+          .attr("font-size", "12px")
+          .text(`${d.key}: ${d.value}`);
+
+        // Size background based on text
+        const bbox = text.node()?.getBBox();
+        if (bbox) {
+          tooltip.select("rect")
+            .attr("width", bbox.width + 10)
+            .attr("height", bbox.height + 10);
+        }
+      })
+      .on("mouseout", function() {
+        d3.select(svgRef2.current).selectAll(".tooltip").remove();
+      });
 
     // Add x-axis
     svg.append("g")
