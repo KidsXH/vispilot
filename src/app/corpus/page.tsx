@@ -207,19 +207,19 @@ export default function Corpus() {
         <div className='col-span-1'>
           <VisSpecList utteranceSamples={utteranceSamples}/>
         </div>
-        <div className='col-span-2 grid grid-cols-2'>
+        <div className='col-span-3 grid grid-cols-3'>
           <div className='col-span-1'>
             <InterpretationVis utteranceSamples={utteranceSamples}/>
           </div>
-          <div className="col-span-1 pt-6 px-2">
+          <div className="col-span-2 pt-6 px-2">
             <InferenceDistribution/>
           </div>
         </div>
-        <div className='col-span-3'>
-          <AccuracyVis/>
-          <div className='grid grid-cols-5'>
-            <svg ref={svgRef} className="border"/>
-          </div>
+        <div className='col-span-1'>
+          {/*<AccuracyVis/>*/}
+          {/*<div className='grid grid-cols-1'>*/}
+          {/*  <svg ref={svgRef} className="border"/>*/}
+          {/*</div>*/}
         </div>
       </div>
       <div className="w-full">
