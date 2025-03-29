@@ -4,7 +4,13 @@ import {ModelConfig} from "@/store/features/ChatSlice";
 
 export const requestToGemini = async (messages: Message[], modelConfig: ModelConfig) => {
   const genAI = new GoogleGenerativeAI(modelConfig.key || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
-  const model = genAI.getGenerativeModel({model: modelNameToID(modelConfig.name)});
+  const model = genAI.getGenerativeModel(
+    {model: modelNameToID(modelConfig.name),},
+    { apiClient: process.env.NEXT_PUBLIC_API_URL || '',
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+      apiVersion: 'v1'
+    }
+  );
 
   const historyMessage = messages.slice(1, messages.length - 1);
   const history = historyMessage.map((message) => {
@@ -27,14 +33,39 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
     },
     history: history,
     generationConfig: {
-      // responseMimeType: "application/json",
       maxOutputTokens: 8000,
     },
   })
+  // const chat = model.startChat({
+  //   // systemInstruction: {
+  //   //   role: 'system',
+  //   //   parts: [
+  //   //     {
+  //   //       text: systemPrompt,
+  //   //     },
+  //   //   ],
+  //   // },
+  //   history: [{
+  //     role: 'system',
+  //     parts: [
+  //       {
+  //         text: systemPrompt,
+  //       },
+  //     ],
+  //   },
+  //     ...history],
+  //   generationConfig: {
+  //     maxOutputTokens: 8000,
+  //   },
+  // })
 
   const msg = messageContentToParts(messages[messages.length - 1].content);
 
-  const result = await chat.sendMessage(msg)
+  const result = await chat.sendMessage(msg,
+    { apiClient: process.env.NEXT_PUBLIC_API_URL || '',
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+    apiVersion: 'v1'}
+  )
   const text = result.response.text();
 
   console.log('Model Response', text)
@@ -48,7 +79,7 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
   } as Message;
 }
 
-const messageContentToParts = (content: MessageContent[]) => {
+export const messageContentToParts = (content: MessageContent[]) => {
   return content.map((content) => {
     return (content.type === 'text' ?
       ({text: content.text}) :
