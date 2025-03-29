@@ -5,11 +5,7 @@ import {ModelConfig} from "@/store/features/ChatSlice";
 export const requestToGemini = async (messages: Message[], modelConfig: ModelConfig) => {
   const genAI = new GoogleGenerativeAI(modelConfig.key || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
   const model = genAI.getGenerativeModel(
-    {model: modelNameToID(modelConfig.name),},
-    { apiClient: process.env.NEXT_PUBLIC_API_URL || '',
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
-      apiVersion: 'v1'
-    }
+    {model: modelNameToID(modelConfig.name)}
   );
 
   const historyMessage = messages.slice(1, messages.length - 1);
@@ -36,40 +32,13 @@ export const requestToGemini = async (messages: Message[], modelConfig: ModelCon
       maxOutputTokens: 8000,
     },
   })
-  // const chat = model.startChat({
-  //   // systemInstruction: {
-  //   //   role: 'system',
-  //   //   parts: [
-  //   //     {
-  //   //       text: systemPrompt,
-  //   //     },
-  //   //   ],
-  //   // },
-  //   history: [{
-  //     role: 'system',
-  //     parts: [
-  //       {
-  //         text: systemPrompt,
-  //       },
-  //     ],
-  //   },
-  //     ...history],
-  //   generationConfig: {
-  //     maxOutputTokens: 8000,
-  //   },
-  // })
 
   const msg = messageContentToParts(messages[messages.length - 1].content);
 
-  const result = await chat.sendMessage(msg,
-    { apiClient: process.env.NEXT_PUBLIC_API_URL || '',
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
-    apiVersion: 'v1'}
-  )
+  const result = await chat.sendMessage(msg)
   const text = result.response.text();
 
   console.log('Model Response', text)
-  console.log('Parsed Response', parseResponseTextAsJson(text))
 
   return {
     id: Date.now(),
@@ -91,10 +60,7 @@ export const messageContentToParts = (content: MessageContent[]) => {
 }
 
 export const parseResponseTextAsJson = (text: string) => {
-  if (!text.startsWith('```json') || !text.endsWith('```')) {
-    return null;
-  }
-  const jsonText = text.slice(7, -3);
+  const jsonText = text.replace(/```json/, '').replace(/```/, '');
   try {
     const json = JSON.parse(jsonText);
     return {
