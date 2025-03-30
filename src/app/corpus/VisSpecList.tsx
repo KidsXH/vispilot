@@ -5,6 +5,7 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {useAppDispatch, useAppSelector} from "@/store";
 import {selectChecklist, setChecklist} from "@/store/features/CorpusSlice";
+import {ProcessResult} from "@/app/llm-processing/page";
 
 export const defaultCheckList = {
   'data': [
@@ -39,11 +40,17 @@ export const defaultCheckList = {
   ]
 }
 
-const VisSpecList = ({utteranceSamples}: { utteranceSamples: UtteranceSample[] }) => {
+const VisSpecList = ({data}: { data: ProcessResult[] }) => {
   const checkList = useAppSelector(selectChecklist);
   const [selectedSource, setSelectedSource] = useState<'generated' | 'groundTruth'>('groundTruth');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const utteranceSamples = data.map(d => {
+    return {
+      id: d.id,
+      groundTruth: d.groundTruth,
+      vegaLite: JSON.parse(d.vegaLite),
+    }
+  })
 
   const visSpecList = useMemo(() => {
     // find all unique keys in utteranceSample.groundTruth and utteranceSample.vegaLite
@@ -71,10 +78,10 @@ const VisSpecList = ({utteranceSamples}: { utteranceSamples: UtteranceSample[] }
     // Iterate through each utteranceSample and find keys in groundTruth and vegaLite
     utteranceSamples.forEach(sample => {
       if (sample.groundTruth && selectedSource === 'groundTruth') {
-        findKeys(sample.groundTruth, '', sample.id);
+        findKeys(sample.groundTruth, '', Number(sample.id));
       }
       if (sample.vegaLite && selectedSource === 'generated') {
-        findKeys(sample.vegaLite, '', sample.id);
+        findKeys(sample.vegaLite, '', Number(sample.id));
       }
     });
     return specList

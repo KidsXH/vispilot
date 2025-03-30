@@ -38,7 +38,7 @@ interface GroundTruth {
   vegaLiteJson: any;
 }
 
-interface ProcessResult {
+export interface ProcessResult {
   id: string;
   utterance: string;
   visID: string;
@@ -62,6 +62,13 @@ interface VisualizationDataset {
   data: any[];
 }
 
+const notePrompt = `## Note
+- If you infer something **by convention**, it must be categorized as **Implicit**.
+- If you assign a default value, it must be categorized as **Implicit**.
+- There are redundant properties in DataSchema and Encoding, such as "field", you need to explain them separately. The DataSchema is the selection of data attribute, and the Encoding is the mapping of the data attribute to the visual channel.
+- If the user only say the data attribute but not mention which axis, its field in DataSchema is explicit, but the Encoding should be categorized as **Implicit**.
+`
+
 export default function LLMProcessingPage() {
   const [systemPrompt, setSystemPrompt] = useState<string>(
     `You are an AI assistant that helps users create data visualizations. Your **Task1** is to convert the user's request into a Vega-Lite JSON specification. After that, wait for the user to provide an abstraction of your generated Vega-Lite JSON specification (**Vega-Lite Abstraction**). The user will categorize important properties of the Vega-Lite JSON specification into  'DataSchema', 'Mark', 'Encoding', and 'Design'. Your **Task2** is to explain the rationale of each property in the **Vega-Lite Abstraction**, and classify the properties into 'Explicit Reference' and 'Implicit Inference'.
@@ -70,13 +77,13 @@ export default function LLMProcessingPage() {
 - **DataSchema**: This component defines the structural properties of data, including attribute names and data transformations.
 - **Mark**: This component specifies the type of visualization, such as bar, line, or scatter plot.
 - **Encoding**: This component specifies the mapping between data attributes and visual properties, such as encoding.x.field, encoding.y.field, etc.
-- **Design**:  The design component captures visualization properties not directly tied to data semantics, like background color, gridlines, axis properties, chart title, etc.
+- **Design**: The design component captures visualization properties not directly tied to data semantics, like background color, gridlines, axis properties, chart title, etc.
 
 
 ## Explanation Requirements
-Give your explanation for the rationale of each property in the **Vega-Lite Abstraction**, then classify the properties into the following categories:
-- Explicit Reference: There are explicit specification in the user request. For example, "Show me the average sales by region using a bar chart" explicitly specifies the field of data and the mark type.
-- Implicit Inference: You infer the properties based on implicit assumptions and incomplete specification in the user request. For example, although "Show me the sales by region" specifies two fields of data, but not explicitly specify which is bound to x-axis and which is to y-axis. Therefore, the encoding.x.field and encoding.y.field are implicit inference.
+Give your explanation for the rationale of each property in the **Vega-Lite Abstraction**, then classify the properties into the following two categories:
+- **Implicit**: You infer the properties based on assumptions or convention experience from incomplete specification or implicit cues in the user request.
+- **Explicit**: You interprets the user intent based on explicit specification from utterance.
 
 ## Response Format for Task1 (Vega-Lite JSON)
 \`\`\`json
@@ -204,7 +211,7 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
             dataset: row.dataset.toLowerCase(),
           } as Utterance;
         });
-        console.log(utterances)
+        console.log('Load utterances', utterances)
         setUtterances(utterances);
       },
       error: (error) => {
@@ -226,7 +233,7 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
         dataset: key.split('-')[0],
         vegaLiteJson: value
       }) as GroundTruth);
-      console.log(groundTruths)
+      console.log('Load GT', groundTruths)
       setGroundTruths(groundTruths);
     } catch (err) {
       console.error("Failed to parse ground truth JSON:", err);
@@ -421,7 +428,7 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
         userPrompt: result.utterance,
         dataPrompt: convertDatasetToTextPrompt(result.dataset, datasetData),
         firstRoundResponse: result.vegaLite,
-        nextUserPrompt: '**Vega-Lite Abstraction**:\n' + abstractVegaLiteJson(result.vegaLite),
+        nextUserPrompt: '**Vega-Lite Abstraction**:\n' + abstractVegaLiteJson(result.vegaLite) + '\nCheck if these properties explicitly or implicitly inferred from user utterance: ' + result.utterance + '\n' + notePrompt,
       });
 
       const updatedResult = {
@@ -456,8 +463,18 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
     setIsProcessing(true);
     setProgress(0);
 
+    // clear all explanations
+    // const updatedResults = results.map(result => ({
+    //   ...result,
+    //   explanation: undefined,
+    //   evaluation: undefined
+    // }));
+    // setResults(updatedResults);
+
     // Filter results that don't have explanations and don't have errors, or have vegaLite and errors but no explanations
-    const resultsToExplain = results.filter(r => (!r.explanation && !r.error && r.vegaLite) || (r.vegaLite && r.error && !r.explanation));
+    // const resultsToExplain = results.filter(r => (!r.explanation && !r.error && r.vegaLite) || (r.vegaLite && r.error && !r.explanation));
+
+    const resultsToExplain = results.filter(r => (!r.error && r.vegaLite && !r.explanation));
 
     if (resultsToExplain.length === 0) {
       setIsProcessing(false);
@@ -715,10 +732,10 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
               <Input
                 type="number"
                 min={1}
-                max={50}
+                max={100}
                 value={parallelism}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setParallelism(Math.min(50, Math.max(1, Number(e.target.value))))}
+                  setParallelism(Math.min(100, Math.max(1, Number(e.target.value))))}
                 placeholder="Number of parallel requests (1-10)"
               />
             </div>
@@ -728,12 +745,12 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
               <Input
                 type="number"
                 min={1}
-                max={300}
+                max={1000}
                 step={1}
                 value={maxRequestsPerMin}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setMaxRequestsPerMin(Math.min(300, Math.max(1, Number(e.target.value))))}
-                placeholder="Rate limit (1-300)"
+                  setMaxRequestsPerMin(Math.min(1000, Math.max(1, Number(e.target.value))))}
+                placeholder="Rate limit (1-1000)"
               />
             </div>
 
@@ -872,18 +889,18 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
                           {result.processingTime}ms
                         </span>
                         {result.evaluation && (
-                          <div className="flex gap-2 w-60">
+                          <div className="flex gap-2 w-96">
                             <Badge variant={(result.evaluation?.categoryMatches.DataSchema.matched === result.evaluation?.categoryMatches.DataSchema.total) ? "success" : "warning"}
                                    className="bg-green-100 text-data">
-                              DataSchema
+                              DataSchema ({result.explanation.DataSchema.filter((item: any) => !item.explicit).length} inf)
                             </Badge>
                             <Badge variant={(result.evaluation?.categoryMatches.Mark.matched === result.evaluation?.categoryMatches.Mark.total) ? "success" : "warning"}
                                    className="bg-green-100 text-mark">
-                              Mark
+                              Mark ({result.explanation.Mark.filter((item: any) => !item.explicit).length} inf)
                             </Badge>
                             <Badge variant={(result.evaluation?.categoryMatches.Encoding.matched === result.evaluation?.categoryMatches.Encoding.total) ? "success" : "warning"}
                                    className="bg-green-100 text-encoding">
-                              Encoding
+                              Encoding  ({result.explanation.Encoding.filter((item: any) => !item.explicit).length} inf)
                             </Badge>
                           </div>
                         )}

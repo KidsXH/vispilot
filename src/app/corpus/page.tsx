@@ -7,9 +7,9 @@ import {useAppDispatch, useAppSelector} from "@/store";
 import {setVisDataset, selectUtteranceSamples, setUtteranceSamples, setFilteredIDs} from "@/store/features/CorpusSlice";
 import InterpretationVis from "@/app/corpus/InterpretationVis";
 import VisSpecList from "@/app/corpus/VisSpecList";
-import AccuracyVis from "@/app/corpus/AccuracyVis";
 import SampleList from "@/app/corpus/SampleList";
 import InferenceDistribution from "@/app/corpus/InferenceDistribution";
+import {ProcessResult} from "@/app/llm-processing/page";
 
 export type SpecCategory = 'Explicit' | 'Implicit';
 export type TestState = 'no' | 'yes' | 'pending';
@@ -30,17 +30,20 @@ export default function Corpus() {
     design: 'Explicit',
   });
 
-  const [modelName, setModelName] = useState<string>('GPT-4o');
+  const [processResults, setProcessResults] = useState<ProcessResult[]>([]);
+
+  const [modelName, setModelName] = useState<string>('gemini-2.0-flash');
+
   useEffect(() => {
-    const corpusDataFile = `/vispilot/corpusData/${modelName}.json`;
-    fetch(corpusDataFile)
+    const dataFile = `/vispilot/corpusData/${modelName}.json`;
+    fetch(dataFile)
       .then(response => response.json())
       .then(data => {
-        const utteranceSamples = prepareData(data);
-        dispatch(setUtteranceSamples(utteranceSamples));
+        setProcessResults(data);
+        console.log('Process results:', data);
       })
       .catch(error => {
-        console.error('Error loading corpus data:', error);
+        console.error('Error loading Process Results:', error);
       });
   }, [dispatch, modelName]);
 
@@ -199,20 +202,32 @@ export default function Corpus() {
     <div className="p-8">
       <h1 className="text-2xl pb-4 border-b border-neutral-300">
         Text Prompt Corpus
-        <span className="text-sm ml-2 bg-gray-200 px-2 py-1 rounded cursor-pointer select-none hover:bg-gray-100">
-          {modelName}
+        <span className={`text-sm ml-2 bg-gray-200 px-2 py-1 rounded cursor-pointer select-none hover:bg-gray-100 ${modelName.toLowerCase() !== 'gpt-4o' && 'opacity-30 hover:opacity-100'}`}
+          onClick={() => {setModelName('gpt-4o')}}
+        >
+          {'gpt-4o'}
+        </span>
+        <span className={`text-sm ml-2 bg-gray-200 px-2 py-1 rounded cursor-pointer select-none hover:bg-gray-100 ${modelName.toLowerCase() !== 'gemini-2.0-flash' && 'opacity-30 hover:opacity-100'}`}
+              onClick={() => {setModelName('gemini-2.0-flash')}}
+        >
+          {'gemini-2.0-flash'}
+        </span>
+        <span className={`text-sm ml-2 bg-gray-200 px-2 py-1 rounded cursor-pointer select-none hover:bg-gray-100 ${modelName.toLowerCase() !== 'claude-3.5-sonnet' && 'opacity-30 hover:opacity-100'}`}
+              onClick={() => {setModelName('claude-3.5-sonnet')}}
+        >
+          {'claude-3.5-sonnet'}
         </span>
       </h1>
       <div className='grid grid-cols-6 gap-4 pb-2 border-b'>
         <div className='col-span-1'>
-          <VisSpecList utteranceSamples={utteranceSamples}/>
+          <VisSpecList data={processResults}/>
         </div>
         <div className='col-span-3 grid grid-cols-3'>
           <div className='col-span-1'>
-            <InterpretationVis utteranceSamples={utteranceSamples}/>
+            <InterpretationVis processResults={processResults}/>
           </div>
           <div className="col-span-2 pt-6 px-2">
-            <InferenceDistribution/>
+            <InferenceDistribution processResults={processResults}/>
           </div>
         </div>
         <div className='col-span-1'>
@@ -223,42 +238,11 @@ export default function Corpus() {
         </div>
       </div>
       <div className="w-full">
-        <SampleList/>
+        <SampleList data={processResults}/>
       </div>
     </div>
   );
 }
-
-const prepareData = (data: any): UtteranceSample[] => {
-  return data.map((item: any) => {
-    return {
-      id: item.id,
-      utteranceSet: item.UtteranceSet,
-      sequential: item.Sequential,
-      visID: item.VisID,
-      dataset: item.Dataset,
-      groundTruth: item.ground_truth,
-      vegaLite: item.vegalite,
-      specGen: item.normed_gen_vis_spec,
-      specGT: item.normed_gt_vis_spec,
-      inference: {
-        dataSchema: item.inference_level.dataSchema,
-        mark: item.inference_level.mark,
-        encoding: item.inference_level.encoding,
-        design: item.inference_level.design,
-      },
-      accuracy: {
-        dataSchema: item.accuracy.dataSchema,
-        mark: item.accuracy.mark,
-        encoding: item.accuracy.encoding,
-        design: item.accuracy.design,
-      },
-      accGenDiff: item.gen_acc_diff,
-      accGTDiff: item.gt_acc_diff,
-      tested: 'yes'
-    } as UtteranceSample;
-  });
-};
 
 const loadCSVDatasets = async (filename: string) => {
   const response = await fetch(`/vispilot/data/${filename}`);

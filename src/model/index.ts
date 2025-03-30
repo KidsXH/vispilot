@@ -51,7 +51,9 @@ export const sendUtteranceTestRequest = async (params: {
 
   const data = {
     "messages": formatMsg,
-    "model": "gemini-2.0-flash-001",
+    "model": "claude-3-5-sonnet-20241022",
+    // "model": "gpt-4o",
+    // "model": "gemini-2.0-flash-001",
   }
 
   try {
@@ -68,7 +70,10 @@ export const sendUtteranceTestRequest = async (params: {
       }
     )
     const responseJson = await response.json();
+    // GPT Response
     const responseText = responseJson.choices[0].message.content;
+    // Gemini Response
+    // const responseText = responseJson.content[0].text;
     return JSON.stringify(JSON.parse(responseText!.replace(/```json/g, '').replace(/```/g, '')));
   } catch (error) {
     console.error("Error in sendUtteranceTestRequest:", userPrompt, error);

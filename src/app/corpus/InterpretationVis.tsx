@@ -3,8 +3,10 @@ import * as d3 from "d3";
 import {UtteranceSample} from "@/types";
 import {useAppDispatch, useAppSelector} from "@/store";
 import {selectChecklist, selectFilteredIDs, setFilteredIDs} from "@/store/features/CorpusSlice";
+import {ProcessResult} from "@/app/llm-processing/page";
+import {useInferenceCounts} from "@/app/corpus/InferenceDistribution";
 
-const specDims = ['dataSchema', 'mark', 'encoding', 'design'] as const;
+const specDims = ['DataSchema', 'Mark', 'Encoding', 'Design'] as const;
 const categories = ['Explicit', 'Implicit'] as const;
 
 interface SpecMatch {
@@ -13,141 +15,76 @@ interface SpecMatch {
   isImplicit: boolean;
 }
 
-const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSample[] }) => {
+const InterpretationVis = ({processResults}: { processResults: ProcessResult[] }) => {
   const dispatch = useAppDispatch();
   const filteredIDs = useAppSelector(selectFilteredIDs);
+  const utteranceSamples = useMemo(() => processResults.map(result => {
+    return {
+      id: result.id,
+      explanation: result.explanation,
+      evaluation: result.evaluation,
+    }
+  }), [processResults])
   const svgRef = useRef<SVGSVGElement>(null);
   const checklist = useAppSelector(selectChecklist);
-  const [patterns, setPatterns] = useState<{ [key: string]: number[] }>({});
-  const [matchedSpecs, setMatchedSpecs] = useState<{
-    dataSchema: SpecMatch[],
-    mark: SpecMatch[],
-    encoding: SpecMatch[],
-    design: SpecMatch[]
-  }>({
-    dataSchema: [],
-    mark: [],
-    encoding: [],
-    design: []
-  });
+  const [patterns, setPatterns] = useState<{ [key: string]: string[] }>({});
+
+  // const inferenceCount = useMemo(() => {
+  //   return utteranceSamples.map(sample => {
+  //     const explanation = sample.explanation;
+  //
+  //     const counts = specDims.map(spec => {
+  //       const implicitCount = explanation[spec].filter((d: any) => d.explicit === false).length;
+  //       const explicitCount = explanation[spec].filter((d: any) => d.explicit === true).length;
+  //
+  //       // if some property in evaluation is not included in the explanation, it is implicit
+  //       const evaluation = sample.evaluation;
+  //       const missingCount = evaluation?.details
+  //         .filter(d => d.category === spec)
+  //         .filter((d: any) => {
+  //           const prop = spec === 'DataSchema' ? d.property.replace(/encoding./g, '') : d.property;
+  //           const propMatch = explanation[spec].some((e: any) => e.property === prop);
+  //           return !propMatch;
+  //         }).length || 0
+  //
+  //       return {
+  //         explicitCount,
+  //         implicitCount,
+  //         missingCount,
+  //       }
+  //     })
+  //
+  //     return {
+  //       id: sample.id,
+  //       DataSchema: counts[0],
+  //       Mark: counts[1],
+  //       Encoding: counts[2],
+  //       Design: counts[3],
+  //     }
+  //   })
+  // }, [utteranceSamples])
+
+  const inferenceCount = useInferenceCounts(processResults);
 
   useEffect(() => {
-    const matchedSpecs: {
-      dataSchema: SpecMatch[],
-      mark: SpecMatch[],
-      encoding: SpecMatch[],
-      design: SpecMatch[]
-    } = {
-      dataSchema: [],
-      mark: [],
-      encoding: [],
-      design: []
-    }
+    const patterns: { [key: string]: string[] } = {};
 
-    const patterns: { [key: string]: number[] } = {};
-
-    utteranceSamples.forEach(sample => {
-      const {inference} = sample;
+    inferenceCount.forEach(count => {
       const pattern = {
-        dataSchema: false,
-        mark: false,
-        encoding: false,
-        design: false,
+        dataSchema: count.DataSchema.implicitCount + count.DataSchema.missingCount > 0,
+        mark: count.Mark.implicitCount + count.Mark.missingCount > 0,
+        encoding: count.Encoding.implicitCount + count.Encoding.missingCount > 0,
+        design: count.Design.implicitCount + count.Design.missingCount > 0,
       }
-      Object.keys(inference.dataSchema).forEach(_spec => {
-        const spec = _spec.replace(/\//g, '.');
-        const value = inference.dataSchema[_spec];
-        checklist.data.forEach(reg => {
-          if (new RegExp(reg).test(spec)) {
-            const isImplicit = value.toLowerCase() === 'implicit inference';
-            if (isImplicit) pattern.dataSchema = true;
-            matchedSpecs.dataSchema.push(
-              {id: sample.id, spec, isImplicit}
-            );
-          }
-        })
-      })
-
-      Object.keys(inference.mark).forEach(_spec => {
-        const spec = _spec.replace(/\//g, '.');
-        const value = inference.mark[_spec];
-        checklist.mark.forEach(reg => {
-          if (new RegExp(reg).test(spec)) {
-            const isImplicit = value.toLowerCase() === 'implicit inference';
-            if (isImplicit) pattern.mark = true;
-            matchedSpecs.mark.push(
-              {id: sample.id, spec, isImplicit}
-            );
-          }
-        })
-      })
-
-      Object.keys(inference.encoding).forEach(_spec => {
-        const spec = _spec.replace(/\//g, '.');
-        const value = inference.encoding[_spec];
-        checklist.encoding.forEach(reg => {
-          const isImplicit = value.toLowerCase() === 'implicit inference';
-          if (isImplicit) pattern.encoding = true;
-          if (new RegExp(reg).test(spec)) {
-            matchedSpecs.encoding.push(
-              {id: sample.id, spec, isImplicit}
-            );
-          }
-        })
-      })
-
-
-
-      // If there are no keys in inference.design, treat as implicit
-      if (Object.keys(inference.design).length === 0) {
-        // debugger;
-        pattern.design = true;
-        // Add a placeholder entry to matchedSpecs
-        matchedSpecs.design.push({
-          id: sample.id,
-          spec: 'default',
-          isImplicit: true
-        });
-      }
-
-      Object.keys(inference.design).forEach(_spec => {
-        const spec = _spec.replace(/\//g, '.');
-        const value = inference.design[_spec];
-        checklist.design.forEach(reg => {
-          const isImplicit = value.toLowerCase() === 'implicit inference';
-          if (isImplicit) pattern.design = true;
-          if (new RegExp(reg).test(spec)) {
-            matchedSpecs.design.push(
-              {id: sample.id, spec, isImplicit}
-            );
-          }
-        })
-      })
 
       const patternString = JSON.stringify(pattern);
       if (!patterns[patternString]) {
         patterns[patternString] = [];
       }
-      patterns[patternString].push(sample.id);
+      patterns[patternString].push(count.id);
     })
-
     setPatterns(patterns);
-    setMatchedSpecs(matchedSpecs)
-  }, [checklist, utteranceSamples])
-
-  const badSamples = useMemo(() => {
-    return utteranceSamples.filter(sample => {
-      const {inference} = sample;
-      return Array.isArray(inference.dataSchema) ||
-        Array.isArray(inference.mark) ||
-        Array.isArray(inference.encoding) ||
-        Array.isArray(inference.design);
-    })
-  }, [utteranceSamples]);
-
-  console.log('Patterns', patterns)
-  console.log('Match', matchedSpecs)
-  console.log('Bad Samples', badSamples)
+  }, [inferenceCount])
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -160,17 +97,20 @@ const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSamp
 
     // Prepare data for stacked bar chart
     const stackData = specDims.map(spec => {
-      const data = matchedSpecs[spec as keyof typeof matchedSpecs];
-      const implicitSpecs = data.filter(d => d.isImplicit).map(d => d.id)
-      const implicitCount = [...new Set(implicitSpecs)].length;
-      const explicitCount = utteranceSamples.length - implicitCount;
-      
-      console.log('Stack Data', spec, explicitCount, implicitCount)
+      // implicitCount = sum of missing + implicit
+      const implicitCount = inferenceCount.map(d => d[spec].implicitCount + d[spec].missingCount).reduce((a, b) => a + b, 0);
+      const explicitCount = inferenceCount.map(d => d[spec].explicitCount).reduce((a, b) => a + b, 0);
+
+
+      const expPercent = (explicitCount / (explicitCount + implicitCount) * 100)
+      const impPercent = 100 - expPercent;
+
+      console.log('Stack Data', spec, explicitCount, implicitCount, expPercent.toFixed(0), impPercent.toFixed(0))
 
       return {
         dimension: spec,
-        Explicit: explicitCount,
-        Implicit: implicitCount
+        Explicit: expPercent,
+        Implicit: impPercent
       }
     })
 
@@ -257,7 +197,7 @@ const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSamp
         .text(cat === 'Implicit' ? 'Partially or Completely Implicit' : 'Completely Explicit');
     });
 
-  }, [matchedSpecs, utteranceSamples]);
+  });
 
   return <>
     <div className="flex py-2 font-bold text-neutral-600">
@@ -280,14 +220,13 @@ const InterpretationVis = ({utteranceSamples}: { utteranceSamples: UtteranceSamp
           })
           .map(([pattern, samples]) => {
             const patternObj = JSON.parse(pattern);
-            const filtered = filteredIDs.includes(samples[0]);
+            const filtered = filteredIDs.includes(Number(samples[0]));
             return <div key={pattern}
                         className={`flex justify-between select-none cursor-pointer hover:bg-white border-t py-1.5 px-2 ${filtered ? 'bg-white' : ''}`}
                         onClick={() => {
                           if (filtered) {
                             dispatch(setFilteredIDs([]))
-                          }
-                          else dispatch(setFilteredIDs(samples))
+                          } else dispatch(setFilteredIDs(samples.map(s => Number(s))))
                         }}
             >
               <span className={`text-data font-bold ${patternObj.dataSchema ? 'opacity-40' : ''}`}>Data</span>

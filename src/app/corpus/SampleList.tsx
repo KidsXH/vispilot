@@ -1,19 +1,34 @@
 import {useState, useRef, useEffect} from 'react';
-import {UtteranceSample} from "@/types";
 import dynamic from 'next/dynamic';
 import vegaEmbed from 'vega-embed';
 import {githubLightTheme} from "@uiw/react-json-view/githubLight";
 import {useAppSelector} from "@/store";
-import {selectFilteredIDs, selectUtteranceSamples} from "@/store/features/CorpusSlice";
+import {selectFilteredIDs} from "@/store/features/CorpusSlice";
+import {ProcessResult} from "@/app/llm-processing/page";
 
 // Dynamically import ReactJson to avoid SSR issues
 const ReactJson = dynamic(() => import('@uiw/react-json-view'), {ssr: false});
 
-const SampleList = () => {
+const SampleList = (props: {data: ProcessResult[]}) => {
   const filteredIDs = useAppSelector(selectFilteredIDs);
-  const samples = useAppSelector(selectUtteranceSamples);
-  const filteredSamples = filteredIDs.length === 0 ? samples : samples.filter(s => filteredIDs.find(id => id === s.id))
-  const [selectedSample, setSelectedSample] = useState<UtteranceSample | null>(null);
+
+  const {data} = props;
+  const filteredData = (filteredIDs.length === 0 ? data : data.filter(s => filteredIDs.find(id => id === Number(s.id))))
+    .map(result => {
+      const {evaluation, vegaLite} = result;
+      const matches = evaluation?.categoryMatches;
+      return {
+        ...result,
+        accuracy: {
+          dataSchema: matches.DataSchema.total === matches.DataSchema.matched ? 1 : 0,
+          mark: matches.Mark.total === matches.Mark.matched ? 1 : 0,
+          encoding: matches.Encoding.total === matches.Encoding.matched ? 1 : 0,
+          design: evaluation?.similarity || 0,
+        },
+      };
+    })
+
+  const [selectedResult, setSelectedResult] = useState<ProcessResult | null>(null);
   const [previewTab, setPreviewTab] = useState<'rawData' | 'visualization'>('visualization');
   const gtVizRef = useRef<HTMLDivElement>(null);
   const genVizRef = useRef<HTMLDivElement>(null);
@@ -23,28 +38,28 @@ const SampleList = () => {
   const [viewMode, setViewMode] = useState<'default' | 'inference' | 'accuracy'>('default');
 
   useEffect(() => {
-    if (selectedSample && previewTab === 'visualization') {
-      if (gtVizRef.current && selectedSample.groundTruth) {
-        const dataset = `/vispilot/data/${selectedSample.dataset.toLowerCase()}.csv`;
+    if (selectedResult && previewTab === 'visualization') {
+      if (gtVizRef.current && selectedResult.groundTruth) {
+        const dataset = `/vispilot/data/${selectedResult.dataset.toLowerCase()}.csv`;
         const spec = {
-          ...selectedSample.groundTruth,
+          ...selectedResult.groundTruth,
           data: {url: dataset}
         }
         vegaEmbed(gtVizRef.current, spec, {actions: false}).then().catch(console.log);
       }
-      if (genVizRef.current && selectedSample.vegaLite) {
-        const dataset = `/vispilot/data/${selectedSample.dataset.toLowerCase()}.csv`;
+      if (genVizRef.current && selectedResult.vegaLite) {
+        const dataset = `/vispilot/data/${selectedResult.dataset.toLowerCase()}.csv`;
         const spec = {
-          ...selectedSample.vegaLite,
+          ...JSON.parse(selectedResult.vegaLite),
           data: {url: dataset}
         }
         vegaEmbed(genVizRef.current, spec, {actions: false}).then().catch(console.log);
       }
     }
-  }, [selectedSample, previewTab]);
+  }, [selectedResult, previewTab]);
 
-  const handleRowClick = (sample: UtteranceSample) => {
-    setSelectedSample(sample);
+  const handleRowClick = (sample: ProcessResult) => {
+    setSelectedResult(sample);
   };
 
   return (
@@ -103,11 +118,11 @@ const SampleList = () => {
             </tr>
             </thead>
             <tbody>
-            {filteredSamples
+            {filteredData
               .toSorted(
                 (a, b) => {
                   if (sortKey === 'id') {
-                    return sortDirection === 'asc' ? a.id - b.id : b.id - a.id;
+                    return sortDirection === 'asc' ? Number(a.id) - Number(b.id) : Number(b.id) - Number(a.id);
                   }
                   if (sortKey === 'data') {
                     return sortDirection === 'asc' ? a.accuracy.dataSchema - b.accuracy.dataSchema : b.accuracy.dataSchema - a.accuracy.dataSchema;
@@ -121,31 +136,31 @@ const SampleList = () => {
                   if (sortKey === 'design') {
                     return sortDirection === 'asc' ? a.accuracy.design - b.accuracy.design : b.accuracy.design - a.accuracy.design;
                   }
-                  return sortDirection === 'asc' ? a.id - b.id : b.id - a.id;
+                  return sortDirection === 'asc' ? Number(a.id) - Number(b.id) : Number(b.id) - Number(a.id);
                 }
               )
-              .map((sample) => (
+              .map((result) => (
               <tr
-                key={sample.id}
-                onClick={() => handleRowClick(sample)}
+                key={result.id}
+                onClick={() => handleRowClick(result)}
                 className={`border-t border-gray-200 hover:bg-gray-50 cursor-pointer ${
-                  selectedSample?.id === sample.id ? 'bg-blue-50' : ''
+                  selectedResult?.id === result.id ? 'bg-blue-50' : ''
                 }`}
               >
-                <td className="px-4 py-2 text-sm text-gray-500">{sample.id}</td>
-                <td className="px-4 py-2 text-sm">{sample.utteranceSet}</td>
-                <td className="px-4 py-2 text-sm text-gray-500">{sample.dataset}</td>
+                <td className="px-4 py-2 text-sm text-gray-500">{result.id}</td>
+                <td className="px-4 py-2 text-sm">{result.utterance}</td>
+                <td className="px-4 py-2 text-sm text-gray-500">{result.dataset}</td>
                 <td className="px-4 py-2 text-center">
-                  <AccuracyBadge value={sample.accuracy.dataSchema}/>
+                  <AccuracyBadge value={result.accuracy.dataSchema}/>
                 </td>
                 <td className="px-4 py-2 text-center">
-                  <AccuracyBadge value={sample.accuracy.mark}/>
+                  <AccuracyBadge value={result.accuracy.mark}/>
                 </td>
                 <td className="px-4 py-2 text-center">
-                  <AccuracyBadge value={sample.accuracy.encoding}/>
+                  <AccuracyBadge value={result.accuracy.encoding}/>
                 </td>
                 <td className="px-4 py-2 text-center">
-                  <AccuracyBadge value={sample.accuracy.design}/>
+                  <AccuracyBadge value={result.accuracy.design}/>
                 </td>
               </tr>
             ))}
@@ -155,10 +170,10 @@ const SampleList = () => {
 
         {/* Right side: Preview Panel */}
         <div className="col-span-6 border rounded-lg p-4">
-          {selectedSample ? (
+          {selectedResult ? (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold text-neutral-600">Sample #{selectedSample.id}</h3>
+                <h3 className="font-bold text-neutral-600">Sample #{selectedResult.id}</h3>
                 <div className="flex flex-col space-y-2">
                   <div className="flex space-x-2 justify-end">
                     <button
@@ -221,7 +236,7 @@ const SampleList = () => {
 
               <div className="mb-4">
                 <h4 className="text-sm mb-1 px-1 text-neutral-600">Utterance</h4>
-                <div className="p-2 bg-gray-50 rounded border text-sm">{selectedSample.utteranceSet}</div>
+                <div className="p-2 bg-gray-50 rounded border text-sm">{selectedResult.utterance}</div>
               </div>
 
               {/* Visualization or VL Code sections stay the same */}
@@ -247,7 +262,7 @@ const SampleList = () => {
                   <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Vega-Lite</h4>
                   <div className="border rounded overflow-auto max-h-96">
                     <ReactJson
-                      value={selectedSample.vegaLite}
+                      value={JSON.parse(selectedResult.vegaLite)}
                       displayDataTypes={false}
                       style={githubLightTheme}
                       enableClipboard={false}
@@ -258,7 +273,7 @@ const SampleList = () => {
                   <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Vega-Lite</h4>
                   <div className="border rounded overflow-auto max-h-96">
                     <ReactJson
-                      value={selectedSample.groundTruth}
+                      value={selectedResult.groundTruth}
                       displayDataTypes={false}
                       style={githubLightTheme}
                       enableClipboard={false}
@@ -274,7 +289,7 @@ const SampleList = () => {
                     <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Specifications</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.specGen}
+                        value={JSON.parse(selectedResult.vegaLite)}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}
@@ -285,7 +300,7 @@ const SampleList = () => {
                     <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Specifications</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.specGT}
+                        value={selectedResult.groundTruth}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}
@@ -302,7 +317,7 @@ const SampleList = () => {
                     <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Specifications</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.specGen}
+                        value={JSON.parse(selectedResult.vegaLite)}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}
@@ -313,7 +328,7 @@ const SampleList = () => {
                     <h4 className="text-sm mb-1 px-1 text-neutral-600">Inference Summary</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.inference}
+                        value={selectedResult.explanation}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}
@@ -327,10 +342,10 @@ const SampleList = () => {
               {viewMode === 'accuracy' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="border rounded px-2 py-1">
-                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Generated Difference Item</h4>
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Matches ({selectedResult.evaluation?.details.filter(d => d.matched).length})</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.accGenDiff}
+                        value={selectedResult.evaluation?.details.filter(d => d.matched)}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}
@@ -338,10 +353,10 @@ const SampleList = () => {
                     </div>
                   </div>
                   <div className='border rounded px-2 py-1'>
-                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Ground Truth Difference Item</h4>
+                    <h4 className="text-sm mb-1 px-1 text-neutral-600">Differences  ({selectedResult.evaluation?.details.filter(d => !d.matched).length})</h4>
                     <div className="border rounded overflow-auto max-h-96">
                       <ReactJson
-                        value={selectedSample.accGTDiff}
+                        value={selectedResult.evaluation?.details.filter(d => !d.matched)}
                         displayDataTypes={false}
                         style={githubLightTheme}
                         enableClipboard={false}

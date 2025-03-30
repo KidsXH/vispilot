@@ -1,10 +1,19 @@
-import React, {useEffect, useRef} from 'react';
-import {useAppSelector} from "@/store";
-import {selectUtteranceSamples} from "@/store/features/CorpusSlice";
+import React, {useEffect, useMemo, useRef} from 'react';
 import * as d3 from 'd3';
+import {ProcessResult} from "@/app/llm-processing/page";
 
-const InferenceDistribution = () => {
-  const utteranceSamples = useAppSelector(selectUtteranceSamples);
+const specDims = ['DataSchema', 'Mark', 'Encoding', 'Design'] as const;
+
+const InferenceDistribution = ({processResults}: { processResults: ProcessResult[] }) => {
+
+  const utteranceSamples = useMemo(() => processResults.map(result => {
+    return {
+      id: result.id,
+      explanation: result.explanation,
+      evaluation: result.evaluation,
+    }
+  }), [processResults])
+
   const svgRef = useRef<SVGSVGElement>(null);
   const svgRef2 = useRef<SVGSVGElement>(null);
 
@@ -14,38 +23,30 @@ const InferenceDistribution = () => {
     const missingPaths: string[] = [];
 
     // Collect paths of implicit inference items
-    Object.entries(sample.inference).forEach(([category, inferences]) => {
-      Object.entries(inferences).forEach(([key, value]) => {
-        if (value && value.toLowerCase() === 'implicit inference') {
-          // replace '/' with '.' and remove spaces
-          implicitPaths.push(`${category}.${key.replace(/\//g, '.').replace(/\s+/g, '')}`);
-        }
+    specDims.forEach((spec) => {
+      const implicitItems = sample.explanation[spec]?.filter((d: any) => d.explicit === false) || [];
+      implicitItems.forEach((item: any) => {
+        const path = `${spec}.${item.property}`;
+        implicitPaths.push(path);
       });
-    });
+    })
 
-    // Recursive function to collect missing property paths
-    const collectMissingProps = (gtObj: any, infObj: any, path = '') => {
-      if (!gtObj || typeof gtObj !== 'object') return;
+    // Collect paths of missing items
+    const evaluation = sample.evaluation;
+    specDims.forEach((spec) => {
+      const missingItems = evaluation?.details
+        .filter(d => d.category === spec)
+        .filter((d: any) => {
+          const prop = spec === 'DataSchema' ? d.property.replace(/encoding./g, '') : d.property;
+          const propMatch = sample.explanation[spec]?.some((e: any) => e.property === prop) || false;
+          return !propMatch;
+        }) || [];
 
-      for (const [key, value] of Object.entries(gtObj)) {
-        // Skip schema and data-related properties
-        if (key === '$schema' || key === 'data' || key === 'transform') continue;
-
-        const currentPath = path ? `${path}.${key}` : key;
-
-        // If the key doesn't exist in inference object, not count for the property which has children
-        if (!(key in infObj) && value && typeof value !== 'object' && currentPath !== 'mark.type') {
-          missingPaths.push(`${currentPath}: ${gtObj[key]}`);
-        }
-        // If it exists but is an object, recurse deeper
-        else if (value && typeof value === 'object' && infObj[key] && typeof infObj[key] === 'object') {
-          collectMissingProps(value, infObj[key], currentPath);
-        }
-      }
-    };
-
-    // Collect missing properties in groundTruth but not in inference
-    collectMissingProps(sample.groundTruth, sample.vegaLite);
+      missingItems.forEach((item: any) => {
+        const path = `${spec}.${item.property}`;
+        missingPaths.push(path);
+      });
+    })
 
     return {
       id: sample.id,
@@ -53,7 +54,7 @@ const InferenceDistribution = () => {
       missingCount: missingPaths.length,
       totalCount: implicitPaths.length + missingPaths.length,
       implicitPaths,
-      missingPaths
+      missingPaths,
     };
   });
 
@@ -65,7 +66,7 @@ const InferenceDistribution = () => {
 
     // Create a histogram
     const margin = {top: 30, right: 20, bottom: 30, left: 40};
-    const width = 300 - margin.left - margin.right;
+    const width = 500 - margin.left - margin.right;
     const height = 200 - margin.top - margin.bottom;
 
     // Clear previous content
@@ -113,7 +114,7 @@ const InferenceDistribution = () => {
 
     // Add y-axis
     svg.append("g")
-      .call(d3.axisLeft(y));
+      .call(d3.axisLeft(y).ticks(5));
 
     // Add title
     svg.append("text")
@@ -125,7 +126,7 @@ const InferenceDistribution = () => {
       .style("font-weight", "bold")
       .text("Distribution of Implicit Inferences");
 
-  }, [utteranceSamples]);
+  }, [inferenceCounts, utteranceSamples]);
 
   useEffect(() => {
     if (!utteranceSamples.length || !svgRef2.current) return;
@@ -180,16 +181,16 @@ const InferenceDistribution = () => {
 
     // Create grouped bar chart data instead of stacked
     const x0 = d3.scaleBand()
-      .domain(pathData.map(d => d.missing > 0 ? ' ' + d.path : d.path))
+      .domain(pathData.map(d => d.path))
       .range([0, width])
       .padding(0.1);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(pathData, d => Math.max(d.implicit, d.missing)) || 0])
+      .domain([0, d3.max(pathData, d => d.total) || 0])
       .range([height, 0]);
 
     const colorImplicit = '#69b3a2';
-    const colorMissing = '#e41a1c';
+    const colorMissing = 'rgb(236,152,152)';
 
 // Add grouped bars
     const groups = svg.selectAll("g.path-group")
@@ -197,11 +198,14 @@ const InferenceDistribution = () => {
       .enter()
       .append("g")
       .attr("class", "path-group")
-      .attr("transform", d => `translate(${x0(d.missing > 0 ? ' ' + d.path : d.path) || 0},0)`);
+      .attr("transform", d => `translate(${x0(d.path) || 0},0)`);
 
-// Create bars for each type (implicit/missing)
+    // Create bars for each type (implicit/missing)
     groups.selectAll("rect")
-      .data(d => d.missing > 0 ? [{key: 'missing', value: d.missing}, {key: 'implicit', value: d.implicit}] : [{key: 'implicit', value: d.implicit}])
+      .data(d => d.missing > 0 ? [{key: 'implicit', value: d.total}, {
+        key: 'missing',
+        value: d.missing
+      }] : [{key: 'implicit', value: d.implicit}])
       .enter()
       .append("rect")
       .attr("x", 0)
@@ -210,7 +214,7 @@ const InferenceDistribution = () => {
       .attr("height", d => height - y(d.value as number))
       .attr("fill", d => d.key === 'implicit' ? colorImplicit : colorMissing)
       // Add tooltip functionality
-      .on("mouseover", function(event, d) {
+      .on("mouseover", function (event, d) {
         const [mouseX, mouseY] = d3.pointer(event, svg.node());
 
         // Create tooltip group
@@ -240,7 +244,7 @@ const InferenceDistribution = () => {
             .attr("height", bbox.height + 10);
         }
       })
-      .on("mouseout", function() {
+      .on("mouseout", function () {
         d3.select(svgRef2.current).selectAll(".tooltip").remove();
       });
 
@@ -253,39 +257,21 @@ const InferenceDistribution = () => {
       .style("text-anchor", "end")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
+      .text((d: any) => d.split('.').slice(1).join('.')) // Remove the first part of the path for display
       .style("fill", (d: any) => {
-        if (d.startsWith(' ')) {
-          const path = d.substring(1);
-          switch (path) {
-            case 'encoding.y.aggregate':
-              return 'var(--color-data)';
-            case 'encoding.x.bin':
-              return 'var(--color-design)';
-            case 'encoding.x.timeUnit':
-              return 'var(--color-design)';
-            case 'encoding.y.axis.format':
-              return 'var(--color-design)';
-            case 'encoding.y.axis.title':
-              return 'var(--color-design)';
-            default:
-              return '#000';
-          }
-        }
-        else {
-          // Color based on specification class (first part of the path)
-          const specClass = d.split('.')[0];
-          switch (specClass) {
-            case 'encoding':
-              return 'var(--color-encoding)';
-            case 'mark':
-              return 'var(--color-mark)';
-            case 'dataSchema':
-              return 'var(--color-data)';
-            case 'design':
-              return 'var(--color-design)';
-            default:
-              return '#000';
-          }
+        // Color based on specification class (first part of the path)
+        const specClass = d.split('.')[0];
+        switch (specClass) {
+          case 'Encoding':
+            return 'var(--color-encoding)';
+          case 'Mark':
+            return 'var(--color-mark)';
+          case 'DataSchema':
+            return 'var(--color-data)';
+          case 'Design':
+            return 'var(--color-design)';
+          default:
+            return '#000';
         }
       });
 
@@ -348,3 +334,42 @@ const InferenceDistribution = () => {
 }
 
 export default InferenceDistribution;
+
+export const useInferenceCounts = (processingResults: ProcessResult[]) => {
+  const inferenceCounts = useMemo(() => {
+    return processingResults.map(sample => {
+      const explanation = sample.explanation;
+
+      const counts = specDims.map(spec => {
+        const implicitCount = explanation[spec]?.filter((d: any) => d.explicit === false).length || 0;
+        const explicitCount = explanation[spec]?.filter((d: any) => d.explicit === true).length || 0;
+
+        // if some property in evaluation is not included in the explanation, it is implicit
+        const evaluation = sample.evaluation;
+        const missingCount = evaluation?.details
+          .filter(d => d.category === spec)
+          .filter((d: any) => {
+            const prop = spec === 'DataSchema' ? d.property.replace(/encoding./g, '') : d.property;
+            const propMatch = explanation[spec]?.some((e: any) => e.property === prop) || false;
+            return !propMatch;
+          }).length || 0
+
+        return {
+          explicitCount,
+          implicitCount,
+          missingCount,
+        }
+      })
+
+      return {
+        id: sample.id,
+        DataSchema: counts[0],
+        Mark: counts[1],
+        Encoding: counts[2],
+        Design: counts[3],
+      }
+    })
+  }, [processingResults])
+
+  return inferenceCounts;
+}
