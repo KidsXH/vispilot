@@ -249,7 +249,6 @@ export default function SketchPad() {
   }
 
 
-  // 渲染路径
   const renderPath = (pathData: CanvasPath) => {
     if (pathData.type === 'axis') {
       const points = Array.from(pathData.points)
@@ -315,17 +314,38 @@ export default function SketchPad() {
     }
   }
 
-  // 撤销功能
+
   const handleUndo = () => {
     if (paths.length === 0) return
     const lastID = paths[paths.length - 1].id
     dispatch(removePath(lastID))
   }
 
-  // 清空画布
+
   const handleClear = () => {
     dispatch(clearVegaElementHighlight())
     dispatch(clearPaths())
+  }
+
+  const handleExportCanvas = () => {
+    const svgElem = svgRef.current
+    if (svgElem && svgBBox) {
+      svgToBase64Png(svgElem, svgBBox.width, svgBBox.height)
+        .then(base64 => {
+          // Create a download link
+          const downloadLink = document.createElement('a')
+          downloadLink.href = base64
+          downloadLink.download = `sketch-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`
+
+          // Append to body, click and remove
+          document.body.appendChild(downloadLink)
+          downloadLink.click()
+          document.body.removeChild(downloadLink)
+        })
+        .catch(error => {
+          console.error('Error exporting canvas:', error)
+        })
+    }
   }
 
   const messages = useAppSelector(selectMessages)
@@ -485,7 +505,7 @@ export default function SketchPad() {
 
         <button
           className="flex items-center h-9 w-[6rem] px-2 py-1 space-x-1 rounded bg-gray-200 font-bold hover:bg-gray-300 cursor-pointer"
-          onClick={undefined}>
+          onClick={handleExportCanvas}>
           <span className="material-symbols-outlined icon-small">download</span>
           <span>Export</span>
         </button>
@@ -516,7 +536,7 @@ export default function SketchPad() {
           return <g key={path.id}
                fill={path.style.fill}
                stroke={path.style.stroke}
-               strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * path.pressure * 4 : path.style.strokeWidth * path.pressure * 2}
+               strokeWidth={focusedPathID === path.id ? path.style.strokeWidth * 4 : path.style.strokeWidth * 2}
                strokeLinecap="round"
                strokeLinejoin="round"
                opacity={path.style.opacity}
