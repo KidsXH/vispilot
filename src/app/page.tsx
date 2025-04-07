@@ -91,7 +91,7 @@ export default function Home() {
           to understand how LLMs interpret ambiguous or incomplete text prompts in the context of visualization
           authoring, and the conditions making LLMs misinterpret user intent. Informed by the findings, we introduce
           visual prompts as a complementary input modality to text prompts, which help clarify user intent and improve
-          LLMs' interpretation abilities. To explore the potential of multimodal prompting in visualization authoring,
+          LLMs&#39; interpretation abilities. To explore the potential of multimodal prompting in visualization authoring,
           we design VisPilot, which enables users to easily create visualizations using multimodal prompts, including
           text, sketches, and direct manipulations on existing visualizations. Through two case studies and a controlled
           user study, we demonstrate that VisPilot provides a more intuitive way to create visualizations without
@@ -124,7 +124,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-4">Research Contributions</h2>
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
             <li>
-              Empirical study on LLMs' interpretation of natural language prompts for visualization authoring
+              Empirical study on LLMs&#39; interpretation of natural language prompts for visualization authoring
             </li>
             <li>
               Novel prompting framework for multimodal visualization authoring
