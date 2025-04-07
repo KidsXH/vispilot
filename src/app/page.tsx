@@ -5,13 +5,13 @@ import Image from 'next/image'
 
 export default function Home() {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12 font-sans">
       <header className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Exploring Multimodal Prompt for Visualization Authoring with Large
           Language Models</h1>
 
         <div className="mt-4 mb-6">
-          <div className="grid grid-cols-2 md:flex md:justify-between gap-2 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:flex md:justify-between gap-2 max-w-4xl mx-auto">
             {[
               {name: 'Zhen Wen', inst: '1'},
               {name: 'Luoxuan Weng', inst: '1'},
@@ -23,7 +23,10 @@ export default function Home() {
               {name: 'Wei Chen', inst: '1'}
             ].map((author, i) => (
               <div key={i} className="text-center">
-                <p className="font-medium">{author.name}<sup>{author.inst}</sup></p>
+                <p className="font-medium">
+                  {author.name}
+                  <sup>{author.inst}</sup>
+                </p>
               </div>
             ))}
           </div>
@@ -107,7 +110,6 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-4">The VisPilot System</h2>
         <div className="bg-slate-100 p-6 rounded-lg">
           <div className="aspect-video bg-white border border-slate-300 rounded-lg mb-4">
-            {/* Replace with actual screenshot of your system */}
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <Image src={'/vispilot/ui-design.png'} alt={'teaser'} width={1920} height={1080}/>
             </div>
@@ -118,6 +120,27 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+
+      <section className="mb-16">
+        <h2 className="text-2xl font-bold mb-4">Multimodal Prompt Framework</h2>
+
+        <div className="bg-slate-100 p-6 rounded-lg">
+          <div className="bg-white border border-slate-300 rounded-lg mb-4 px-10 py-6">
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <Image className='' src={'/vispilot/visual-prompt.png'} alt={'teaser'} width={1280} height={300}/>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600">
+            Our prompting framework instructs the LLM to interpret visual prompts to visualization specifications step by step.
+          </p>
+        </div>
+
+        {/*<p className="text-gray-700 leading-relaxed text-justify text-pretty hyphens-auto">*/}
+        {/*  Framework*/}
+        {/*</p>*/}
+      </section>
+
 
       <section className="mb-16">
         <div>
@@ -136,6 +159,7 @@ export default function Home() {
           </ul>
         </div>
       </section>
+
 
       <section className="mb-16">
         <h2 className="text-2xl font-bold mb-4">Citation</h2>
