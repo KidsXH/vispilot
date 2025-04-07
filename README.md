@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VisPilot
+
+VisPilot is a system that enables users to create visualizations using multimodal prompts, including text, sketches, and direct manipulations on existing visualizations. This repository contains the source code for the VisPilot system, which explores the potential of multimodal prompting for visualization authoring with Large Language Models (LLMs).
+
+## Features
+
+- Multimodal visualization authoring with text, sketches, and direct manipulation
+- Interactive design panel for refining visualization parameters
+- Data table view for exploring datasets
+- Chat interface for natural language interaction
+- History panel for tracking visualization changes
+- Demo interface for trying the system
+- Corpus view for exploring the research dataset
+
+## Project Structure
+
+- `/src/app`: Main application routes and pages
+    - `/corpus`: Visualization corpus analysis tools
+    - `/demo`: Interactive demo interface
+- `/components`: React components for the UI
+- `/public`: Static assets including images
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js (18.x or later)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/KidsXH/vispilot.git
+cd vispilot
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Start the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open your browser and navigate to `http://localhost:3000/vispilot`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Research
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project explores how LLMs interpret ambiguous or incomplete text prompts in the context of visualization authoring, and introduces visual prompts as a complementary input modality to improve user intent interpretation. Our research highlights the importance of multimodal prompting in enhancing human-AI collaboration for visualization tasks.
 
-## Learn More
+### Citation
 
-To learn more about Next.js, take a look at the following resources:
+```bibtex
+@article{wen2025exploring,
+  title={Exploring Multimodal Prompt for Visualization Authoring with Large Language Models},
+  author={Wen, Zhen and Weng, Luoxuan and Tang, Yinghao and Zhang, Runjin and Pan, Bo and Zhu, Minfeng and Chen, Wei},
+  journal={arXiv preprint},
+  year={2025}
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Resources
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Paper (Coming soon)](undefined)
+- [Code](https://github.com/KidsXH/vispilot)
+- [Supplementary Materials](https://osf.io/2qrak)
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the LICENSE file for details.
