@@ -14,13 +14,47 @@ const InferenceDistribution = ({processResults}: { processResults: ProcessResult
     }
   }), [processResults])
 
+  const chartTypes = useMemo(() => {
+    return processResults.map(result => {
+      const vegaSpec = JSON.parse(result.vegaLite);
+      const isExplicit = result.explanation?.Mark[0].explicit
+      const mark = vegaSpec.mark.type || vegaSpec.mark;
+      return {
+        id: result.id, type: (isExplicit ? 'Exp ' : 'Imp ') + (mark || 'unknown')
+      };
+    })
+  }, [processResults])
+
+  // count for each type of chart
+  const chartCounts = useMemo(() => {
+    const counts: Record<string, string[]> = {};
+    chartTypes.forEach(type => {
+      if (!counts[type.type]) {
+        counts[type.type] = [];
+      }
+      counts[type.type].push(type.id);
+    });
+    return counts;
+  }, [chartTypes]);
+  console.log('chartCounts', chartCounts);
+
   const svgRef = useRef<SVGSVGElement>(null);
   const svgRef2 = useRef<SVGSVGElement>(null);
 
   // Revised to return arrays of paths instead of just counts
   const inferenceDetails = utteranceSamples.map(sample => {
+    const explicitPaths: string[] = [];
     const implicitPaths: string[] = [];
     const missingPaths: string[] = [];
+
+    // Collect paths of explicit inference items
+    specDims.forEach((spec) => {
+      const explicitItems = sample.explanation[spec]?.filter((d: any) => d.explicit === true) || [];
+      explicitItems.forEach((item: any) => {
+        const path = `${spec}.${item.property}`;
+        explicitPaths.push(path);
+      });
+    })
 
     // Collect paths of implicit inference items
     specDims.forEach((spec) => {
@@ -50,22 +84,36 @@ const InferenceDistribution = ({processResults}: { processResults: ProcessResult
 
     return {
       id: sample.id,
+      explicitCount: explicitPaths.length,
       implicitCount: implicitPaths.length,
       missingCount: missingPaths.length,
       totalCount: implicitPaths.length + missingPaths.length,
       implicitPaths,
       missingPaths,
+      explicitPaths,
     };
   });
 
 // For the histogram, we still need just the counts
   const inferenceCounts = inferenceDetails.map(detail => detail.totalCount);
 
+  const averageCounts = useMemo(() => {
+    const totalCounts = inferenceCounts.reduce((acc, count) => acc + count, 0);
+    return totalCounts / inferenceCounts.length;
+  }, [inferenceCounts])
+
+  const stdDevCounts = useMemo(() => {
+    const mean = averageCounts;
+    const variance = inferenceCounts.reduce((acc, count) => acc + Math.pow(count - mean, 2), 0) / inferenceCounts.length;
+    return Math.sqrt(variance);
+  }, [averageCounts, inferenceCounts]);
+
+
   useEffect(() => {
     if (!utteranceSamples.length || !svgRef.current) return;
 
     // Create a histogram
-    const margin = {top: 30, right: 20, bottom: 30, left: 40};
+    const margin = {top: 40, right: 20, bottom: 25, left: 40};
     const width = 500 - margin.left - margin.right;
     const height = 200 - margin.top - margin.bottom;
 
@@ -120,25 +168,42 @@ const InferenceDistribution = ({processResults}: { processResults: ProcessResult
     svg.append("text")
       .attr("class", "fill-neutral-600")
       .attr("x", width / 2)
-      .attr("y", -10)
+      .attr("y", -24)
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("font-weight", "bold")
       .text("Distribution of Implicit Inferences");
 
-  }, [inferenceCounts, utteranceSamples]);
+    // Add subtitle
+    svg.append("text")
+      .attr("class", "fill-neutral-600")
+      .attr("x", width / 2)
+      .attr("y", -8)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text(`Average: ${averageCounts.toFixed(2)}, StdDev: ${stdDevCounts.toFixed(2)}`);
+
+  }, [averageCounts, inferenceCounts, stdDevCounts, utteranceSamples]);
 
   useEffect(() => {
     if (!utteranceSamples.length || !svgRef2.current) return;
 
     // Collect all unique paths and count their occurrences
-    const pathCounts: Record<string, { implicit: number, missing: number }> = {};
+    const pathCounts: Record<string, { implicit: number, missing: number, explicit: number }> = {};
 
     inferenceDetails.forEach(detail => {
+      // Count explicit paths
+      detail.explicitPaths.forEach(path => {
+        if (!pathCounts[path]) {
+          pathCounts[path] = {implicit: 0, missing: 0, explicit: 0};
+        }
+        pathCounts[path].explicit += 1;
+      });
+
       // Count implicit paths
       detail.implicitPaths.forEach(path => {
         if (!pathCounts[path]) {
-          pathCounts[path] = {implicit: 0, missing: 0};
+          pathCounts[path] = {implicit: 0, missing: 0, explicit: 0};
         }
         pathCounts[path].implicit += 1;
       });
@@ -148,19 +213,40 @@ const InferenceDistribution = ({processResults}: { processResults: ProcessResult
         // Extract just the path without the value
         const pathKey = path.split(':')[0].trim();
         if (!pathCounts[pathKey]) {
-          pathCounts[pathKey] = {implicit: 0, missing: 0};
+          pathCounts[pathKey] = {implicit: 0, missing: 0, explicit: 0};
         }
         pathCounts[pathKey].missing += 1;
       });
     });
+
+    const inferencePercentages = inferenceDetails.map(detail => {
+      const total = detail.implicitCount + detail.missingCount + detail.explicitCount;
+      const implicitPercentage = total === 0 ? 0 : (detail.totalCount / total) * 100;
+      const missingPercentage = total === 0 ? 0 : (detail.missingCount / total) * 100;
+      const implicitCount = detail.totalCount;
+
+      return {
+        id: detail.id,
+        implicitPercentage,
+        missingPercentage,
+        missingPaths: detail.missingPaths,
+        explicitPaths: detail.explicitPaths,
+        implicitPaths: detail.implicitPaths,
+        implicitCount: implicitCount,
+      }
+    })
+
+    console.log('inferencePercentages', inferencePercentages.sort((a, b) => a.implicitCount - b.implicitCount));
 
     // Convert to array and sort by total occurrences
     const pathData = Object.entries(pathCounts)
       .map(([path, counts]) => ({
         path,
         implicit: counts.implicit,
-        missing: counts.missing,
-        total: counts.implicit + counts.missing
+        missing: 0,
+        total: counts.implicit,
+        // missing: counts.missing,
+        // total: counts.implicit + counts.missing
       }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 15); // Take top 15 for readability
