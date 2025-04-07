@@ -111,7 +111,7 @@ export default function Home() {
         <div className="bg-slate-100 p-6 rounded-lg">
           <div className="aspect-video bg-white border border-slate-300 rounded-lg mb-4">
             <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <Image src={'/vispilot/ui-design.png'} alt={'teaser'} width={1920} height={1080}/>
+              <Image src={'/vispilot/ui-design.png'} alt={'VisPilot interface'} width={1920} height={1080}/>
             </div>
           </div>
           <p className="text-sm text-gray-600">
@@ -128,7 +128,7 @@ export default function Home() {
         <div className="bg-slate-100 p-6 rounded-lg">
           <div className="bg-white border border-slate-300 rounded-lg mb-4 px-10 py-6">
             <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <Image className='' src={'/vispilot/visual-prompt.png'} alt={'teaser'} width={1280} height={300}/>
+              <Image className='' src={'/vispilot/visual-prompt.png'} alt={'Illustration of prompt framework'} width={1280} height={300}/>
             </div>
           </div>
           <p className="text-sm text-gray-600">
@@ -139,6 +139,43 @@ export default function Home() {
         {/*<p className="text-gray-700 leading-relaxed text-justify text-pretty hyphens-auto">*/}
         {/*  Framework*/}
         {/*</p>*/}
+      </section>
+
+
+      <section className="mb-16">
+        <h2 className="text-2xl font-bold mb-4">Use Cases</h2>
+
+        <h3 className="text-xl font-bold mb-4">Case 1 - Visualization Authoring</h3>
+        <div className="bg-slate-100 p-6 rounded-lg mb-4">
+          <div className="aspect-video bg-white border border-slate-300 rounded-lg mb-4">
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <video
+                className="w-full h-full"
+                controls
+                poster="/vispilot/ui-design.png"
+              >
+                <source src="/vispilot/demo-case1.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600">
+            The video demonstrates the process of creating a sophisticated visualization using VisPilot.
+          </p>
+        </div>
+
+
+        <h3 className="text-xl font-bold mb-4">Case 2 - Data Exploration</h3>
+        <div className="bg-slate-100 p-6 rounded-lg">
+          <div className="bg-white border border-slate-300 rounded-lg mb-4">
+            <div className="w-full h-full flex items-center justify-center text-gray-400 rounded-lg">
+              <Image className='rounded-lg' src={'/vispilot/case2.png'} alt={'Illustration of prompt framework'} width={1280} height={300}/>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600">
+            The use case of VisPilot for data exploration.
+          </p>
+        </div>
       </section>
 
 
