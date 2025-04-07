@@ -11,12 +11,13 @@ export default function Home() {
           Language Models</h1>
 
         <div className="mt-4 mb-6">
-          <div className="grid grid-cols-2 md:grid-cols-7 gap-2 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:flex md:justify-between gap-2 max-w-5xl mx-auto">
             {[
               {name: 'Zhen Wen', inst: '1'},
               {name: 'Luoxuan Weng', inst: '1'},
               {name: 'Yinghao Tang', inst: '1'},
               {name: 'Runjin Zhang', inst: '1'},
+              {name: 'Yuxin Liu', inst: '1'},
               {name: 'Bo Pan', inst: '1'},
               {name: 'Minfeng Zhu', inst: '2'},
               {name: 'Wei Chen', inst: '1'}
@@ -82,7 +83,7 @@ export default function Home() {
 
       <section className="mb-16">
         <h2 className="text-2xl font-bold mb-4">Abstract</h2>
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-gray-700 leading-relaxed text-justify text-pretty hyphens-auto">
           Recent advances in large language models (LLMs) have shown great potential in automating the process of
           visualization authoring through simple natural language utterances. However, instructing LLMs using natural
           language is limited on precision and expressiveness for conveying visualization intent, leading to
@@ -92,13 +93,13 @@ export default function Home() {
           visual prompts as a complementary input modality to text prompts, which help clarify user intent and improve
           LLMs' interpretation abilities. To explore the potential of multimodal prompting in visualization authoring,
           we design VisPilot, which enables users to easily create visualizations using multimodal prompts, including
-          text, sketches, and direct manipulations on existing visualizations. Through a controlled user study, we
-          demonstrate that VisPilot provides a more intuitive way to create visualizations without affecting the overall
-          task efficiency compared to text-only prompting approaches. Furthermore, we analyze the impact of text and
-          visual prompts in different visualization tasks. Our findings highlight the importance of multimodal prompting
-          in improving the usability of LLMs for visualization authoring. We discuss design implications for future
-          visualization systems and provide insights into how multimodal interaction can enhance human-AI collaboration
-          in creative visual tasks.
+          text, sketches, and direct manipulations on existing visualizations. Through two case studies and a controlled
+          user study, we demonstrate that VisPilot provides a more intuitive way to create visualizations without
+          affecting the overall task efficiency compared to text-only prompting approaches. Furthermore, we analyze the
+          impact of text and visual prompts in different visualization tasks. Our findings highlight the importance of
+          multimodal prompting in improving the usability of LLMs for visualization authoring. We discuss design
+          implications for future visualization systems and provide insights into how multimodal prompts can enhance
+          human-AI collaboration in creative visualization tasks.
         </p>
       </section>
 
@@ -112,22 +113,13 @@ export default function Home() {
             </div>
           </div>
           <p className="text-sm text-gray-600">
-            The interface of VisPilot includes four components: (A) Chat Interface, (B) Free-drawing Canvas, (C) Design Panel, and (D) Authoring Flow.
+            The interface of VisPilot includes four components: (A) Chat Interface, (B) Free-drawing Canvas, (C) Design
+            Panel, and (D) Authoring Flow.
           </p>
         </div>
       </section>
 
-      <section className="grid gap-8 mb-16">
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Key Features</h2>
-          <ul className="list-disc pl-5 space-y-2 text-gray-700">
-            <li>Natural language visualization generation</li>
-            <li>Interactive specification refinement</li>
-            <li>Support for ambiguous and underspecified requests</li>
-            <li>Multiple visualization types and encodings</li>
-            <li>Real-time inference explanation</li>
-          </ul>
-        </div>
+      <section className="mb-16">
         <div>
           <h2 className="text-2xl font-bold mb-4">Research Contributions</h2>
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
