@@ -32,10 +32,10 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
   const dispatch = useAppDispatch();
 
   const availableModels = [
-    {id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI'},
-    {id: 'gemini-2.0-pro', name: 'Gemini 2.0 Pro', provider: 'Google'},
     {id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google'},
+    {id: 'gemini-2.0-pro', name: 'Gemini 2.0 Pro', provider: 'Google'},
     {id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'Google'},
+    {id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI'},
     {id: 'claude-3.7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'Anthropic'}
   ];
 

@@ -233,12 +233,7 @@ export default function SketchPad() {
       if (currentPath) {
         if (tool === 'pencil' || tool === 'axis' || tool === 'shape' || tool === 'note') {
           dispatch(addPath(currentPath))
-          dispatch(
-            addHistory({
-              type: 'canvas',
-              content: currentPath
-            })
-          )
+          // dispatch(addHistory({ type: 'canvas', content: currentPath }))
         }
       }
       setIsDrawing(false)

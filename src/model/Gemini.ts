@@ -60,8 +60,9 @@ export const messageContentToParts = (content: MessageContent[]) => {
 }
 
 export const parseResponseTextAsJson = (text: string) => {
-  const jsonText = text.replace(/```json/, '').replace(/```/, '');
+  const jsonText = text.replace(/```json/g, '').replace(/```/g, '');
   try {
+    console.log('Parsing JSON:', jsonText);
     const json = JSON.parse(jsonText);
     return {
       think: json.think,

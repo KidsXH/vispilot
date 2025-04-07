@@ -73,7 +73,7 @@ const DesignPanel = () => {
                 }
                 dispatch(setTool('select'))
                 dispatch(addPath(newPath))
-                dispatch(addHistory({type: 'canvas', content: newPath}))
+                // dispatch(addHistory({type: 'canvas', content: newPath}))
               }
             }}>
             <span className="material-symbols-outlined text-neutral-600 m-auto">add_chart</span>
