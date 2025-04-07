@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   basePath: "/vispilot",
   output: "export",
   reactStrictMode: true,
+  images: { unoptimized: true },
 };
 
 export default nextConfig;
