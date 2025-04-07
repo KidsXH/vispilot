@@ -34,11 +34,11 @@ export default function Home() {
 
 
         <div className="mt-6 flex justify-center space-x-6">
-          <a href="https://osf.io/2qrak" className="text-slate-700 group flex items-center" target="_blank"
+          <a href={undefined} className="text-slate-700 group flex items-center cursor-not-allowed" target="_blank"
              rel="noopener noreferrer">
             <span className="material-symbols-outlined mr-1 group-hover:no-underline"
                   style={{fontSize: '18px'}}>description</span>
-            <span className="group-hover:underline">Paper</span>
+            <span className="group-hover:underline">Paper (Coming soon)</span>
           </a>
           <a href="https://github.com/KidsXH/vispilot" className="text-slate-700 group flex items-center"
              target="_blank" rel="noopener noreferrer">
