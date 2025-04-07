@@ -160,7 +160,7 @@ export default function Home() {
             </div>
           </div>
           <p className="text-sm text-gray-600">
-            The video demonstrates the process of creating a sophisticated visualization using VisPilot.
+            The video demonstrates the process of creating a sophisticated visualization using VisPilot (full video coming soon).
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t pt-8 text-center text-gray-600">
-        <p>© 2023 Research Team. All rights reserved.</p>
+        <p>This project is licensed under the <a className='text-slate-700 hover:underline' href={'https://creativecommons.org/licenses/by-nc/4.0/'}>CC BY-NC 4.0 License.</a></p>
         <div className="mt-4 space-x-4">
           <a href="#" className="text-slate-700 hover:underline">Paper PDF</a>
           <a href="#" className="text-slate-700 hover:underline">GitHub</a>
