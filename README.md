@@ -67,4 +67,4 @@ This project explores how LLMs interpret ambiguous or incomplete text prompts in
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
