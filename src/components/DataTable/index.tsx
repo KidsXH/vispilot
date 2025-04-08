@@ -148,7 +148,7 @@ const CSVReader = () => {
               >
                   <div className="flex flex-col items-center space-y-2">
                       <Upload className="w-8 h-8 text-gray-400"/>
-                      <span className="font-bold text-sm text-gray-400">Drop or click to upload CSV file</span>
+                      <span className="font-bold text-sm text-gray-400">Click to upload CSV file</span>
                   </div>
                   <input
                       id="csvInput"

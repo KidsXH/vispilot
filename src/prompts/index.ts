@@ -73,7 +73,7 @@ Perform the following steps based on the input type:
     - Constrain Specification: 'mark.type'
   - **SetMarkStyle**: Set the style properties of the mark.
     - Constrain Specification: 'mark.*'.
-  - **SetChartStyle**: Set the style properties of the chart, such as chart title/subtitle, background color, axis styles, etc.
+  - **SetChartStyle**: Set the style properties of the chart, such as chart title, subtitle (text below title), background color, axis styles, etc.
     - Constrain Specification: 'title', 'subtitle', 'background', 'encoding.*.axis.title', 'encoding.*.axis.labels', 'encoding.*.axis.ticks', etc.
   - **Encode**: Map data fields to visual properties, such as x-axis, y-axis, color, size, etc.
     - Constrain Specification: 'encoding.x.field', 'encoding.y.field', 'encoding.color.field', 'encoding.column.field', 'encoding.row.field'

@@ -20,10 +20,13 @@ export const historySlice = createSlice({
     clearHistory: (state) => {
       state.history = []
     },
+    removeLastHistory: (state) => {
+      state.history = state.history.slice(0, -1)
+    }
   },
 })
 
-export const {addHistory, clearHistory} = historySlice.actions
+export const {addHistory, clearHistory, removeLastHistory} = historySlice.actions
 
 export const selectHistory = (state: RootState) => state.history.history
 

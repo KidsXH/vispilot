@@ -48,7 +48,7 @@ export default function SketchPad() {
       dispatch(setFocusedPathID(null))
     }
     if (tool === 'pencil' || tool === 'axis') {
-      const newStyle = {...currentStyle, fill: 'none', stroke: '#000000'}
+      const newStyle = {...currentStyle, fill: 'none', stroke: '#000000', strokeWidth: 1}
       dispatch(setCurrentStyle(newStyle))
     }
     if (tool === 'note') {
@@ -56,7 +56,7 @@ export default function SketchPad() {
       dispatch(setCurrentStyle(newStyle))
     }
     if (tool === 'shape') {
-      const newStyle = {...currentStyle, fill: '#ffffff', stroke: '#000000'}
+      const newStyle = {...currentStyle, fill: '#ffffff', stroke: '#ffffff', strokeWidth: 0}
       dispatch(setCurrentStyle(newStyle))
     }
   }, [dispatch, tool]);

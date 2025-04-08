@@ -15,7 +15,7 @@ import Image from "next/image";
 import {sendRequest} from "@/model";
 import {resetDataSource, selectDataSource, setVegaString} from "@/store/features/DataSlice";
 import {parseResponseTextAsJson} from "@/model/Gemini";
-import {addHistory, clearHistory} from "@/store/features/HistorySlice";
+import {addHistory, clearHistory, removeLastHistory} from "@/store/features/HistorySlice";
 import ConfigModal from "@/components/Chat/ConfigModal";
 import {setDesignIdea} from "@/store/features/CanvasSlice";
 
@@ -160,6 +160,8 @@ const Chat = () => {
             title={'Withdraw'}
             onClick={() => {
               dispatch(removeLastQA())
+              dispatch(removeLastHistory())
+              dispatch(removeLastHistory())
             }}
           >
             fast_rewind
@@ -249,8 +251,8 @@ const MessageBox = ({message}: { message: Message }) => {
                 </button>
             </>
             }
-            <div className='border-l-2 h-3'></div>
-            {new Date(message.id).toLocaleString()}
+            {/*<div className='border-l-2 h-3'></div>*/}
+            {/*{new Date(message.id).toLocaleString()}*/}
           </div>
       }
     </div>
