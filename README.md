@@ -20,7 +20,7 @@ VisPilot is a system that enables users to create visualizations using multimoda
 
 <video id="video" controls="" preload="none" poster="/public/ui-design.png">
       <source id="mp4" src="/public/Vispilot-DemoVideo.mp4" type="video/mp4">
-</videos>
+</video>
 
 ## Project Structure
 
