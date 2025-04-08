@@ -16,6 +16,12 @@ VisPilot is a system that enables users to create visualizations using multimoda
 - Interactive interface for trying the system - [Online Demo](https://wenzhen.site/vispilot/)
 - Corpus view for exploring the research dataset - [Corpus Page](https://wenzhen.site/vispilot/)  (in development)
 
+## Demo
+
+<video id="video" controls="" preload="none" poster="/public/ui-design.png">
+      <source id="mp4" src="/public/Vispilot-DemoVideo.mp4" type="video/mp4">
+</videos>
+
 ## Project Structure
 
 - `/src/app`: Main application routes and pages
