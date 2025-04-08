@@ -154,7 +154,7 @@ export default function Home() {
                 controls
                 poster="/vispilot/ui-design.png"
               >
-                <source src="/vispilot/VisPilot-DemoVideo.mp4" type="video/mp4" />
+                <source src="/vispilot/Vispilot-DemoVideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             </div>
