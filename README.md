@@ -4,6 +4,8 @@
 
 VisPilot is a system that enables users to create visualizations using multimodal prompts, including text, sketches, and direct manipulations on existing visualizations. This repository contains the source code for the VisPilot system, which explores the potential of multimodal prompting for visualization authoring with Large Language Models (LLMs).
 
+![](/public/teaser.png)
+
 ## Features
 
 - Multimodal visualization authoring with text, sketches, and direct manipulation
