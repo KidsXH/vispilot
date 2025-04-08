@@ -61,8 +61,8 @@ This project explores how LLMs interpret ambiguous or incomplete text prompts in
 
 ## Resources
 
+- [Page](https://wenzhen.site/vispilot)
 - [Paper (Coming soon)](undefined)
-- [Code](https://github.com/KidsXH/vispilot)
 - [Supplementary Materials](https://osf.io/2qrak)
 
 ## License
