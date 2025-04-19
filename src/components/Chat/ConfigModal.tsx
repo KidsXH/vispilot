@@ -64,7 +64,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
 
   const handleSave = useCallback(() => {
     if (modelName === 'GPT-4o' || modelName === 'Claude 3.7 Sonnet') {
-      setMessage({text: `${modelName} is not supported yet. Please use Gemini 2.0 Pro or Flash`, type: 'error'});
+      setMessage({text: `${modelName} is not supported yet. Please use Gemini models`, type: 'error'});
       return;
     }
 
