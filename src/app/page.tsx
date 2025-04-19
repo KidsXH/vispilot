@@ -216,8 +216,8 @@ export default function Home() {
         <p>This project is licensed under the <a className='text-slate-700 hover:underline' href={'https://creativecommons.org/licenses/by-nc/4.0/'}>CC BY-NC 4.0 License.</a></p>
         <div className="mt-4 space-x-4">
           <a href="#" className="text-slate-700 hover:underline">Paper PDF</a>
-          <a href="#" className="text-slate-700 hover:underline">GitHub</a>
-          <a href="#" className="text-slate-700 hover:underline">Contact</a>
+          <a href="https://github.com/KidsXH/vispilot" className="text-slate-700 hover:underline">GitHub</a>
+          {/*<a href="#" className="text-slate-700 hover:underline">Contact</a>*/}
         </div>
       </footer>
     </div>
