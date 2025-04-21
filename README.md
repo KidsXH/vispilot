@@ -1,6 +1,6 @@
 # VisPilot - Multimodal Visualization Authoring with LLMs
 
-> Here is the official repository for the paper [Exploring Multimodal Prompt for Visualization Authoring with Large Language Models]() (coming soon).
+> Here is the official repository for the paper [Exploring Multimodal Prompt for Visualization Authoring with Large Language Models](https://arxiv.org/abs/2504.13700).
 
 VisPilot is a system that enables users to create visualizations using multimodal prompts, including text, sketches, and direct manipulations on existing visualizations. This repository contains the source code for the VisPilot system, which explores the potential of multimodal prompting for visualization authoring with Large Language Models (LLMs).
 
@@ -14,7 +14,7 @@ VisPilot is a system that enables users to create visualizations using multimoda
 - Design panel for customizing styles
 - History panel for tracking visualization changes
 - Interactive interface for trying the system - [Online Demo](https://wenzhen.site/vispilot/)
-- Corpus view for exploring the research dataset - [Corpus Page](https://wenzhen.site/vispilot/)  (in development)
+- Corpus view for exploring the research dataset - [Corpus Page](https://wenzhen.site/vispilot/)
 
 ## Demo
 
@@ -66,9 +66,22 @@ This project explores how LLMs interpret ambiguous or incomplete text prompts in
 
 ## Resources
 
-- [Page](https://wenzhen.site/vispilot)
-- [Paper (Coming soon)](undefined)
+- [Project Page](https://wenzhen.site/vispilot)
+- [Research Paper](https://arxiv.org/abs/2504.13700)
 - [Supplementary Materials](https://osf.io/2qrak)
+
+## Citation
+You can cite our work as follows:
+
+```bibtex
+@article{wen2025exploring,
+  title={Exploring Multimodal Prompt for Visualization Authoring with Large Language Models},
+  author={Zhen Wen and Luoxuan Weng and Yinghao Tang and Runjin Zhang and Yuxin Liu and Bo Pan and Minfeng Zhu and Wei Chen},
+  journal={arXiv preprint},
+  year={2025}
+  doi={10.48550/arXiv.2504.13700}
+}
+```
 
 ## License
 
