@@ -37,11 +37,11 @@ export default function Home() {
 
 
         <div className="mt-6 flex justify-center space-x-6">
-          <a href={undefined} className="text-slate-700 group flex items-center cursor-not-allowed" target="_blank"
+          <a href="https://arxiv.org/abs/2504.13700" className="text-slate-700 group flex items-center" target="_blank"
              rel="noopener noreferrer">
             <span className="material-symbols-outlined mr-1 group-hover:no-underline"
                   style={{fontSize: '18px'}}>description</span>
-            <span className="group-hover:underline">Paper (Coming soon)</span>
+            <span className="group-hover:underline">Paper</span>
           </a>
           <a href="https://github.com/KidsXH/vispilot" className="text-slate-700 group flex items-center"
              target="_blank" rel="noopener noreferrer">
@@ -201,12 +201,13 @@ export default function Home() {
       <section className="mb-16">
         <h2 className="text-2xl font-bold mb-4">Citation</h2>
         <div className="rounded-lg">
-    <pre className="text-sm overflow-x-auto p-2 bg-neutral-50 border border-slate-300 rounded">
+    <pre className="text-sm overflow-x-auto p-2 bg-neutral-50 border border-slate-300 rounded font-mono text-gray-700">
       {`@article{wen2025exploring,
   title={Exploring Multimodal Prompt for Visualization Authoring with Large Language Models},
-  author={Wen, Zhen and Weng, Luoxuan and Tang, Yinghao and Zhang, Runjin and Pan, Bo and Zhu, Minfeng and Chen, Wei},
+  author={Zhen Wen and Luoxuan Weng and Yinghao Tang and Runjin Zhang and Yuxin Liu and Bo Pan and Minfeng Zhu and Wei Chen},
   journal={arXiv preprint},
   year={2025}
+  doi={10.48550/arXiv.2504.13700}
 }`}
     </pre>
         </div>
@@ -215,7 +216,7 @@ export default function Home() {
       <footer className="border-t pt-8 text-center text-gray-600">
         <p>This project is licensed under the <a className='text-slate-700 hover:underline' href={'https://creativecommons.org/licenses/by-nc/4.0/'}>CC BY-NC 4.0 License.</a></p>
         <div className="mt-4 space-x-4">
-          <a href="#" className="text-slate-700 hover:underline">Paper PDF</a>
+          <a href="https://arxiv.org/pdf/2504.13700" className="text-slate-700 hover:underline">Paper PDF</a>
           <a href="https://github.com/KidsXH/vispilot" className="text-slate-700 hover:underline">GitHub</a>
           {/*<a href="#" className="text-slate-700 hover:underline">Contact</a>*/}
         </div>
