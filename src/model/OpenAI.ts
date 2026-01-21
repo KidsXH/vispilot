@@ -36,8 +36,6 @@ export const requestToOpenAI = async (messages: Message[], modelConfig: ModelCon
   const responseJson = await response.json();
   const text = responseJson.choices[0].message.content;
 
-  console.log('Model Response', text);
-
   return {
     id: Date.now(),
     role: 'assistant',
@@ -69,20 +67,4 @@ export const messageContentToOpenAIFormat = (content: MessageContent[]) => {
       };
     }
   });
-};
-
-export const parseResponseTextAsJson = (text: string) => {
-  const jsonText = text.replace(/```json/g, '').replace(/```/g, '');
-  try {
-    console.log('Parsing JSON:', jsonText);
-    const json = JSON.parse(jsonText);
-    return {
-      think: json.think,
-      chat: json.chat,
-      vega: json.vega,
-    };
-  } catch (e) {
-    console.error('Error parsing JSON:', e);
-    return null;
-  }
 };

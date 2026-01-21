@@ -113,9 +113,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
   }, [isOpen, currentModel]);
 
   // When model changes from dropdown, keep other settings
-  useEffect(() => {
-    // No need to reload API key when model changes since we use a single key
-  }, [modelName]);
+  // (no action needed since we use a single API key for all models)
 
   return (isOpen &&
       <div className="fixed inset-0 bg-white/70 flex items-center justify-center z-50">
