@@ -2,12 +2,13 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {RootState} from '@/store'
 import {Message} from "@/types";
 
-export type ChatModels = 'Gemini 2.0 Flash' | 'Gemini 2.0 Pro' | 'Gemini 2.5 Pro' | 'GPT-4o' |'Claude 3.7 Sonnet';
+export type ChatModels = string;
 export type ChatState = 'idle' | 'waiting';
 
 export interface ModelConfig {
   name: ChatModels;
   key: string;
+  baseURL?: string;
 }
 
 interface ChatSlice {
@@ -19,8 +20,9 @@ interface ChatSlice {
 const initialState: ChatSlice = {
   state: 'idle',
   model: {
-    name: 'Gemini 2.0 Flash',
+    name: 'openai/gpt-4o',
     key: '',
+    baseURL: 'https://openrouter.ai/api/v1',
   },
   messages: [],
 }

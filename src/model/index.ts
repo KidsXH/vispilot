@@ -1,16 +1,13 @@
 'use client'
 
 import {Message} from "@/types";
-import {requestToGemini} from "@/model/Gemini";
-import {ChatModels, ModelConfig} from "@/store/features/ChatSlice";
+import {requestToOpenAI} from "@/model/OpenAI";
+import {ModelConfig} from "@/store/features/ChatSlice";
+
+const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 
 export const sendRequest = async (messages: Message[], modelConfig: ModelConfig) => {
-  if (modelConfig.name.toLowerCase().startsWith("gemini")) {
-    return await requestToGemini(messages, modelConfig);
-  }
-
-  // throw error if model is not supported
-  throw new Error(`Model ${modelConfig.name} is not supported`);
+  return await requestToOpenAI(messages, modelConfig);
 }
 
 
@@ -21,14 +18,10 @@ export const sendUtteranceTestRequest = async (params: {
   dataPrompt: string;
   firstRoundResponse?: string;
   nextUserPrompt?: string;
+  apiKey?: string;
+  baseURL?: string;
 }): Promise<string> => {
-  const { model, systemPrompt, userPrompt, dataPrompt } = params;
-
-  // Create a modelConfig object based on the model name
-  const modelConfig: ModelConfig = {
-    name: model as ChatModels,
-    key: process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
-  };
+  const { model, systemPrompt, userPrompt, dataPrompt, apiKey, baseURL } = params;
 
   // Create messages array for the request
   const messages: Message[] = [
@@ -51,29 +44,30 @@ export const sendUtteranceTestRequest = async (params: {
 
   const data = {
     "messages": formatMsg,
-    "model": "claude-3-5-sonnet-20241022",
-    // "model": "gpt-4o",
-    // "model": "gemini-2.0-flash-001",
+    "model": model,
+    "max_tokens": 8000,
   }
 
   try {
-    // const response = await sendRequest(messages, modelConfig);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/v1/chat/completions' || '';
+    const apiUrl = (baseURL || DEFAULT_BASE_URL) + '/chat/completions';
     const response = await fetch(apiUrl,
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
+          "Authorization": `Bearer ${apiKey || ''}`
         },
         method: "POST",
         body: JSON.stringify(data),
       }
     )
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+    
     const responseJson = await response.json();
-    // GPT Response
     const responseText = responseJson.choices[0].message.content;
-    // Gemini Response
-    // const responseText = responseJson.content[0].text;
     return JSON.stringify(JSON.parse(responseText!.replace(/```json/g, '').replace(/```/g, '')));
   } catch (error) {
     console.error("Error in sendUtteranceTestRequest:", userPrompt, error);

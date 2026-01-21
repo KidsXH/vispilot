@@ -11,11 +11,6 @@ import {
   CardTitle,
   Input,
   Progress,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -156,9 +151,10 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
   const [progress, setProgress] = useState<number>(0);
   const [parallelism, setParallelism] = useState<number>(3);
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
-  const [apiEndpoint, setApiEndpoint] = useState<string>('/api/llm');
+  const [baseURL, setBaseURL] = useState<string>('https://openrouter.ai/api/v1');
+  const [apiKey, setApiKey] = useState<string>('');
   const [maxRequestsPerMin, setMaxRequestsPerMin] = useState<number>(12);
-  const [modelName, setModelName] = useState<string>('Gemini 2.0 Flash');
+  const [modelName, setModelName] = useState<string>('openai/gpt-4o');
 
   const [visualizationDatasets, setVisualizationDatasets] = useState<VisualizationDataset[]>([]);
   const [newDatasetName, setNewDatasetName] = useState<string>("");
@@ -302,7 +298,9 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
         model: modelName, // Use the selected model name
         systemPrompt,
         userPrompt: utterance.utterance,
-        dataPrompt: convertDatasetToTextPrompt(utterance.dataset, datasetData)
+        dataPrompt: convertDatasetToTextPrompt(utterance.dataset, datasetData),
+        apiKey: apiKey,
+        baseURL: baseURL,
       });
 
       return {
@@ -429,6 +427,8 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
         dataPrompt: convertDatasetToTextPrompt(result.dataset, datasetData),
         firstRoundResponse: result.vegaLite,
         nextUserPrompt: '**Vega-Lite Abstraction**:\n' + abstractVegaLiteJson(result.vegaLite) + '\nCheck if these properties explicitly or implicitly inferred from user utterance: ' + result.utterance + '\n' + notePrompt,
+        apiKey: apiKey,
+        baseURL: baseURL,
       });
 
       const updatedResult = {
@@ -720,12 +720,39 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-2">API Endpoint</label>
+              <label className="block mb-2">Base URL</label>
               <Input
-                value={apiEndpoint}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiEndpoint(e.target.value)}
-                placeholder="API endpoint for LLM processing"
+                value={baseURL}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBaseURL(e.target.value)}
+                placeholder="https://openrouter.ai/api/v1"
               />
+              <p className="text-xs text-muted-foreground mt-1">OpenAI-compatible API endpoint</p>
+            </div>
+            <div>
+              <label className="block mb-2">API Key</label>
+              <Input
+                type="password"
+                value={apiKey}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
+                placeholder="Enter your API key"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Model Name</label>
+              <Input
+                value={modelName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModelName(e.target.value)}
+                placeholder="openai/gpt-4o"
+                list="llm-suggested-models"
+              />
+              <datalist id="llm-suggested-models">
+                <option value="openai/gpt-4o">GPT-4o (OpenAI)</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
+                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
+                <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Google)</option>
+                <option value="google/gemini-2.5-pro-preview-03-25">Gemini 2.5 Pro (Google)</option>
+              </datalist>
+              <p className="text-xs text-muted-foreground mt-1">Enter model name or select from suggestions</p>
             </div>
             <div>
               <label className="block mb-2">Parallelism</label>
@@ -753,26 +780,12 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
                 placeholder="Rate limit (1-1000)"
               />
             </div>
-
-            <div>
-              <label className="block mb-2">Model Name</label>
-              <Select value={modelName} onValueChange={setModelName}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select model"/>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Gemini 2.0 Flash">Gemini 2.0 Flash</SelectItem>
-                  <SelectItem value="Gemini 2.0 Pro">Gemini 2.0 Pro</SelectItem>
-                  <SelectItem value="Gemini 2.5 Pro">Gemini 2.5 Pro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </CardContent>
         <CardFooter>
           <Button
             onClick={processAll}
-            disabled={isProcessing || utterances.length === 0}
+            disabled={isProcessing || utterances.length === 0 || !apiKey}
             className="w-full"
           >
             {isProcessing ? 'Processing...' : 'Process All Utterances'}
