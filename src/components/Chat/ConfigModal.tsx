@@ -12,6 +12,7 @@ import {
 import {setVegaString} from "@/store/features/DataSlice";
 import {Message} from "@/types";
 import {setDesignIdea} from "@/store/features/CanvasSlice";
+import { id } from 'vega';
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -38,7 +39,8 @@ const ConfigModal: React.FC<ConfigModalProps> = ({isOpen, onClose}) => {
     {id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI'},
     {id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic'},
     {id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', provider: 'Google'},
-    {id: 'google/gemini-2.5-pro-preview-03-25', name: 'Gemini 2.5 Pro', provider: 'Google'},
+    {id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'Google'},
+    {id: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash Preview', provider: 'Google'},
   ];
 
   const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
