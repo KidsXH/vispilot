@@ -751,6 +751,7 @@ Give your explanation for the rationale of each property in the **Vega-Lite Abst
                 <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
                 <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Google)</option>
                 <option value="google/gemini-2.5-pro-preview-03-25">Gemini 2.5 Pro (Google)</option>
+                <option value="google/gemini-3-flash-preview">Gemini 3 Flash (Google)</option>
               </datalist>
               <p className="text-xs text-muted-foreground mt-1">Enter model name or select from suggestions</p>
             </div>

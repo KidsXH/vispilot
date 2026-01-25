@@ -66,6 +66,11 @@ export default function Corpus() {
         >
           {'claude-3.5-sonnet'}
         </span>
+        <span className={`text-sm ml-2 bg-gray-200 px-2 py-1 rounded cursor-pointer select-none hover:bg-gray-100 ${modelName.toLowerCase() !== 'gemini-3-flash' && 'opacity-30 hover:opacity-100'}`}
+              onClick={() => {setModelName('gemini-3-flash')}}
+        >
+          {'gemini-3-flash'}
+        </span>
       </h1>
       <div className='grid grid-cols-12 gap-4 pb-2 border-b'>
         <div className='col-span-2'>
