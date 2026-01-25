@@ -3,7 +3,8 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 
 const specDims = ['dataSchema', 'mark', 'encoding', 'design'] as const;
-const dimDisplayNames = {
+const dimDisplayNames: Record<string, string> = {
+  'overall': 'Overall',
   'dataSchema': 'Data Schema',
   'mark': 'Mark',
   'encoding': 'Encoding',
@@ -59,7 +60,13 @@ const AccuracyVis = (props: { processResult: ProcessResult[] }) => {
       return matches.matched === matches.total ? 1 : 0
     })
 
+    // Calculate overall accuracy (Data Schema, Mark, and Encoding all correct)
+    const overall: number[] = processResult.map((result, index) => {
+      return (dataSchema[index] === 1 && mark[index] === 1 && encoding[index] === 1) ? 1 : 0
+    })
+
     return {
+      overall: overall.reduce((a, b) => a + b, 0) / overall.length,
       dataSchema: dataSchema.reduce((a, b) => a + b, 0) / dataSchema.length,
       mark: mark.reduce((a, b) => a + b, 0) / mark.length,
       encoding: encoding.reduce((a, b) => a + b, 0) / encoding.length,
@@ -300,10 +307,12 @@ const AccuracyVis = (props: { processResult: ProcessResult[] }) => {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const data = specDims.map(dim => ({
+    // Include overall in the accuracy chart
+    const overallChartDims = ['overall', ...specDims] as const;
+    const data = overallChartDims.map(dim => ({
       dimension: dim,
       displayName: dimDisplayNames[dim],
-      accuracy: accuracyByDim[dim]
+      accuracy: accuracyByDim[dim as keyof typeof accuracyByDim]
     }));
 
     const x = d3.scaleBand()
