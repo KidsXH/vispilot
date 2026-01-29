@@ -24,7 +24,7 @@ export const requestToOpenAI = async (messages: Message[], modelConfig: ModelCon
     body: JSON.stringify({
       model: model,
       messages: formattedMessages,
-      max_tokens: 8000,
+      max_tokens: 32000,
     }),
   });
 
