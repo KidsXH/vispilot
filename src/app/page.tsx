@@ -87,22 +87,24 @@ export default function Home() {
       <section className="mb-16">
         <h2 className="text-2xl font-bold mb-4">Abstract</h2>
         <p className="text-gray-700 leading-relaxed text-justify text-pretty hyphens-auto">
-          Recent advances in large language models (LLMs) have shown great potential in automating the process of
-          visualization authoring through simple natural language utterances. However, instructing LLMs using natural
-          language is limited on precision and expressiveness for conveying visualization intent, leading to
-          misinterpretation and time-consuming iterations. To address these limitations, we conduct an empirical study
-          to understand how LLMs interpret ambiguous or incomplete text prompts in the context of visualization
-          authoring, and the conditions making LLMs misinterpret user intent. Informed by the findings, we introduce
-          visual prompts as a complementary input modality to text prompts, which help clarify user intent and improve
-          LLMs&#39; interpretation abilities. To explore the potential of multimodal prompting in visualization authoring,
-          we design VisPilot, which enables users to easily create visualizations using multimodal prompts, including
-          text, sketches, and direct manipulations on existing visualizations. Through two case studies and a controlled
-          user study, we demonstrate that VisPilot provides a more intuitive way to create visualizations without
-          affecting the overall task efficiency compared to text-only prompting approaches. Furthermore, we analyze the
-          impact of text and visual prompts in different visualization tasks. Our findings highlight the importance of
-          multimodal prompting in improving the usability of LLMs for visualization authoring. We discuss design
-          implications for future visualization systems and provide insights into how multimodal prompts can enhance
-          human-AI collaboration in creative visualization tasks.
+          Recent advances in large language models (LLMs) have shown great potential in automating the process
+          of visualization authoring through simple natural language utterances. However, instructing LLMs using
+          natural language is limited in precision and expressiveness for conveying visualization intent,
+          leading to misinterpretation and time-consuming iterations. To address these limitations, we conduct
+          an empirical study to understand how LLMs interpret ambiguous or incomplete text prompts in the
+          context of visualization authoring, and the conditions making LLMs misinterpret user intent. Informed
+          by the findings, we introduce visual prompts as a complementary input modality to text prompts, which
+          help clarify user intent and improve LLMs&#x27; interpretation abilities. To explore the potential of
+          multimodal prompting in visualization authoring, we design VisPilot, which enables users to easily
+          create visualizations using multimodal prompts, including text, sketches, and direct manipulations on
+          existing visualizations. We evaluate VisPilot through a controlled user study and an expert
+          evaluation. The results suggest that multimodal prompts facilitate users in communicating spatial
+          constraints, local references, and design preferences while maintaining comparable task efficiency to
+          text-only prompting. We further discuss when text, visual, and hybrid prompts are beneficial for
+          visualization authoring, and summarize design implications for future human-AI authoring systems. All
+          materials are available at
+          {' '}<a href="https://osf.io/2qrak" className="text-slate-700 underline" target="_blank"
+                 rel="noopener noreferrer">https://osf.io/2qrak</a>.
         </p>
       </section>
 
@@ -169,11 +171,19 @@ export default function Home() {
         <div className="bg-slate-100 p-6 rounded-lg">
           <div className="bg-white border border-slate-300 rounded-lg mb-4">
             <div className="w-full h-full flex items-center justify-center text-gray-400 rounded-lg">
-              <Image className='rounded-lg' src={'/vispilot/case2.png'} alt={'Illustration of prompt framework'} width={1280} height={300}/>
+              <a href="/vispilot/case2.png" target="_blank" rel="noopener noreferrer"
+                 aria-label="Open the Case 2 figure at full resolution" className="block w-full cursor-zoom-in">
+                <Image className="w-full h-auto rounded-lg" src="/vispilot/case2.png"
+                       alt="Domain experts analyzing Premier League player statistics with VisPilot, from scatterplots to a comparison of Milos Kerkez and the average defender"
+                       width={2560} height={530}/>
+              </a>
             </div>
           </div>
           <p className="text-sm text-gray-600">
-            The use case of VisPilot for data exploration.
+            Case study with domain experts analyzing Premier League player statistics, using VisPilot to iteratively
+            create visualizations from (A) to (D).{' '}
+            <a href="/vispilot/case2.png" className="text-slate-700 underline" target="_blank"
+               rel="noopener noreferrer">View full-size image</a>.
           </p>
         </div>
       </section>
@@ -202,12 +212,15 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-4">Citation</h2>
         <div className="rounded-lg">
     <pre className="text-sm overflow-x-auto p-2 bg-neutral-50 border border-slate-300 rounded font-mono text-gray-700">
-      {`@article{wen2025exploring,
-  title={Exploring Multimodal Prompt for Visualization Authoring with Large Language Models},
-  author={Zhen Wen and Luoxuan Weng and Yinghao Tang and Runjin Zhang and Yuxin Liu and Bo Pan and Minfeng Zhu and Wei Chen},
-  journal={arXiv preprint},
-  year={2025}
-  doi={10.48550/arXiv.2504.13700}
+      {`@article{wen2026exploring,
+  title   = {Exploring Multimodal Prompt for Visualization Authoring with Large Language Models},
+  author  = {Zhen Wen and Luoxuan Weng and Yinghao Tang and Runjin Zhang and Yuxin Liu and Bo Pan and Minfeng Zhu and Wei Chen},
+  journal = {IEEE Transactions on Visualization and Computer Graphics},
+  year    = {2026},
+  volume  = {32},
+  number  = {9},
+  pages   = {7685--7700},
+  doi     = {10.1109/TVCG.2026.3701510}
 }`}
     </pre>
         </div>
